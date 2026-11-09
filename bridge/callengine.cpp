@@ -8,6 +8,7 @@
 #include <gst/video/video.h>
 
 #include "callengine.h"
+#include "camerabranch.h"
 #include "dtlscertificate.h"
 #include "vp8filter.h"
 #include "aec/echocanceller.h"
@@ -333,7 +334,7 @@ void CallEngine::stop()
     removeCamera();
     m_video = false;
     g_signal_handlers_disconnect_by_data(m_webrtc, this);
-    gst_element_set_state(m_pipeline, GST_STATE_NULL);
+    const bool stopped = CameraBranch::stop(m_pipeline);
     if (m_channel) {
         g_signal_handlers_disconnect_by_data(m_channel, this);
         g_object_unref(m_channel);
@@ -341,9 +342,15 @@ void CallEngine::stop()
     }
     gst_object_unref(m_micVolume);
     gst_object_unref(m_webrtc);
-    gst_object_unref(m_pipeline);
-    // After the pipeline stopped: no probe runs any more.
-    m_echoCanceller.reset();
+    if (stopped) {
+        gst_object_unref(m_pipeline);
+        // After the pipeline stopped: no probe runs any more.
+        m_echoCanceller.reset();
+    } else {
+        // It hangs: better a pipeline and a canceller left behind than a frozen app.
+        qWarning() << "call: the pipeline did not stop";
+        (void)m_echoCanceller.take();
+    }
     m_micVolume = nullptr;
     m_webrtc = nullptr;
     m_pipeline = nullptr;
@@ -357,6 +364,7 @@ void CallEngine::stop()
     // must not reach the next one, nor the manager after the user hung up.
     QCoreApplication::removePostedEvents(this, QEvent::MetaCall);
     m_remoteFramePending = false;
+    m_localFramePending = false;
 }
 
 // --- GStreamer threads: hand everything over to this object's thread. ---
@@ -624,11 +632,21 @@ int CallEngine::onRemoteSample(GstElement *sink, void *self)
 
 int CallEngine::onLocalSample(GstElement *sink, void *self)
 {
-    const QImage image = sampleImage(GST_APP_SINK(sink));
-    if (!image.isNull()) {
-        QMetaObject::invokeMethod(static_cast<CallEngine *>(self), "localFrame", Qt::QueuedConnection,
-                                  Q_ARG(QImage, image));
+    auto *engine = static_cast<CallEngine *>(self);
+    if (engine->m_localFramePending.exchange(true)) {
+        // The GUI is behind: pictures must not pile up in its queue.
+        GstSample *sample = gst_app_sink_pull_sample(GST_APP_SINK(sink));
+        if (sample) {
+            gst_sample_unref(sample);
+        }
+        return GST_FLOW_OK;
     }
+    const QImage image = sampleImage(GST_APP_SINK(sink));
+    if (image.isNull()) {
+        engine->m_localFramePending = false;
+        return GST_FLOW_OK;
+    }
+    QMetaObject::invokeMethod(engine, "onLocalFrame", Qt::QueuedConnection, Q_ARG(QImage, image));
     return GST_FLOW_OK;
 }
 
@@ -650,7 +668,7 @@ void CallEngine::setCamera(bool on, bool front)
         gst_object_unref(droid);
     }
     const QString description = source + QStringLiteral(
-        " ! videoconvert ! videoscale ! videorate ! capsfilter name=camcaps caps=%1 ! tee name=camtee "
+        " ! videoconvert name=camconv ! videoscale ! videorate ! capsfilter name=camcaps caps=%1 ! tee name=camtee "
         "camtee. ! queue max-size-buffers=2 leaky=downstream name=camout "
         "camtee. ! queue max-size-buffers=1 leaky=downstream ! videoconvert ! video/x-raw,format=BGRx "
         "! appsink name=localvideo emit-signals=true sync=false max-buffers=1 drop=true")
@@ -670,6 +688,7 @@ void CallEngine::setCamera(bool on, bool front)
     GstElement *preview = gst_bin_get_by_name(GST_BIN(bin), "localvideo");
     g_signal_connect(preview, "new-sample", G_CALLBACK(&CallEngine::onLocalSample), this);
     gst_object_unref(preview);
+    CameraBranch::keepCameraNegotiated(bin, "camconv");
 
     gst_bin_add(GST_BIN(m_pipeline), bin);
     GstElement *funnel = gst_bin_get_by_name(GST_BIN(m_pipeline), "vin");
@@ -678,8 +697,10 @@ void CallEngine::setCamera(bool on, bool front)
     GstPad *binPad = gst_element_get_static_pad(bin, "src");
     gst_pad_link(binPad, m_cameraPad);
     gst_object_unref(binPad);
-    gst_element_sync_state_with_parent(bin);
     m_camera = bin;
+    if (!CameraBranch::start(bin)) {
+        qWarning() << "call: the camera did not start";
+    }
 }
 
 void CallEngine::removeCamera()
@@ -687,23 +708,13 @@ void CallEngine::removeCamera()
     if (!m_camera) {
         return;
     }
-    GstElement *bin = m_camera;
+    GstElement *funnel = gst_bin_get_by_name(GST_BIN(m_pipeline), "vin");
+    if (!CameraBranch::remove(m_pipeline, funnel, m_camera, m_cameraPad)) {
+        qWarning() << "call: the camera did not stop";
+    }
+    gst_object_unref(funnel);
     m_camera = nullptr;
-    // No EOS (it would end the encoder's stream for good): unlink, then stop the branch.
-    GstPad *binPad = gst_element_get_static_pad(bin, "src");
-    gst_pad_unlink(binPad, m_cameraPad);
-    gst_object_unref(binPad);
-    if (m_pipeline) {
-        GstElement *funnel = gst_bin_get_by_name(GST_BIN(m_pipeline), "vin");
-        gst_element_release_request_pad(funnel, m_cameraPad);
-        gst_object_unref(funnel);
-    }
-    gst_object_unref(m_cameraPad);
     m_cameraPad = nullptr;
-    gst_element_set_state(bin, GST_STATE_NULL);
-    if (m_pipeline) {
-        gst_bin_remove(GST_BIN(m_pipeline), bin);
-    }
 }
 
 // What the encoder may send (Android's quality profiles, capped for software VP8).
@@ -960,6 +971,12 @@ void CallEngine::onRemoteFrame(const QImage &image)
 {
     m_remoteFramePending = false;
     emit remoteFrame(image);
+}
+
+void CallEngine::onLocalFrame(const QImage &image)
+{
+    m_localFramePending = false;
+    emit localFrame(image);
 }
 
 void CallEngine::onError(const QString &reason)

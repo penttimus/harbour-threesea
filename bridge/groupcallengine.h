@@ -84,6 +84,7 @@ private slots:
     void onError(const QString &reason);
     void sendConsent();
     void onParticipantFrame(quint32 participant, const QImage &image);
+    void onLocalFrame(const QImage &image);
 
 private:
     void setRemote(const QString &offer);
@@ -177,6 +178,8 @@ private:
     // there (read from GStreamer threads).
     QMutex m_framesLock;
     QSet<quint32> m_pendingFrames;
+    // The same for our own picture.
+    bool m_localFramePending = false;
     // ICE consent checks (see sendConsent) with the credentials of both sides.
     QTimer m_consent;
     QString m_localUfrag;

@@ -83,6 +83,7 @@ private slots:
     void onChannelOpen();
     void onChannelData(const QByteArray &data);
     void onRemoteFrame(const QImage &image);
+    void onLocalFrame(const QImage &image);
 
 private:
     friend class CallEngineTest;
@@ -133,8 +134,9 @@ private:
     std::atomic<unsigned> m_framesSent{0};
     std::atomic<unsigned> m_framesReceived{0};
     std::atomic<unsigned> m_packetsReceived{0};
-    // A picture of the peer is on its way to the GUI: the next ones are dropped until it got there.
+    // A picture is on its way to the GUI: the next ones are dropped until it got there.
     std::atomic<bool> m_remoteFramePending{false};
+    std::atomic<bool> m_localFramePending{false};
     unsigned m_busWatch = 0;
     bool m_remoteSet = false;
     bool m_connected = false;
