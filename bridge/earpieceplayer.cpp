@@ -136,6 +136,9 @@ bool EarpiecePlayer::start(const QByteArray &data, bool raw, int startMs, bool p
         release();
         return false;
     }
+    // Asked for counts from here on: a phone taken off the ear before the pipeline is ready (the
+    // sensor bounces) must find the message playing, or it would stand still on the loudspeaker.
+    setPlaying(playing);
     if (change == GST_STATE_CHANGE_ASYNC) {
         // It is prerolling: the bus says when (ASYNC_DONE), and the watchdog if it never does.
         m_watchdog.start();
@@ -184,10 +187,9 @@ void EarpiecePlayer::resume()
         return;
     }
     m_autoplay = true;
-    if (!m_prerolled) {
-        return; // plays once prerolled
+    if (m_prerolled) { // else it plays once prerolled
+        gst_element_set_state(m_pipeline, GST_STATE_PLAYING);
     }
-    gst_element_set_state(m_pipeline, GST_STATE_PLAYING);
     setPlaying(true);
 }
 
@@ -267,12 +269,11 @@ void EarpiecePlayer::setPlaying(bool playing)
 
 int EarpiecePlayer::position() const
 {
-    if (!m_pipeline) {
-        return m_baseMs;
-    }
+    // Where it was asked to start until the pipeline can say: also what the loudspeaker carries
+    // on from if the earpiece doesn't come up.
     gint64 ns = 0;
-    if (!gst_element_query_position(m_pipeline, GST_FORMAT_TIME, &ns) || ns < 0) {
-        return m_baseMs;
+    if (!m_pipeline || !m_prerolled || !gst_element_query_position(m_pipeline, GST_FORMAT_TIME, &ns) || ns < 0) {
+        return m_seekMs;
     }
     const double ms = static_cast<double>(ns) / GST_MSECOND;
     // Raw mode runs the data faster than it is, so the pipeline's clock is compressed.
