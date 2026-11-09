@@ -3,6 +3,30 @@
 All notable changes. Versions follow `MAJOR.MINOR.PATCH`; each release is built from the
 `release` branch and tagged `v<version>` (see [docs/release.md](docs/release.md)).
 
+## [Unreleased]
+
+Changed:
+
+- Calls from a chat's pull-down menu start after a short countdown you can cancel, and they moved
+  to the top of the menu, so a pull that goes wrong doesn't ring anyone
+  ([#4](https://github.com/penttimus/harbour-threesea/pull/4)).
+
+Fixed:
+
+- The chat list shows a message you sent or a draft you changed right away, not only after going
+  back to it ([#6](https://github.com/penttimus/harbour-threesea/pull/6)).
+- A notification light goes off when the message is read: the notification that only vibrates
+  stayed active until now ([#5](https://github.com/penttimus/harbour-threesea/pull/5)).
+
+Added:
+
+- The README and the About page list the contributors, with the day of their first commit. Whoever
+  is new is highlighted for that release.
+
+New contributors:
+
+- [jmpx448](https://github.com/jmpx448)
+
 ## [0.3.0] - 2026-11-08
 
 A large round of fixes after a review of the whole app, and the features from Threema for Android
