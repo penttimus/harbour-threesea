@@ -7,7 +7,8 @@ hand. `main` is where work happens; `release` only ever receives merges from `ma
 
 1. On `main`: raise the version in all three places, `rpm/harbour-threesea.spec` (`Version:`),
    `Cargo.toml` (`[workspace.package] version`) and `harbour-threesea.pro` (`VERSION`), and add a
-   section `## [<version>] - <date>` to `CHANGELOG.md` (it becomes the release notes).
+   section `## [<version>] - <date>` to `CHANGELOG.md` (it becomes the release notes; every entry
+   says who did it, "by [name](https://github.com/name)", with the pull request if there is one).
    `scripts/release-version.sh --new-tag` checks all of this locally.
    Contributors: whoever made a first commit since the last release goes into `contributors.json`
    (`check.sh` says who is missing). Replace `"next"` there with the new version, run

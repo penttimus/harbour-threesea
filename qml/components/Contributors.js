@@ -4,5 +4,5 @@
 
 var list = [
     {"login": "penttimus", "since": "2026-10-27", "release": "0.1.0"},
-    {"login": "jmpx448", "since": "2026-11-08", "release": "next"}
+    {"login": "jmpx448", "since": "2026-11-08", "release": "0.3.0"}
 ]

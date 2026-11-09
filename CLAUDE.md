@@ -530,7 +530,8 @@ details in `docs/STATUS.md`.
   day of the first commit, the release they are new in), not in Credits and without a description
   of their work. `scripts/make-contributors.py` writes the README's section and
   `qml/components/Contributors.js`; whoever is new is highlighted for that one release
-  (user decision 2026-11-09; docs/release.md).
+  (user decision 2026-11-09; docs/release.md). Every CHANGELOG entry says who did it: "by
+  [name](https://github.com/name)", with the pull request if there is one.
 - **Keep this file current.** If the layout, stack, or phases change, update `CLAUDE.md` in the
   same commit.
 
