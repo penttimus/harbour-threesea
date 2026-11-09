@@ -3,6 +3,7 @@
 #define CAMERABRANCH_H
 
 #include <gst/gst.h>
+#include <gst/video/video.h>
 
 #include <chrono>
 #include <condition_variable>
@@ -54,6 +55,26 @@ inline void keepCameraNegotiated(GstElement *bin, const char *first)
     gst_pad_add_probe(pad, GST_PAD_PROBE_TYPE_EVENT_UPSTREAM, &dropReconfigure, nullptr, nullptr);
     gst_object_unref(pad);
     gst_object_unref(element);
+}
+
+// The camera delivers what its sensor sees, and the sensor is mounted across the phone. The call
+// pages are portrait only, so `camflip` stands the picture upright for a phone held upright, for
+// our preview and the other side alike: no video orientation extension tells them (sdp.rs). True
+// if that swapped its width and height. (The emulator's test pattern has no `camsrc`.)
+inline bool standUpright(GstElement *bin)
+{
+    GstElement *camera = gst_bin_get_by_name(GST_BIN(bin), "camsrc");
+    if (!camera) {
+        return false;
+    }
+    int angle = 0;
+    g_object_get(camera, "sensor-mount-angle", &angle, nullptr);
+    gst_object_unref(camera);
+    // Degrees clockwise; videoflip's directions go identity, 90R, 180, 90L.
+    GstElement *flip = gst_bin_get_by_name(GST_BIN(bin), "camflip");
+    g_object_set(flip, "video-direction", static_cast<GstVideoOrientationMethod>(angle / 90 % 4), nullptr);
+    gst_object_unref(flip);
+    return angle % 180 != 0;
 }
 
 // The camera branch into its state.

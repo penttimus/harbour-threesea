@@ -64,6 +64,14 @@ const SimulcastLayer SIMULCAST[GroupCallEngine::VIDEO_LAYERS] = {
     {"h", 1, 600000},
 };
 
+// What a layer is encoded at: the other way round when the picture stands upright.
+QString layerSize(int layer, bool turned)
+{
+    const int width = CAMERA_WIDTH / SIMULCAST[layer].scaleDown;
+    const int height = CAMERA_HEIGHT / SIMULCAST[layer].scaleDown;
+    return QStringLiteral("video/x-raw,width=%1,height=%2").arg(turned ? height : width).arg(turned ? width : height);
+}
+
 // A frame through the core's frame encryption (`participant` < 0: ours, encrypt); a new buffer
 // with the same timing, or nullptr to drop the frame.
 GstBuffer *transformFrame(GstBuffer *buffer, qint64 participant, uint8_t codec)
@@ -451,12 +459,12 @@ bool GroupCallEngine::buildVideo(const QString &offer)
         const SimulcastLayer &layer = SIMULCAST[i];
         const QString encode = QStringLiteral(
             "queue max-size-buffers=2 leaky=downstream ! videoscale "
-            "! video/x-raw,width=%1,height=%2 "
+            "! capsfilter name=vsize%1 caps=%2 "
             "! vp8enc name=venc deadline=1 cpu-used=8 end-usage=cbr target-bitrate=%3 "
             "keyframe-max-dist=60 lag-in-frames=0 error-resilient=default threads=%4 "
             "! appsink name=vout emit-signals=true sync=false")
-                                   .arg(CAMERA_WIDTH / layer.scaleDown)
-                                   .arg(CAMERA_HEIGHT / layer.scaleDown)
+                                   .arg(i)
+                                   .arg(layerSize(i, false))
                                    .arg(layer.bitrate)
                                    .arg(layer.scaleDown == 1 ? 2 : 1);
         GstElement *encodeBin = gst_parse_bin_from_description(encode.toUtf8().constData(), TRUE, &error);
@@ -529,13 +537,13 @@ void GroupCallEngine::setCamera(bool on, bool front)
     }
     m_frontCamera = front;
     GstElementFactory *droid = gst_element_factory_find("droidcamsrc");
-    const QString source = droid ? QStringLiteral("droidcamsrc camera-device=%1 mode=2").arg(front ? 1 : 0)
+    const QString source = droid ? QStringLiteral("droidcamsrc name=camsrc camera-device=%1 mode=2").arg(front ? 1 : 0)
                                  : QStringLiteral("videotestsrc is-live=true pattern=ball");
     if (droid) {
         gst_object_unref(droid);
     }
     const QString description = source + QStringLiteral(
-        " ! videoconvert name=camconv ! videoscale ! videorate ! capsfilter caps=%1 ! tee name=camtee "
+        " ! videoconvert name=camconv ! videoscale ! videorate ! capsfilter caps=%1 ! videoflip name=camflip ! tee name=camtee "
         "camtee. ! queue max-size-buffers=2 leaky=downstream name=camout "
         "camtee. ! queue max-size-buffers=1 leaky=downstream ! videoconvert ! video/x-raw,format=BGRx "
         "! appsink name=localvideo emit-signals=true sync=false max-buffers=1 drop=true")
@@ -556,6 +564,14 @@ void GroupCallEngine::setCamera(bool on, bool front)
     g_signal_connect(preview, "new-sample", G_CALLBACK(&GroupCallEngine::onLocalSample), this);
     gst_object_unref(preview);
     CameraBranch::keepCameraNegotiated(bin, "camconv");
+    const bool turned = CameraBranch::standUpright(bin);
+    for (int i = 0; i < VIDEO_LAYERS; ++i) {
+        GstElement *size = gst_bin_get_by_name(GST_BIN(m_pipeline), QStringLiteral("vsize%1").arg(i).toUtf8().constData());
+        GstCaps *caps = gst_caps_from_string(layerSize(i, turned).toUtf8().constData());
+        g_object_set(size, "caps", caps, nullptr);
+        gst_caps_unref(caps);
+        gst_object_unref(size);
+    }
 
     gst_bin_add(GST_BIN(m_pipeline), bin);
     m_cameraPad = gst_element_request_pad_simple(m_videoInput, "sink_%u");

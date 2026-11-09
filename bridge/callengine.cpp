@@ -127,8 +127,12 @@ bool CallEngine::build(const QVariantMap &turn, bool relayOnly, int opusPayloadT
         "! vp8enc name=venc deadline=1 cpu-used=8 end-usage=cbr target-bitrate=600000 "
         "keyframe-max-dist=60 lag-in-frames=0 error-resilient=default threads=2 "
         "! rtpvp8pay pt=%1 picture-id-mode=15-bit mtu=1200 ! queue "
-        "! application/x-rtp,media=video,encoding-name=VP8,clock-rate=90000,payload=%1 "
-        "! webrtc. ").arg(vp8PayloadType));
+        // The SSRC is fixed here so that the SDP can name it: webrtcbin takes it from these caps,
+        // and without the camera nothing else sets them when the answer is made. libwebrtc drops
+        // what it can't assign, and in a call we answer the MID extension it would go by is
+        // negotiated but never sent (issue 7).
+        "! application/x-rtp,media=video,encoding-name=VP8,clock-rate=90000,payload=%1,ssrc=(uint)%2 "
+        "! webrtc. ").arg(vp8PayloadType).arg(g_random_int_range(1, G_MAXINT32)));
     GError *error = nullptr;
     m_pipeline = gst_parse_launch(description.toUtf8().constData(), &error);
     if (error) {
@@ -666,13 +670,13 @@ void CallEngine::setCamera(bool on, bool front)
         return;
     }
     GstElementFactory *droid = gst_element_factory_find("droidcamsrc");
-    const QString source = droid ? QStringLiteral("droidcamsrc camera-device=%1 mode=2").arg(front ? 1 : 0)
+    const QString source = droid ? QStringLiteral("droidcamsrc name=camsrc camera-device=%1 mode=2").arg(front ? 1 : 0)
                                  : QStringLiteral("videotestsrc is-live=true pattern=ball");
     if (droid) {
         gst_object_unref(droid);
     }
     const QString description = source + QStringLiteral(
-        " ! videoconvert name=camconv ! videoscale ! videorate ! capsfilter name=camcaps caps=%1 ! tee name=camtee "
+        " ! videoconvert name=camconv ! videoscale ! videorate ! capsfilter name=camcaps caps=%1 ! videoflip name=camflip ! tee name=camtee "
         "camtee. ! queue max-size-buffers=2 leaky=downstream name=camout "
         "camtee. ! queue max-size-buffers=1 leaky=downstream ! videoconvert ! video/x-raw,format=BGRx "
         "! appsink name=localvideo emit-signals=true sync=false max-buffers=1 drop=true")
@@ -693,6 +697,7 @@ void CallEngine::setCamera(bool on, bool front)
     g_signal_connect(preview, "new-sample", G_CALLBACK(&CallEngine::onLocalSample), this);
     gst_object_unref(preview);
     CameraBranch::keepCameraNegotiated(bin, "camconv");
+    CameraBranch::standUpright(bin);
 
     gst_bin_add(GST_BIN(m_pipeline), bin);
     GstElement *funnel = gst_bin_get_by_name(GST_BIN(m_pipeline), "vin");
