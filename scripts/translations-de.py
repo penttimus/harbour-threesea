@@ -3660,9 +3660,6 @@ DE = {
     "threesea-la-key-confirmation-notification-body":
         ("After a restart the phone asks once whether Threesea may read the key to its data. Confirm that to receive messages.",
          "Nach einem Neustart fragt das Telefon einmal, ob Threesea den Schlüssel zu seinen Daten lesen darf. Bestätige das, um Nachrichten zu empfangen."),
-    "threesea-la-credit-finnish":
-        ("The Finnish translation: jmpx448 (github.com/jmpx448), a first-time contributor.",
-         "Die finnische Übersetzung: jmpx448 (github.com/jmpx448), zum ersten Mal mit einem Beitrag dabei."),
     "threesea-me-open-in-maps":
         ("Open in maps app",
          "In Maps-App öffnen"),

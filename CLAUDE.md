@@ -66,6 +66,8 @@ harbour-threesea/
   LICENSE                   AGPL-3.0
   THIRD-PARTY-NOTICES.txt   licences of everything bundled (scripts/make-notices.py; installed
                             with LICENSE, shown under About)
+  contributors.json         who has committed here, source of the README's and About's list
+                            (scripts/make-contributors.py)
   docs/
     decisions/              one short markdown file per architectural decision (ADR style)
     android-mapping.md      which upstream Kotlin/Java package maps to which module here
@@ -120,7 +122,7 @@ harbour-threesea/
                             checks; hooks/pre-commit runs its quick part), check-qml.py (UI
                             against core, imports, texts), test-*.sh (one per tests/ program, all
                             run by run-sdk-tests.sh), check-package.sh (inside built RPMs: no demo
-                            data, licences), make-notices.py
+                            data, licences), make-notices.py, make-contributors.py
   .github/                  CI on every push but Markdown-only ones (checks, libthreema's tests, every SDK test, both
                             flavours for all architectures), weekly cargo audit, Dependabot for
                             the actions, releases from the `release` branch (docs/release.md),
@@ -524,6 +526,11 @@ details in `docs/STATUS.md`.
   of substance) is credited in the README's Credits and on the About page; both carry the EU
   "AI generated" label and the disclaimer (made with Claude Code, audited with OpenAI Codex,
   research project, no warranty, not affiliated with Threema).
+- **Contributors:** people who commit to this repository are in `contributors.json` (GitHub name,
+  day of the first commit, the release they are new in), not in Credits and without a description
+  of their work. `scripts/make-contributors.py` writes the README's section and
+  `qml/components/Contributors.js`; whoever is new is highlighted for that one release
+  (user decision 2026-11-09; docs/release.md).
 - **Keep this file current.** If the layout, stack, or phases change, update `CLAUDE.md` in the
   same commit.
 

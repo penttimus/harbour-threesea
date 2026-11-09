@@ -13,6 +13,8 @@
 #   UI and core    scripts/check-qml.py: the commands the UI sends against the core's, QML
 #                  imports against the Jolla Store's list, every tests/ program run by a script
 #   notices        THIRD-PARTY-NOTICES.txt is current (scripts/make-notices.py)
+#   contributors   the list in the README and on the About page is current and matches the history
+#                  (scripts/make-contributors.py); with --release, nobody is left as "next"
 #   fuzz targets   they still build (core/fuzz, its own workspace; fuzzing itself: docs/build.md)
 #   texts          how many texts await the translation step (scripts/check-qml.py --texts);
 #                  with --release a failure: a release has them all
@@ -108,6 +110,13 @@ python3 -I scripts/check-qml.py || fail "UI and core (scripts/check-qml.py)"
 step "licence notices"
 # THIRD-PARTY-NOTICES.txt lists every crate in Cargo.lock that the app links.
 python3 -I scripts/make-notices.py --check || fail "licence notices (python3 -I scripts/make-notices.py)"
+
+step "contributors"
+if $release; then
+    python3 -I scripts/make-contributors.py --check --release || fail "contributors (contributors.json)"
+else
+    python3 -I scripts/make-contributors.py --check || fail "contributors (contributors.json)"
+fi
 
 step "fuzz targets"
 quiet "fuzz targets (core/fuzz)" env CARGO_TARGET_DIR="$PWD/target/fuzz-check" \

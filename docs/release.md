@@ -9,6 +9,10 @@ hand. `main` is where work happens; `release` only ever receives merges from `ma
    `Cargo.toml` (`[workspace.package] version`) and `harbour-threesea.pro` (`VERSION`), and add a
    section `## [<version>] - <date>` to `CHANGELOG.md` (it becomes the release notes).
    `scripts/release-version.sh --new-tag` checks all of this locally.
+   Contributors: whoever made a first commit since the last release goes into `contributors.json`
+   (`check.sh` says who is missing). Replace `"next"` there with the new version, run
+   `python3 -I scripts/make-contributors.py`, and name them in the CHANGELOG section under "New
+   contributors". They are highlighted in this release; the next one ends that by itself.
    If the store's schema changed since the last release (`MIGRATIONS` in `core/src/store.rs` got
    longer), keep the new release's schema as a fixture, so that every later version is tested
    on a database with its data in it:
