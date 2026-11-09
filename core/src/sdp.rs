@@ -241,6 +241,9 @@ impl SdpPatcher {
             || uri_and_attributes.contains("urn:ietf:params:rtp-hdrext:csrc-audio-level")
             || uri_and_attributes
                 .contains("http://tools.ietf.org/html/draft-ietf-avtext-framemarking-07")
+            // A deviation from Android's rules: GStreamer can't read this one encrypted, and
+            // a sender for which it isn't negotiated turns its pictures itself.
+            || uri_and_attributes.contains("urn:3gpp:video-orientation")
         {
             return Ok(Action::Reject);
         }
@@ -411,6 +414,33 @@ mod tests {
             patched_answer,
             "v=0\r\nm=audio 9 UDP/TLS/RTP/SAVPF 111\r\na=mid:0\r\n\
              a=extmap:1 urn:ietf:params:rtp-hdrext:encrypt urn:x\r\na=rtpmap:111 opus/48000/2\r\n"
+        );
+    }
+
+    /// Nothing can read it here, so the answer must not make the sender rely on it.
+    #[test]
+    fn video_orientation_is_left_to_the_sender() {
+        let audio = "v=0\r\nm=audio 9 UDP/TLS/RTP/SAVPF 111\r\na=rtpmap:111 opus/48000/2\r\n";
+        let offer = "m=video 9 UDP/TLS/RTP/SAVPF 96\r\na=mid:1\r\n\
+                     a=extmap:1 urn:ietf:params:rtp-hdrext:encrypt urn:x\r\n\
+                     a=extmap:2 urn:ietf:params:rtp-hdrext:encrypt urn:3gpp:video-orientation\r\n";
+        let mut patcher = SdpPatcher::new(HeaderExtensions::OneAndTwoByte);
+        let patched_offer = patcher
+            .patch(SdpKind::RemoteOffer, &format!("{audio}{offer}"))
+            .unwrap();
+        assert!(patched_offer.contains("encrypt urn:x"), "{patched_offer}");
+        assert!(
+            !patched_offer.contains("video-orientation"),
+            "{patched_offer}"
+        );
+        let answer = "m=video 9 UDP/TLS/RTP/SAVPF 96\r\na=mid:1\r\n";
+        let patched_answer = patcher
+            .patch(SdpKind::LocalAnswer, &format!("{audio}{answer}"))
+            .unwrap();
+        assert!(patched_answer.contains("encrypt urn:x"), "{patched_answer}");
+        assert!(
+            !patched_answer.contains("video-orientation"),
+            "{patched_answer}"
         );
     }
 }
