@@ -467,7 +467,16 @@ impl App {
             }
             Conversation::Contact(contact) => self.make_direct(contact)?,
         }
+        self.chat_preview_changed();
         Ok(())
+    }
+
+    /// What a row of the chat list shows changed by the user's hand: a message of theirs, a
+    /// draft. Only the list needs it; `chatsChanged` would reload an open chat as well.
+    fn chat_preview_changed(&self) {
+        let _ = self.media_events.send(crate::providers::CoreEvent::Call(
+            json!({ "event": "chatPreviewChanged" }),
+        ));
     }
 
     /// Writing in an archived chat brings it back (Android's `ContactMessageReceiver`,
@@ -1202,6 +1211,7 @@ impl App {
         let key = self.readable_conversation(identity)?.0;
         if text.trim().is_empty() {
             self.remove_draft(&key)?;
+            self.chat_preview_changed();
             return Ok(json!({}));
         }
         let quote = quote
@@ -1214,6 +1224,7 @@ impl App {
             Some(id) => self.store.set_setting(&quote_key, id)?,
             None => self.store.delete_setting(&quote_key)?,
         }
+        self.chat_preview_changed();
         Ok(json!({}))
     }
 

@@ -284,7 +284,7 @@ Page {
     Connections {
         target: backend
         onCoreEvent: {
-            if (name === "messageAdded" || name === "contactsChanged"
+            if (name === "messageAdded" || name === "contactsChanged" || name === "chatPreviewChanged"
                     || name === "conversationRead" || name === "groupsChanged" || name === "chatsChanged") {
                 page.reload()
             } else if (name === "privateChanged") {
