@@ -7,6 +7,12 @@
 
 #include <QDebug>
 
+#include <chrono>
+#include <condition_variable>
+#include <memory>
+#include <mutex>
+#include <thread>
+
 namespace {
 
 // The core's Opus decoder hands over 48 kHz mono S16 (voice.rs).
@@ -14,6 +20,30 @@ const int PcmRate = 48000;
 const int PcmBytesPerMs = PcmRate * 2 / 1000;
 // One push into the appsrc.
 const int ChunkSize = 64 * 1024;
+// How long the GUI waits for the pipeline to stop.
+const int StopWaitMs = 3000;
+
+// The pipeline to NULL on a thread of its own: a hardware decoder that hangs keeps it from ever
+// getting there (issue 10), and that must not take the GUI with it. False if it didn't.
+bool stopsInTime(GstElement *pipeline)
+{
+    struct State {
+        std::mutex lock;
+        std::condition_variable finished;
+        bool done = false;
+    };
+    auto state = std::make_shared<State>();
+    gst_object_ref(pipeline);
+    std::thread([state, pipeline] {
+        gst_element_set_state(pipeline, GST_STATE_NULL);
+        gst_object_unref(pipeline);
+        std::lock_guard<std::mutex> guard(state->lock);
+        state->done = true;
+        state->finished.notify_all();
+    }).detach();
+    std::unique_lock<std::mutex> guard(state->lock);
+    return state->finished.wait_for(guard, std::chrono::milliseconds(StopWaitMs), [&state] { return state->done; });
+}
 
 } // namespace
 
@@ -49,7 +79,9 @@ bool EarpiecePlayer::start(const QByteArray &data, bool raw, int startMs, bool p
     if (data.isEmpty()) {
         return false;
     }
-    m_data = data;
+    // A copy of its own: a pipeline that hangs can go on reading it, and the caller's must stay
+    // whole for the loudspeaker to take over.
+    m_data = QByteArray(data.constData(), data.size());
     m_raw = raw;
     m_speed = speed > 0.0 ? speed : 1.0;
     m_autoplay = playing;
@@ -275,13 +307,23 @@ void EarpiecePlayer::release()
         gst_object_unref(m_source);
         m_source = nullptr;
     }
+    bool hung = false;
     if (m_pipeline) {
         // NULL joins the streaming threads, so nothing reads m_data afterwards.
-        gst_element_set_state(m_pipeline, GST_STATE_NULL);
-        gst_object_unref(m_pipeline);
+        if (stopsInTime(m_pipeline)) {
+            gst_object_unref(m_pipeline);
+        } else {
+            qWarning() << "earpiece pipeline: did not stop";
+            hung = true;
+        }
         m_pipeline = nullptr;
     }
-    // Shared with the caller, which wipes the bytes once nothing reads them any more.
+    // Wiped either way. If the pipeline hangs, its threads may still read this memory: it is left
+    // allocated for them, with nothing in it (the reference is never given back, on purpose).
+    m_data.fill('\0');
+    if (hung) {
+        new QByteArray(m_data);
+    }
     m_data.clear();
     m_offset = 0;
     m_prerolled = false;
