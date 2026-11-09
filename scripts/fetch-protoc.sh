@@ -10,7 +10,8 @@ DEST="$ROOT/tools/protoc"
 [ -x "$DEST/bin/protoc" ] && { echo "$DEST/bin/protoc"; exit 0; }
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
-curl -sfLo "$TMP/protoc.zip" \
+# Retries: a download that fails now and then shouldn't fail a build. -S says why when it does.
+curl -sSfL --retry 5 --retry-delay 5 --retry-all-errors -o "$TMP/protoc.zip" \
   "https://github.com/protocolbuffers/protobuf/releases/download/v$VERSION/protoc-$VERSION-linux-x86_64.zip"
 echo "$SHA256  $TMP/protoc.zip" | sha256sum -c - >/dev/null
 mkdir -p "$DEST"

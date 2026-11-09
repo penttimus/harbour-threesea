@@ -46,7 +46,8 @@ jobs:
       - name: Rust toolchain (rust-toolchain.toml) and protoc
         run: |
           rustup show active-toolchain || rustup toolchain install
-          echo "PROTOC=$(scripts/fetch-protoc.sh)" >> "$GITHUB_ENV"
+          PROTOC=$(scripts/fetch-protoc.sh)
+          echo "PROTOC=$PROTOC" >> "$GITHUB_ENV"
       - name: Rust build output from the cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -85,7 +86,8 @@ jobs:
       - name: Rust toolchain (rust-toolchain.toml) and protoc
         run: |
           rustup show active-toolchain || rustup toolchain install
-          echo "PROTOC=$(scripts/fetch-protoc.sh)" >> "$GITHUB_ENV"
+          PROTOC=$(scripts/fetch-protoc.sh)
+          echo "PROTOC=$PROTOC" >> "$GITHUB_ENV"
       - name: libthreema's tests
         run: scripts/libthreema-tests.sh
 
@@ -100,7 +102,8 @@ jobs:
       - name: Nightly toolchain and protoc
         run: |
           rustup toolchain install nightly --profile minimal
-          echo "PROTOC=$(scripts/fetch-protoc.sh)" >> "$GITHUB_ENV"
+          PROTOC=$(scripts/fetch-protoc.sh)
+          echo "PROTOC=$PROTOC" >> "$GITHUB_ENV"
       - name: The C ABI under AddressSanitizer
         run: scripts/test-ffi-asan.sh
 
