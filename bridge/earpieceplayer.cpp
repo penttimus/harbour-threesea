@@ -374,7 +374,11 @@ void EarpiecePlayer::onNeedData(GstElement *source, unsigned length, void *self)
         gst_app_src_end_of_stream(GST_APP_SRC(source));
         return;
     }
-    const qint64 wanted = qBound<qint64>(ChunkSize, length, 4 * ChunkSize);
+    // A file is read at random, and the demuxer takes what it gets for one frame: anything longer
+    // than it asked for reached the decoder as one giant frame, and the phone's hardware AAC
+    // decoder hung on it (issue 10). Raw audio is a plain stream, any size will do.
+    const bool exact = !player->m_raw && length != 0 && length != static_cast<unsigned>(-1);
+    const qint64 wanted = exact ? static_cast<qint64>(length) : qBound<qint64>(ChunkSize, length, 4 * ChunkSize);
     const qint64 count = qMin(wanted, size - player->m_offset);
     // Read-only view of the data; the pipeline is stopped before it is cleared.
     GstBuffer *buffer = gst_buffer_new_wrapped_full(
