@@ -6,9 +6,15 @@
 
 #include "callclass.h"
 
+#include <QDBusConnection>
+#include <QDBusMessage>
+#include <QDBusObjectPath>
+#include <QDBusPendingCallWatcher>
+#include <QDBusPendingReply>
+#include <QDBusVariant>
 #include <QGuiApplication>
 #include <QKeyEvent>
-#include <QSettings>
+#include <QStandardPaths>
 
 #include <policy/resource-set.h>
 
@@ -16,8 +22,26 @@
 
 namespace {
 
-const double StepDb = 3.0;
-const char *const LevelKey = "callVolumeLevel";
+// PulseAudio's own bus (no daemon: a socket in its runtime folder, which Sailjail's Audio
+// permission shows us), as the system's volume bar talks to it.
+const char *const Connection = "threesea-pulse";
+const char *const CorePath = "/org/pulseaudio/core1";
+const char *const CoreInterface = "org.PulseAudio.Core1";
+const char *const VolumePath = "/com/meego/mainvolume2";
+const char *const VolumeInterface = "com.Meego.MainVolume2";
+const char *const Properties = "org.freedesktop.DBus.Properties";
+// From the top step down to the lowest.
+const double RangeDb = 24.0;
+
+QString busAddress()
+{
+    const QByteArray given = qgetenv("PULSE_DBUS_SERVER");
+    if (!given.isEmpty()) {
+        return QString::fromLocal8Bit(given);
+    }
+    return QStringLiteral("unix:path=%1/pulse/dbus-socket")
+        .arg(QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation));
+}
 
 } // namespace
 
@@ -31,16 +55,18 @@ CallVolume *CallVolume::instance()
 CallVolume::CallVolume(QObject *parent)
     : QObject(parent)
 {
-    m_level = qBound(0, QSettings().value(QLatin1String(LevelKey), Levels - 1).toInt(), Levels - 1);
-    m_gain = gainFor(m_level);
     connect(CallClass::instance(), &CallClass::held, this, &CallVolume::onHeld);
     connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, &CallVolume::updateKeys);
     qGuiApp->installEventFilter(this);
 }
 
-double CallVolume::gainFor(int level)
+double CallVolume::gainFor(uint stepCount, uint currentStep)
 {
-    return std::pow(10.0, -StepDb * (Levels - 1 - qBound(0, level, Levels - 1)) / 20.0);
+    if (stepCount < 2) {
+        return 1.0;
+    }
+    const double position = qMin(currentStep, stepCount - 1) / double(stepCount - 1);
+    return std::pow(10.0, -RangeDb * (1.0 - position) / 20.0);
 }
 
 void CallVolume::follow(GstElement *volume)
@@ -60,16 +86,10 @@ void CallVolume::follow(GstElement *volume)
     m_elements.append(GST_ELEMENT(gst_object_ref(volume)));
 }
 
-void CallVolume::setLevel(int level)
+void CallVolume::apply()
 {
-    level = qBound(0, level, Levels - 1);
-    if (level == m_level) {
-        return;
-    }
-    m_level = level;
-    QSettings().setValue(QLatin1String(LevelKey), level);
     std::lock_guard<std::mutex> guard(m_lock);
-    m_gain = gainFor(level);
+    m_gain = gainFor(m_stepCount, m_step);
     for (GstElement *element : m_elements) {
         g_object_set(element, "volume", m_gain, nullptr);
     }
@@ -78,6 +98,7 @@ void CallVolume::setLevel(int level)
 void CallVolume::onHeld(bool held)
 {
     m_held = held;
+    listen(held);
     updateKeys();
     if (!held) {
         std::lock_guard<std::mutex> guard(m_lock);
@@ -86,6 +107,87 @@ void CallVolume::onHeld(bool held)
         }
         m_elements.clear();
     }
+}
+
+void CallVolume::listen(bool on)
+{
+    if (on == m_listening) {
+        return;
+    }
+    if (!on) {
+        QDBusConnection::disconnectFromPeer(QLatin1String(Connection));
+        m_listening = false;
+        return;
+    }
+    QDBusConnection bus = QDBusConnection::connectToPeer(busAddress(), QLatin1String(Connection));
+    if (!bus.isConnected()) {
+        qWarning("threesea: no connection to the system's volume, the call plays as it comes");
+        QDBusConnection::disconnectFromPeer(QLatin1String(Connection));
+        m_stepCount = 0;
+        apply();
+        return;
+    }
+    m_listening = true;
+    // PulseAudio sends a signal only to those who asked for it.
+    QDBusMessage ask = QDBusMessage::createMethodCall(QString(), QLatin1String(CorePath),
+                                                      QLatin1String(CoreInterface),
+                                                      QStringLiteral("ListenForSignal"));
+    ask << QStringLiteral("com.Meego.MainVolume2.StepsUpdated") << QVariant::fromValue(QList<QDBusObjectPath>());
+    bus.asyncCall(ask);
+    bus.connect(QString(), QLatin1String(VolumePath), QLatin1String(VolumeInterface),
+                QStringLiteral("StepsUpdated"), this, SLOT(onSteps(uint,uint)));
+
+    QDBusMessage all = QDBusMessage::createMethodCall(QString(), QLatin1String(VolumePath),
+                                                      QLatin1String(Properties), QStringLiteral("GetAll"));
+    all << QLatin1String(VolumeInterface);
+    auto *watcher = new QDBusPendingCallWatcher(bus.asyncCall(all), this);
+    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this](QDBusPendingCallWatcher *call) {
+        QDBusPendingReply<QVariantMap> reply = *call;
+        call->deleteLater();
+        if (!m_listening) {
+            return;
+        }
+        if (!reply.isValid()) {
+            qWarning("threesea: the system's volume gave no answer");
+            return;
+        }
+        const QVariantMap values = reply.value();
+        m_safeStep = values.value(QStringLiteral("HighVolumeStep")).toUInt();
+        onSteps(values.value(QStringLiteral("StepCount")).toUInt(),
+                values.value(QStringLiteral("CurrentStep")).toUInt());
+    });
+}
+
+void CallVolume::onSteps(uint stepCount, uint currentStep)
+{
+    if (m_listening) {
+        m_stepCount = stepCount;
+        m_step = currentStep;
+        apply();
+    }
+}
+
+// One step of the media volume, heard at once; the system's signal confirms it.
+void CallVolume::step(int by)
+{
+    if (!m_listening || m_stepCount < 2) {
+        return;
+    }
+    uint top = m_stepCount - 1;
+    if (m_safeStep > 0 && m_safeStep < top) {
+        top = m_safeStep;
+    }
+    const uint wanted = by > 0 ? qMin(m_step + 1, qMax(top, m_step)) : (m_step > 0 ? m_step - 1 : 0);
+    if (wanted == m_step) {
+        return;
+    }
+    m_step = wanted;
+    apply();
+    QDBusMessage set = QDBusMessage::createMethodCall(QString(), QLatin1String(VolumePath),
+                                                      QLatin1String(Properties), QStringLiteral("Set"));
+    set << QLatin1String(VolumeInterface) << QStringLiteral("CurrentStep")
+        << QVariant::fromValue(QDBusVariant(QVariant::fromValue(wanted)));
+    QDBusConnection(QLatin1String(Connection)).asyncCall(set);
 }
 
 // The keys are ours only while the call or the message is in front: behind another app they
@@ -121,7 +223,7 @@ bool CallVolume::eventFilter(QObject *, QEvent *event)
         return false;
     }
     if (event->type() == QEvent::KeyPress) {
-        setLevel(m_level + (key == Qt::Key_VolumeUp ? 1 : -1));
+        step(key == Qt::Key_VolumeUp ? 1 : -1);
     }
     return true;
 }

@@ -12,14 +12,20 @@ namespace ResourcePolicy {
 class ResourceSet;
 }
 
-// The volume keys during a call and a voice message at the ear (ADR 0034). The system ties them
-// to a call's volume only while its own call state is active, which the modem or App Support
-// set; during ours they changed the ringtone's volume (no media plays as far as the system
-// knows), and our streams, in the policy's group "call", follow neither that nor the media
-// volume. So while the call class is held and the app is in front, the app asks the policy for
-// the volume keys, as a camera or a player does, and turns them into a gain on our own
-// playback pipelines. The level is kept for the next call. A gain element of our own, not the
-// stream's volume: that one is stored under the role the system's phone calls share. Full only.
+// The volume keys during a call and a voice message at the ear (ADR 0034): they change the media
+// volume, and our playback follows it (user decision 2026-11-10: one volume, the media's).
+//
+// The system does neither by itself. It ties the keys to a call's volume only while its own call
+// state is active, which the modem or App Support set; during ours they changed the ringtone's
+// volume (to the system no media plays). And our streams, in the policy's group "call", don't
+// follow the media volume. So while the call class is held:
+//  - with the app in front, it asks the policy for the volume keys, as a camera or a player
+//    does, and moves the media volume's step itself (PulseAudio's MainVolume2 interface, the one
+//    the system's volume bar uses);
+//  - the step, whoever moved it, becomes a gain on our own playback pipelines. A gain element of
+//    our own, not the stream's volume: that one is stored under the role the system's phone
+//    calls share.
+// Full only.
 class CallVolume : public QObject
 {
     Q_OBJECT
@@ -31,9 +37,9 @@ public:
     // any thread (the engines link their playback on a streaming thread).
     void follow(GstElement *volume);
 
-    // The top level plays as it comes; the lowest is quiet, not silent, like a phone call's.
-    static const int Levels = 9;
-    static double gainFor(int level);
+    // The top step plays as it comes; the lowest is quiet, not silent, like a phone call's:
+    // media volume at zero must not make a call that can't be heard.
+    static double gainFor(uint stepCount, uint currentStep);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -41,16 +47,24 @@ protected:
 private slots:
     void onHeld(bool held);
     void updateKeys();
+    void onSteps(uint stepCount, uint currentStep);
 
 private:
     explicit CallVolume(QObject *parent = nullptr);
-    void setLevel(int level);
+    void listen(bool on);
+    void step(int by);
+    void apply();
 
     std::mutex m_lock;
     QVector<GstElement *> m_elements;
     double m_gain = 1.0;
-    int m_level = Levels - 1;
+    // The media volume as last heard of. Without the system's answer: the top, as the sound comes.
+    uint m_stepCount = 0;
+    uint m_step = 0;
+    // On a headset the system warns above this step; the keys stop there. 0: no such step.
+    uint m_safeStep = 0;
     bool m_held = false;
+    bool m_listening = false;
     bool m_keysAsked = false;
     ResourcePolicy::ResourceSet *m_keys = nullptr;
 };

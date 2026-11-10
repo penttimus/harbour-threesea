@@ -1587,5 +1587,6 @@ Heard on a phone with a test build: a voice message and a call at the ear, the o
 us. Not yet run on a phone: the loudspeaker button's new way, the fallback on a device without an
 earpiece, the recovery after a crash on the loudspeaker (device checklist, "Ringing, routes and the
 screen in calls", 8 and 10), and the volume keys: `bridge/callvolume.cpp` asks the policy for
-them while the class is held and the app is in front, and sets a gain of our own (not run on a
-phone yet; following the media volume instead failed there, the keys don't move it).
+them while the class is held and the app is in front, moves the media volume with them and follows
+it with a gain of our own (the keys with a level of our own worked on the phone; with the media
+volume not run there yet).
