@@ -5,23 +5,37 @@
 #include <QDBusMessage>
 #include <QDBusPendingCallWatcher>
 #include <QDBusPendingReply>
+#include <QSettings>
 
 namespace {
 
-// Sailjail's Audio permission (part of Microphone) lets us talk to it. The interface is in the
-// SDK; the two names below aren't (the policy's rules are on the phone), see the device checklist.
+// Sailjail's Audio permission (part of Microphone) lets us talk to it. The names are the
+// policy's (policy-settings-common), seen on a phone.
 const char *const Service = "org.nemomobile.Route.Manager";
 const char *const Path = "/org/nemomobile/Route/Manager";
 const char *const Interface = "org.nemomobile.Route.Manager";
-const char *const SpeakerFeature = "speaker";
+const char *const Speaker = "speaker";
 const char *const Earpiece = "earpiece";
+// ohm's route plugin (ohm-ext/route.h). The change signal comes for inputs and for the routes
+// left as well; Prefer wants the output bit.
+const uint OutputType = 1u << 0;
+const uint ActiveType = 1u << 27;
 // The manager's signals come at once if it does what it was asked.
 const int ConfirmMs = 3000;
+// Set while the loudspeaker is preferred on our word (see recover).
+const char *const PreferredKey = "callSpeakerPreferred";
 
 QDBusMessage routeCall(const char *method)
 {
     return QDBusMessage::createMethodCall(QLatin1String(Service), QLatin1String(Path), QLatin1String(Interface),
                                           QLatin1String(method));
+}
+
+QDBusMessage preferSpeaker(bool on)
+{
+    QDBusMessage message = routeCall("Prefer");
+    message << QLatin1String(Speaker) << OutputType << uint(on ? 1 : 0);
+    return message;
 }
 
 } // namespace
@@ -36,11 +50,18 @@ CallRoute::CallRoute(QObject *parent)
 
 CallRoute::~CallRoute()
 {
-    // Waits: the process is ending, and the loudspeaker must not stay on for the next phone call.
+    // Waits: the process is ending, and the loudspeaker must not stay preferred after it.
     if (m_ours || (m_pending && m_wanted)) {
-        QDBusMessage disable = routeCall("Disable");
-        disable << QLatin1String(SpeakerFeature);
-        QDBusConnection::systemBus().call(disable, QDBus::Block, 1000);
+        QDBusConnection::systemBus().call(preferSpeaker(false), QDBus::Block, 1000);
+        QSettings().remove(QLatin1String(PreferredKey));
+    }
+}
+
+void CallRoute::recover()
+{
+    if (QSettings().contains(QLatin1String(PreferredKey))) {
+        qWarning("threesea: taking back the loudspeaker preference of a call that did not end");
+        busSend(false);
     }
 }
 
@@ -49,13 +70,9 @@ void CallRoute::busListen(bool on)
     QDBusConnection bus = QDBusConnection::systemBus();
     const QString service = QLatin1String(Service), path = QLatin1String(Path), iface = QLatin1String(Interface);
     if (on) {
-        bus.connect(service, path, iface, QStringLiteral("AudioFeatureChanged"), this,
-                    SLOT(onFeatureChanged(QString,uint,uint)));
         bus.connect(service, path, iface, QStringLiteral("AudioRouteChanged"), this,
                     SLOT(onRouteChanged(QString,uint)));
     } else {
-        bus.disconnect(service, path, iface, QStringLiteral("AudioFeatureChanged"), this,
-                       SLOT(onFeatureChanged(QString,uint,uint)));
         bus.disconnect(service, path, iface, QStringLiteral("AudioRouteChanged"), this,
                        SLOT(onRouteChanged(QString,uint)));
     }
@@ -63,45 +80,41 @@ void CallRoute::busListen(bool on)
 
 void CallRoute::busQuery()
 {
-    QDBusConnection bus = QDBusConnection::systemBus();
-    const auto features = [this, &bus](const char *method, void (CallRoute::*answered)(const QStringList &)) {
-        auto *watcher = new QDBusPendingCallWatcher(bus.asyncCall(routeCall(method)), this);
-        connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, answered](QDBusPendingCallWatcher *call) {
-            QDBusPendingReply<QStringList> reply = *call;
-            call->deleteLater();
-            if (reply.isValid()) {
-                (this->*answered)(reply.value());
-            } else {
-                qWarning("threesea: audio route manager gave no answer");
-            }
-        });
-    };
-    features("FeaturesAllowed", &CallRoute::answeredAllowed);
-    features("FeaturesEnabled", &CallRoute::answeredEnabled);
-    auto *routes = new QDBusPendingCallWatcher(bus.asyncCall(routeCall("ActiveRoutes")), this);
+    auto *routes = new QDBusPendingCallWatcher(QDBusConnection::systemBus().asyncCall(routeCall("ActiveRoutes")),
+                                               this);
     connect(routes, &QDBusPendingCallWatcher::finished, this, [this](QDBusPendingCallWatcher *call) {
         QDBusPendingReply<QString, uint, QString, uint> reply = *call;
         call->deleteLater();
         if (reply.isValid()) {
             answeredRoute(reply.argumentAt<0>());
+        } else {
+            qWarning("threesea: audio route manager gave no answer");
         }
     });
 }
 
 void CallRoute::busSend(bool on)
 {
-    QDBusMessage message = routeCall(on ? "Enable" : "Disable");
-    message << QLatin1String(SpeakerFeature);
-    auto *watcher = new QDBusPendingCallWatcher(QDBusConnection::systemBus().asyncCall(message), this);
+    // Written before asking and removed after taking back: a crash in between leaves the mark.
+    if (on) {
+        QSettings().setValue(QLatin1String(PreferredKey), true);
+    }
+    auto *watcher = new QDBusPendingCallWatcher(QDBusConnection::systemBus().asyncCall(preferSpeaker(on)), this);
     connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, on](QDBusPendingCallWatcher *call) {
         const bool ok = !call->isError();
         call->deleteLater();
+        if (!on && ok) {
+            QSettings().remove(QLatin1String(PreferredKey));
+        }
         answeredSend(ok, on);
     });
 }
 
-void CallRoute::setShown(bool available, bool speaker)
+// The button is there while the sound is on the earpiece, or on the loudspeaker by our doing.
+void CallRoute::show()
 {
+    const bool available = m_running && (m_ours || m_pending || m_output == QLatin1String(Earpiece));
+    const bool speaker = m_running && m_ours;
     if (available != m_available || speaker != m_speaker) {
         m_available = available;
         m_speaker = speaker;
@@ -109,7 +122,7 @@ void CallRoute::setShown(bool available, bool speaker)
     }
 }
 
-void CallRoute::setCall(bool running, bool preferSpeaker)
+void CallRoute::setCall(bool running)
 {
     if (running != m_running) {
         m_running = running;
@@ -121,40 +134,12 @@ void CallRoute::setCall(bool running, bool preferSpeaker)
             m_confirm.stop();
             m_pending = false;
             m_ours = false;
-            m_featureOn = false;
             m_output.clear();
-            m_lastPrefer = false;
-            m_preferSpeaker = false;
-            setShown(false, false);
+            show();
             return;
         }
-        m_chosen = false;
         busListen(true);
         busQuery();
-    }
-    if (!running) {
-        return;
-    }
-    if (preferSpeaker != m_lastPrefer) {
-        m_lastPrefer = preferSpeaker;
-        m_preferSpeaker = preferSpeaker;
-        applyPreference();
-    }
-}
-
-void CallRoute::answeredAllowed(const QStringList &features)
-{
-    if (m_running) {
-        setShown(features.contains(QLatin1String(SpeakerFeature)), m_speaker);
-        applyPreference();
-    }
-}
-
-void CallRoute::answeredEnabled(const QStringList &features)
-{
-    if (m_running && !m_pending) {
-        m_featureOn = features.contains(QLatin1String(SpeakerFeature));
-        setShown(m_available, m_featureOn);
     }
 }
 
@@ -163,17 +148,7 @@ void CallRoute::answeredRoute(const QString &device)
     if (m_running) {
         m_output = device;
         settle();
-        applyPreference();
-    }
-}
-
-// Only from the earpiece: a headset stays as it is.
-void CallRoute::applyPreference()
-{
-    if (m_preferSpeaker && !m_chosen && m_available && !m_speaker && !m_pending
-        && m_output == QLatin1String(Earpiece)) {
-        m_preferSpeaker = false;
-        request(true, false);
+        show();
     }
 }
 
@@ -182,37 +157,31 @@ void CallRoute::setSpeaker(bool on)
     if (!m_running || !m_available || m_pending || on == m_speaker) {
         return;
     }
-    m_chosen = true;
-    request(on, true);
+    request(on);
 }
 
-void CallRoute::request(bool on, bool byUser)
+void CallRoute::request(bool on)
 {
     m_pending = true;
     m_wanted = on;
-    m_byUser = byUser;
-    m_outputAtRequest = m_output;
     m_confirm.start();
     busSend(on);
 }
 
-// The manager's feature follows, and the sound is not on the earpiece; or the route itself moved.
+// The route itself has to say it: off the earpiece when asked on, off the loudspeaker when
+// asked off (to the earpiece, or to a headset that came in the meantime).
 void CallRoute::settle()
 {
-    if (!m_pending) {
+    if (!m_pending || m_output.isEmpty()) {
         return;
     }
-    const bool moved = m_output != m_outputAtRequest;
-    const bool onEarpiece = m_output == QLatin1String(Earpiece);
-    const bool done = m_wanted ? (m_featureOn || moved) && !onEarpiece : !m_featureOn || moved;
+    const bool done = m_wanted ? m_output != QLatin1String(Earpiece) : m_output != QLatin1String(Speaker);
     if (!done) {
         return;
     }
     m_confirm.stop();
     m_pending = false;
     m_ours = m_wanted;
-    m_featureOn = m_wanted;
-    setShown(m_available, m_wanted);
 }
 
 void CallRoute::answeredSend(bool ok, bool on)
@@ -231,7 +200,7 @@ void CallRoute::confirmTimedOut()
     }
 }
 
-// Back to what it was. The feature may be on with the sound still on the earpiece.
+// Back to what it was: no preference of ours stays behind with the sound still on the earpiece.
 void CallRoute::giveUp()
 {
     m_confirm.stop();
@@ -240,31 +209,15 @@ void CallRoute::giveUp()
         m_ours = false;
         busSend(false);
     }
-    if (m_byUser) {
-        emit failed();
-    }
+    show();
+    emit failed();
 }
 
-void CallRoute::onFeatureChanged(const QString &name, uint allowed, uint enabled)
+void CallRoute::onRouteChanged(const QString &device, uint type)
 {
-    if (!m_running || name != QLatin1String(SpeakerFeature)) {
-        return;
-    }
-    m_featureOn = enabled != 0;
-    if (m_pending) {
-        setShown(allowed != 0, m_speaker);
-        settle();
-    } else {
-        setShown(allowed != 0, m_featureOn);
-        applyPreference();
-    }
-}
-
-void CallRoute::onRouteChanged(const QString &device, uint)
-{
-    if (m_running) {
+    if (m_running && (type & OutputType) && (type & ActiveType)) {
         m_output = device;
         settle();
-        applyPreference();
+        show();
     }
 }

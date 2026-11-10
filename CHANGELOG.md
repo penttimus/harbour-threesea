@@ -16,6 +16,11 @@ Fixed:
 - The chat list shows a message you sent or a draft you changed right away, not only after going
   back to it, by [penttimus](https://github.com/penttimus)
   ([#6](https://github.com/penttimus/harbour-threesea/pull/6)).
+- Calls and voice messages at the ear come from the earpiece, also on phones without Android App
+  Support, where they came from the loudspeaker. While one runs the system treats it as a call:
+  music from other apps pauses. The loudspeaker button in calls shows on these phones now, and the
+  volume keys change the call's volume, by
+  [penttimus](https://github.com/penttimus).
 - A notification light goes off when the message is read: the notification that only vibrates
   stayed active until now, by [jmpx448](https://github.com/jmpx448)
   ([#5](https://github.com/penttimus/harbour-threesea/pull/5)).

@@ -26,6 +26,10 @@
 #include "applifecycle.h"
 #include "callmanager.h"
 #include "callroute.h"
+#ifdef THREESEA_FULL
+#include "callclass.h"
+#include "callvolume.h"
+#endif
 #include "callvideo.h"
 #include "groupcallmanager.h"
 #include "dbusinterface.h"
@@ -244,11 +248,24 @@ int main(int argc, char *argv[])
             || group == QLatin1String("connected");
         const bool inCall = one != QLatin1String("idle") && one != QLatin1String("incoming")
             && one != QLatin1String("ended");
-        // Only a camera that is on takes a call away from the ear, as on Android: `video` only says
-        // both sides can do video, which Android's voice calls say too.
-        callRoute->setCall(inCall || inGroup, (inCall && (calls->camera() || calls->remoteCamera()))
-                                                  || (inGroup && groupCalls->camera()));
+#ifdef THREESEA_FULL
+        // What puts a call on the earpiece (ADR 0034). Before the route is looked at below.
+        if (inCall || inGroup) {
+            CallClass::instance()->hold(callRoute);
+        } else {
+            CallClass::instance()->drop(callRoute);
+        }
+#endif
+        callRoute->setCall(inCall || inGroup);
     };
+#ifdef THREESEA_FULL
+    callRoute->recover();
+    // Here, on this thread and before anything holds the call class: it listens for that and for
+    // the keys, and the engines first reach it from a streaming thread.
+    view->rootContext()->setContextProperty(QStringLiteral("callVolume"), CallVolume::instance());
+#else
+    view->rootContext()->setContextProperty(QStringLiteral("callVolume"), static_cast<QObject *>(nullptr));
+#endif
     QObject::connect(calls, &CallManager::stateChanged, callRoute, followCalls);
     QObject::connect(calls, &CallManager::cameraChanged, callRoute, followCalls);
     QObject::connect(calls, &CallManager::remoteChanged, callRoute, followCalls);
