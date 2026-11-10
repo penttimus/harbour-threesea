@@ -18,9 +18,7 @@ const int MEDIA_SILENT_LIMIT_SECONDS = 60;
 
 } // namespace
 
-GroupCallManager::GroupCallManager(ThreeseBackend *backend, QObject *parent)
-    : QObject(parent)
-    , m_backend(backend)
+void GroupCallManager::makeEngine()
 {
 #ifdef THREESEA_FULL
     m_engine = new GroupCallEngine(this);
@@ -33,6 +31,30 @@ GroupCallManager::GroupCallManager(ThreeseBackend *backend, QObject *parent)
     connect(m_engine, &GroupCallEngine::localFrame, this, &GroupCallManager::localFrame);
     connect(m_engine, &GroupCallEngine::localVideoStopped, this, &GroupCallManager::localVideoStopped);
     connect(m_engine, &GroupCallEngine::participantFrame, this, &GroupCallManager::participantFrame);
+#endif
+}
+
+// Stops the engine. One whose pipeline didn't stop is left behind with it, on purpose and for
+// good (what still runs of that pipeline calls into it), and the next call gets a new one.
+void GroupCallManager::stopEngine()
+{
+#ifdef THREESEA_FULL
+    m_engine->stop();
+    if (m_engine->left()) {
+        qWarning("threesea: a call's pipeline was left behind, the next call gets a new engine");
+        m_engine->disconnect(this);
+        m_engine->setParent(nullptr);
+        makeEngine();
+    }
+#endif
+}
+
+GroupCallManager::GroupCallManager(ThreeseBackend *backend, QObject *parent)
+    : QObject(parent)
+    , m_backend(backend)
+{
+    makeEngine();
+#ifdef THREESEA_FULL
     // The core's timers (rekeys, call state updates, announcing a new call) run on this tick.
     m_tick.setInterval(1000);
     connect(&m_tick, &QTimer::timeout, this, [this] {
@@ -110,7 +132,7 @@ void GroupCallManager::join(const QString &conversation, bool create)
                                m_error = kind;
                                m_errorMessage = result.value(QStringLiteral("message")).toString();
                                // Wipes our copy of the certificate made for this join.
-                               m_engine->stop();
+                               stopEngine();
                                resetDevices();
                                setState(QStringLiteral("ended"));
                                setState(QStringLiteral("idle"));
@@ -180,7 +202,7 @@ void GroupCallManager::leave()
         return;
     }
 #ifdef THREESEA_FULL
-    m_engine->stop();
+    stopEngine();
 #endif
     m_backend->request(QStringLiteral("groupCallLeave"), QVariantMap());
     resetDevices();

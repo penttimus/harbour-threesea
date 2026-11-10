@@ -14,7 +14,7 @@ docker run --rm -i -e SFOS="$SFOS" -v "$ROOT:/src:ro" "$IMAGE" sh -euc '
     sb2 -t $T -m sdk-install -R zypper --non-interactive in -y gstreamer1.0-devel \
         gstreamer1.0-plugins-base-devel gstreamer1.0-plugins-bad-devel meson ninja abseil-cpp-devel openssl-devel >&2
     B=$HOME/build; mkdir -p $B/tests $B/bridge $B/core $B/third_party
-    cp -r /src/tests/callengine $B/tests/; cp -r /src/bridge/callengine.* /src/bridge/dtlscertificate.* /src/bridge/vp8filter.h /src/bridge/aec $B/bridge/
+    cp -r /src/tests/callengine $B/tests/; cp -r /src/bridge/callengine.* /src/bridge/callvolume.h /src/bridge/dtlscertificate.* /src/bridge/vp8filter.h /src/bridge/camerabranch.h /src/bridge/aec $B/bridge/
     cp -r /src/core/include $B/core/
     cp -r /src/third_party/webrtc-audio-processing $B/third_party/
     # The rpm i486 optflags enable SSE (the emulator CPU has it); a bare build must ask for it.

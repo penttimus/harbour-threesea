@@ -105,6 +105,9 @@ private slots:
 
 private:
     void setState(const QString &state);
+    // The engine with its signals; again after one had to be left behind (stopEngine).
+    void makeEngine();
+    void stopEngine();
     enum class Tone { None, Ringtone, Ringback };
     void setTone(Tone tone);
     void stopTone();

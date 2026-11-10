@@ -31,16 +31,7 @@ CallManager::CallManager(ThreeseBackend *backend, QObject *parent)
     : QObject(parent)
     , m_backend(backend)
 {
-#ifdef THREESEA_FULL
-    m_engine = new CallEngine(this);
-    connect(m_engine, &CallEngine::localDescription, this, &CallManager::onLocalDescription);
-    connect(m_engine, &CallEngine::localCandidate, this, &CallManager::onLocalCandidate);
-    connect(m_engine, &CallEngine::connected, this, &CallManager::onConnected);
-    connect(m_engine, &CallEngine::failed, this, &CallManager::onFailed);
-    connect(m_engine, &CallEngine::channelMessage, this, &CallManager::onChannelMessage);
-    connect(m_engine, &CallEngine::remoteFrame, this, &CallManager::remoteFrame);
-    connect(m_engine, &CallEngine::localFrame, this, &CallManager::localFrame);
-#endif
+    makeEngine();
     connect(backend, &ThreeseBackend::coreEvent, this, &CallManager::onCoreEvent);
     m_candidateTimer.setSingleShot(true);
     m_candidateTimer.setInterval(100);
@@ -211,10 +202,39 @@ void CallManager::setInterrupted(bool interrupted)
     }
 }
 
-void CallManager::stopMedia()
+void CallManager::makeEngine()
+{
+#ifdef THREESEA_FULL
+    m_engine = new CallEngine(this);
+    connect(m_engine, &CallEngine::localDescription, this, &CallManager::onLocalDescription);
+    connect(m_engine, &CallEngine::localCandidate, this, &CallManager::onLocalCandidate);
+    connect(m_engine, &CallEngine::connected, this, &CallManager::onConnected);
+    connect(m_engine, &CallEngine::failed, this, &CallManager::onFailed);
+    connect(m_engine, &CallEngine::channelMessage, this, &CallManager::onChannelMessage);
+    connect(m_engine, &CallEngine::remoteFrame, this, &CallManager::remoteFrame);
+    connect(m_engine, &CallEngine::localFrame, this, &CallManager::localFrame);
+#endif
+}
+
+// Stops the engine. One whose pipeline didn't stop is left behind with it, on purpose and for
+// good (what still runs of that pipeline calls into it), and the next call gets a new one.
+void CallManager::stopEngine()
 {
 #ifdef THREESEA_FULL
     m_engine->stop();
+    if (m_engine->left()) {
+        qWarning("threesea: a call's pipeline was left behind, the next call gets a new engine");
+        m_engine->disconnect(this);
+        m_engine->setParent(nullptr);
+        makeEngine();
+    }
+#endif
+}
+
+void CallManager::stopMedia()
+{
+#ifdef THREESEA_FULL
+    stopEngine();
 #endif
     m_ringTimer.stop();
     m_connectTimer.stop();
@@ -320,7 +340,7 @@ void CallManager::endCallWithMicrophone()
     hangUp();
 #ifdef THREESEA_FULL
     // At once, not when the core's answer comes: nothing may reach this call from now on.
-    m_engine->stop();
+    stopEngine();
 #endif
 }
 

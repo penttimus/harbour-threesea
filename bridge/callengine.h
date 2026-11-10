@@ -60,6 +60,10 @@ public:
     void sendChannel(const QByteArray &data);
     void stop();
     bool active() const { return m_pipeline != nullptr; }
+    // stop() gave up on a pipeline that hangs and left it behind. Its threads may still call into
+    // this object, so it never takes another call and is never deleted: the manager goes on
+    // with a new one.
+    bool left() const { return m_left; }
 
 signals:
     void localDescription(const QString &type, const QString &sdp);
@@ -83,6 +87,7 @@ private slots:
     void onChannelOpen();
     void onChannelData(const QByteArray &data);
     void onRemoteFrame(const QImage &image);
+    void onLocalFrame(const QImage &image);
 
 private:
     friend class CallEngineTest;
@@ -114,6 +119,7 @@ private:
     static int onMediaBuffer(GstPad *pad, GstPadProbeInfo *info, void *self);
     static int onNetworkBuffer(GstPad *pad, GstPadProbeInfo *info, void *self);
     static int onVp8Frame(GstPad *pad, GstPadProbeInfo *info, void *filter);
+    static int onVideoEncoded(GstPad *pad, GstPadProbeInfo *info, void *self);
     void flushChannel();
     void descriptionCreated(GstPromise *promise, const char *field, const QString &type);
 
@@ -133,8 +139,12 @@ private:
     std::atomic<unsigned> m_framesSent{0};
     std::atomic<unsigned> m_framesReceived{0};
     std::atomic<unsigned> m_packetsReceived{0};
-    // A picture of the peer is on its way to the GUI: the next ones are dropped until it got there.
+    std::atomic<unsigned> m_videoFramesSent{0};
+    std::atomic<unsigned> m_videoFramesReceived{0};
+    // A picture is on its way to the GUI: the next ones are dropped until it got there.
     std::atomic<bool> m_remoteFramePending{false};
+    std::atomic<bool> m_localFramePending{false};
+    bool m_left = false;
     unsigned m_busWatch = 0;
     bool m_remoteSet = false;
     bool m_connected = false;

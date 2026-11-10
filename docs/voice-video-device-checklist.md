@@ -1406,3 +1406,20 @@ need neither a sensor nor a real network.
      an empty banner with the blue information icon. (The cause was read from lipstick's
      `NotificationPreview.qml`: a notification updated without banner text while its banner is
      up keeps the banner, empty. Not reproduced before the fix.)
+
+# Added 2026-11-10 (video calls, answered and started)
+
+Seen on the phone with the changes before they moved onto `fix/camera-deadlock`; this branch's
+combination still has to be tried once.
+
+1. A video call from Threema for Android, answered here, camera on.
+   - Expect: both pictures upright and moving on both phones; Android shows ours, not black.
+2. The same call started here.
+   - Expect: as before.
+3. Switch the camera, turn it off and on again, hang up.
+   - Expect: no freeze. With the log level on detailed, the journal (not the in-app log) has
+     `call video frames: sent … received …` at the end, both above zero.
+4. Our picture's shape.
+   - Expect: not squeezed; the sides are cut instead.
+5. A group call with the camera.
+   - Expect: upright (the group engine has no size limit for the camera yet: watch the load).

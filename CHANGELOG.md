@@ -27,6 +27,9 @@ Fixed:
 - No more empty banner with the system's information icon when a second message, an edit or a
   deletion comes while a message's banner is still showing: the banner shows the new text, by
   [penttimus](https://github.com/penttimus).
+- In a video call that someone on Threema for Android started, they see your camera's picture
+  (it stayed black), and theirs is upright. Your picture keeps its proportions, and the camera
+  runs at a size the phone can handle (Full), by [penttimus](https://github.com/penttimus).
 
 Added:
 
