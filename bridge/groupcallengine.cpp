@@ -272,6 +272,10 @@ void GroupCallEngine::start(const QString &offer, const QVariantList &candidates
         emit failed(QStringLiteral("certificate"));
         return;
     }
+    if (m_left) {
+        emit failed(QStringLiteral("pipeline"));
+        return;
+    }
     // Our video stream's RTP numbers start at random values (RFC 3550).
     for (int i = 0; i < VIDEO_LAYERS; ++i) {
         VideoLayer &layer = m_videoLayers[i];
@@ -728,9 +732,10 @@ void GroupCallEngine::stop()
         // After the pipeline stopped: no probe runs any more.
         m_echoCanceller.reset();
     } else {
-        // It hangs: better a pipeline and a canceller left behind than a frozen app.
+        // It hangs: better a pipeline left behind than a frozen app. Its probes and handlers
+        // still point here, so the canceller stays for them and this engine takes no other call.
         qWarning() << "group call: the pipeline did not stop";
-        (void)m_echoCanceller.take();
+        m_left = true;
     }
     if (m_sendTail) {
         gst_object_unref(m_sendTail);

@@ -86,6 +86,9 @@ private slots:
 
 private:
     void setState(const QString &state);
+    // The engine with its signals; again after one had to be left behind (stopEngine).
+    void makeEngine();
+    void stopEngine();
     // After a call: unmuted and without camera for the next one.
     void resetDevices();
     void checkMedia();

@@ -60,6 +60,10 @@ public:
     void setCamera(bool on, bool front);
     void stop();
     bool active() const { return m_pipeline != nullptr; }
+    // stop() gave up on a pipeline that hangs and left it behind. Its threads may still call into
+    // this object, so it never takes another call and is never deleted: the manager goes on
+    // with a new one.
+    bool left() const { return m_left; }
     // What came in over the network so far (before decryption; none if that couldn't be counted):
     // while it grows the connection is alive, whoever speaks.
     unsigned packetsReceived() const { return m_packetsReceived; }
@@ -157,6 +161,7 @@ private:
     };
     VideoLayer m_videoLayers[VIDEO_LAYERS];
     QScopedPointer<EchoCanceller> m_echoCanceller;
+    bool m_left = false;
     // MID → participant, read from GStreamer threads.
     QMutex m_midsLock;
     QHash<QString, quint32> m_mids;

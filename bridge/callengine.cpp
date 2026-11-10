@@ -100,6 +100,9 @@ bool CallEngine::build(const QVariantMap &turn, bool relayOnly, int opusPayloadT
 {
     // Remote candidates can arrive before the user accepts.
     const QVariantList pending = m_pendingCandidates;
+    if (m_left) {
+        return false;
+    }
     stop();
     m_pendingCandidates = pending;
     m_framesSent = 0;
@@ -347,9 +350,10 @@ void CallEngine::stop()
         // After the pipeline stopped: no probe runs any more.
         m_echoCanceller.reset();
     } else {
-        // It hangs: better a pipeline and a canceller left behind than a frozen app.
+        // It hangs: better a pipeline left behind than a frozen app. Its probes and handlers
+        // still point here, so the canceller stays for them and this engine takes no other call.
         qWarning() << "call: the pipeline did not stop";
-        (void)m_echoCanceller.take();
+        m_left = true;
     }
     m_micVolume = nullptr;
     m_webrtc = nullptr;
