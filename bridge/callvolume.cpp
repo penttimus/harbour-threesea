@@ -42,7 +42,8 @@ QString busAddress()
 
 CallVolume *CallVolume::instance()
 {
-    // Never deleted, like CallClass: pipelines register from their own threads.
+    // Never deleted, like CallClass: pipelines register from their own threads. First called at
+    // the start (main.cpp), so that it is there when the class is first held.
     static CallVolume *self = new CallVolume;
     return self;
 }

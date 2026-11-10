@@ -28,6 +28,7 @@
 #include "callroute.h"
 #ifdef THREESEA_FULL
 #include "callclass.h"
+#include "callvolume.h"
 #endif
 #include "callvideo.h"
 #include "groupcallmanager.h"
@@ -262,6 +263,9 @@ int main(int argc, char *argv[])
     };
 #ifdef THREESEA_FULL
     callRoute->recover();
+    // Here, on this thread and before anything holds the call class: it listens for that, and
+    // the engines first reach it from a streaming thread.
+    CallVolume::instance();
 #endif
     QObject::connect(calls, &CallManager::stateChanged, callRoute, followCalls);
     QObject::connect(calls, &CallManager::cameraChanged, callRoute, followCalls);
