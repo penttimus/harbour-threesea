@@ -1,0 +1,11 @@
+# Advisories `cargo audit` is told to pass over. Each one with its reason and with what takes it
+# out of this list again; the decision is in docs/decisions.
+
+[advisories]
+ignore = [
+    # SQLite before 3.54.0: uninitialised memory from a crafted `-wal` beside a database
+    # (CVE-2026-119375). No release fixes it for us: libsqlite3-sys 0.39.x still bundles an
+    # affected SQLite under `bundled-sqlcipher`. The one database we open is in the app's own
+    # data folder. Goes when a libsqlite3-sys bundles SQLCipher on SQLite >= 3.54 (ADR 0034).
+    "RUSTSEC-2026-0459",
+]

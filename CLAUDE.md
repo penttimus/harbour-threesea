@@ -189,7 +189,9 @@ Rules:
 - Platform integration where it is simplest: notifications (Nemo.Notifications, actions over
   `DBusInterface` with a per-chat token), keepalive (`BackgroundJob`) and sharing
   (Sailfish.Share) in QML; address book matching through `AddressBookReader.qml` (opt-in,
-  hashed in Rust); voice recording, players, camera and calls in their own C++ classes. The
+  hashed in Rust); voice recording, players, camera and calls in their own C++ classes; the
+  earpiece comes with the audio policy's call class, held while a call or a voice message at the
+  ear runs (Full, ADR 0034). The
   Full flavour adds a systemd user unit (ADR 0010).
 - `SecretStore`: the database key lives in Sailfish Secrets (required by the RPM; without it
   the app fails closed, no plaintext fallback). Optionally it is wrapped with a passphrase

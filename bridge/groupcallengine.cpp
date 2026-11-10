@@ -13,6 +13,7 @@
 #include <openssl/rand.h>
 
 #include "groupcallengine.h"
+#include "callvolume.h"
 #include "camerabranch.h"
 #include "aec/echocanceller.h"
 #include "dtlscertificate.h"
@@ -358,7 +359,8 @@ bool GroupCallEngine::buildAudio(const QString &offer)
         // (Opus DTX sends almost nothing while someone is silent).
         "audiomixer name=mix force-live=true ignore-inactive-pads=true latency=60000000 "
         "! audioconvert ! audioresample "
-        "! audio/x-raw,format=S16LE,channels=1,rate=48000 ! audiobuffersplit output-buffer-duration=1/100 "
+        "! audio/x-raw,format=S16LE,channels=1,rate=48000 ! volume name=gain "
+        "! audiobuffersplit output-buffer-duration=1/100 "
         "! identity name=aecplayback ! pulsesink stream-properties=\"props,media.role=phone\"");
     GError *error = nullptr;
     // The microphone joins the pipeline only when it can be linked (linkMicrophone), or it would
@@ -415,6 +417,10 @@ bool GroupCallEngine::buildAudio(const QString &offer)
                       reinterpret_cast<GstPadProbeCallback>(&GroupCallEngine::onPlaybackBuffer), this, nullptr);
     gst_object_unref(playbackPad);
     gst_object_unref(playback);
+    // The volume keys (CallVolume); before the echo canceller's tap, which must see what plays.
+    GstElement *gain = gst_bin_get_by_name(GST_BIN(bin), "gain");
+    CallVolume::instance()->follow(gain);
+    gst_object_unref(gain);
     m_micVolume = gst_bin_get_by_name(GST_BIN(sendBin), "mic");
     // Muted while there was no pipeline yet ("Joining…" takes seconds).
     g_object_set(m_micVolume, "mute", m_muted ? TRUE : FALSE, nullptr);

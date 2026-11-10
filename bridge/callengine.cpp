@@ -8,6 +8,7 @@
 #include <gst/video/video.h>
 
 #include "callengine.h"
+#include "callvolume.h"
 #include "camerabranch.h"
 #include "dtlscertificate.h"
 #include "vp8filter.h"
@@ -111,7 +112,8 @@ bool CallEngine::build(const QVariantMap &turn, bool relayOnly, int opusPayloadT
     m_videoFramesSent = 0;
     m_videoFramesReceived = 0;
     // Microphone → mono Opus, constant bitrate (Android's SdpPatcher asks for cbr=1). The
-    // pulse role "phone" lets the audio policy route it like a call.
+    // earpiece comes with the audio policy's call class, held while a call runs (CallClass,
+    // ADR 0034), not with the pulse role.
     const QString description = QStringLiteral(
         "webrtcbin name=webrtc bundle-policy=max-bundle latency=100 "
         "pulsesrc stream-properties=\"props,media.role=phone\" ! audioconvert ! audioresample "
@@ -512,7 +514,8 @@ void CallEngine::onPadAdded(GstElement *, GstPad *pad, void *self)
     // dropped.
     const char *description = opus
         ? "queue ! rtpopusdepay ! opusdec plc=true use-inband-fec=true ! audioconvert ! audioresample "
-          "! audio/x-raw,format=S16LE,channels=1,rate=48000 ! audiobuffersplit output-buffer-duration=1/100 "
+          "! audio/x-raw,format=S16LE,channels=1,rate=48000 ! volume name=gain "
+          "! audiobuffersplit output-buffer-duration=1/100 "
           "! identity name=aecplayback ! pulsesink stream-properties=\"props,media.role=phone\""
         : vp8 ? "queue ! rtpvp8depay name=depay ! vp8dec threads=2 ! videoconvert ! video/x-raw,format=BGRx "
                 "! appsink name=remotevideo emit-signals=true sync=false max-buffers=1 drop=true"
@@ -541,6 +544,10 @@ void CallEngine::onPadAdded(GstElement *, GstPad *pad, void *self)
         gst_pad_add_probe(playbackPad, GST_PAD_PROBE_TYPE_BUFFER, reinterpret_cast<GstPadProbeCallback>(&CallEngine::onPlaybackBuffer), engine, nullptr);
         gst_object_unref(playbackPad);
         gst_object_unref(playback);
+        // The volume keys (CallVolume); before the echo canceller's tap, which must see what plays.
+        GstElement *gain = gst_bin_get_by_name(GST_BIN(bin), "gain");
+        CallVolume::instance()->follow(gain);
+        gst_object_unref(gain);
     }
     gst_bin_add(GST_BIN(engine->m_pipeline), bin);
     gst_element_sync_state_with_parent(bin);

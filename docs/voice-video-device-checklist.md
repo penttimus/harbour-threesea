@@ -19,6 +19,9 @@ Settings → Chats: "Play voice messages at the ear" is on by default.
 1. Open a chat with an unheard voice message and hold the phone to your ear (do not tap play).
    - Expect: it starts at the first unheard one, through the **earpiece**, at call volume; the
      screen goes black and takes no taps.
+   - Heard on a phone on 2026-11-10 (ADR 0034). On a device without an earpiece, or if the
+     policy refuses: after at most 1.5 s it plays on the loudspeaker instead, and the log says
+     `the sound did not get to the earpiece`.
    - Before the fix it was "scrambled silence" — if anything like that is left, the log line to
      look for is `earpiece pipeline error` (it names the GStreamer element).
 2. Take the phone away from your ear.
@@ -602,29 +605,37 @@ Full, unless it says otherwise. With a second phone calling.
      ringtone setting goes (it would be a control that does nothing); the vibration switch stays
      if it works.
    - Choose a music file, delete it, get called: the system's tone, not silence.
-8. In a 1:1 audio call, tap the speaker button. **Nothing about the switch has been run yet.** The
-   SDK shows the route manager's interface but not two names in `bridge/callroute.cpp`, which come
-   from memory: the feature `speaker` and the device `earpiece`. During a call, please send the
-   output of `gdbus call --system -d org.nemomobile.Route.Manager -o
-   /org/nemomobile/Route/Manager -m org.nemomobile.Route.Manager.FeaturesAllowed`, and the same with
-   `…Route.Manager.ActiveRoutes`. How each failing looks:
-   - `speaker` is wrong, or not offered outside phone calls: no button at all, in any call.
-   - `earpiece` is wrong: the button works, but a camera doesn't move the call to the loudspeaker
-     by itself, and the button can light with the sound still at the ear.
-   - The manager takes it but doesn't move phone-role streams: tap, and three seconds later "The
-     sound could not be switched" with the button dark (if the route doesn't change, the sound
-     stays), or a lit button with no change in sound (if the route changes without the streams).
-     Then the engines must change the stream's role instead.
-   - Expect: the sound moves to the loudspeaker and back, the button lit only while it is there.
-     Listen for echo on the other side while on the loudspeaker.
+8. In a 1:1 audio call, tap the speaker button. The earpiece itself was heard on a phone on
+   2026-11-10 (ADR 0034: the app holds the audio policy's call class); **the button's new way, the
+   route manager's preferred device, has not run on a phone yet.**
+   - Expect: the call starts on the earpiece with the button there; a tap moves the sound to the
+     loudspeaker and back, the button lit only while it is there. Listen for echo on the other
+     side while on the loudspeaker.
+   - If it fails: three seconds after the tap "The sound could not be switched" with the button
+     dark. Then please send the log's lines with `audio route manager`, and during a call the
+     output of `dbus-send --system --print-reply --dest=org.nemomobile.Route.Manager
+     /org/nemomobile/Route/Manager org.nemomobile.Route.Manager.ActiveRoutes`.
+   - No button at all: the sound isn't on the earpiece (a headset, or a device where the policy
+     keeps it shut; the log then says `call class`).
+   - Music playing in another app when the call starts: it pauses and stays paused after the call.
+   - The volume keys during the call, also at the ear with the screen off, and during a voice
+     message at the ear. Heard on a phone on 2026-11-10. Expect: the call gets louder and quieter with the media
+     volume, without a volume bar; at zero nothing is heard and a notice in the middle of the
+     screen says to turn the volume up (again when the phone comes away from the ear); afterwards the media
+     volume is where the keys left it (Settings → Sounds). With another app in front the keys do what they always do. If nothing
+     changes: say whether the system's bar shows instead, and the log's line with `volume keys`.
+   - On another device than the one of 2026-11-10: say how the call sounds on both sides. The
+     policy puts the audio hardware into its call mode without a call on the modem.
 9. A voice call from **Threema for Android**, answered here (it says "video" on every call).
    - Expect: "Incoming call", the earpiece, the screen allowed to blank, black at the ear; the
      camera button is there. Then turn a camera on, on either side.
-   - Expect: it moves to the loudspeaker with the button lit, and stays there when the camera goes
-     off. A group call does this only for our own camera.
+   - Expect: the sound stays where it is; only the speaker button moves it (user decision
+     2026-11-10: no automatism. Until then a camera coming on moved the call to the loudspeaker).
 10. After a call on the loudspeaker: make a normal phone call; and once kill the process during such
-    a call first.
-    - Expect: the phone call is on the earpiece. Say if it starts on the loudspeaker after the kill.
+    a call first (`pkill -9 harbour-threesea`), play some music, then start the app again.
+    - Expect: the phone call is on the earpiece. After the kill the music is on the loudspeaker
+      also with a headset in, until the app has started again (it takes its preference back; the
+      log says so). Say if it stays there after that.
 11. A wired headset, then a Bluetooth headset, connected before a call and during one, also with the
     speaker button.
     - Note where the sound goes each time, and what the output is named
@@ -1386,6 +1397,15 @@ need neither a sensor nor a real network.
     - Expect: the fixed sentences, and the log line has the code.
 28. Settings → About.
     - Expect: the two licence buttons open readable pages; the source link opens the browser.
+
+# Added 2026-11-10 (the empty banner)
+
+1. Have someone send two messages a few seconds apart while the app is in the background, and
+   edit or delete a message right after sending it.
+   - Expect: the first message's banner changes to the newer text, without a second sound; never
+     an empty banner with the blue information icon. (The cause was read from lipstick's
+     `NotificationPreview.qml`: a notification updated without banner text while its banner is
+     up keeps the banner, empty. Not reproduced before the fix.)
 
 # Added 2026-11-10 (video calls, answered and started)
 

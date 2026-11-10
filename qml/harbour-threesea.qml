@@ -924,6 +924,8 @@ ApplicationWindow {
             readonly property bool own: true
             // When it last alerted, or would have (alert()).
             property real alertedAt: 0
+            // When it last asked for a banner (publishQuietly()).
+            property real bannerAt: 0
             property string identity
             // The message it shows, and who in a group wrote it.
             property var messageId
@@ -958,6 +960,7 @@ ApplicationWindow {
             id: plain
             readonly property bool own: true
             property real alertedAt: 0
+            property real bannerAt: 0
             // Under this it is in `notifications`.
             property string key
             // The chat tapping it opens; otherwise it opens the app.
@@ -1271,6 +1274,7 @@ ApplicationWindow {
         n.body = text
         n.previewSummary = title
         n.previewBody = text
+        n.bannerAt = Date.now()
         n.publish()
         if (vibrate) {
             // Nothing to show, only the vibration.
@@ -1466,7 +1470,13 @@ ApplicationWindow {
 
     // Quietly, as this isn't news: no sound or vibration (this category only has the light), and
     // no banner. The next message's alert() sets them all again.
+    // Unless its banner may still be up: lipstick goes on showing the notification it shows, with
+    // what that says now, and without a banner's text that is an empty banner with the system's
+    // information icon (NotificationPreview.qml). So the banner follows the text for as long as
+    // it may be there; if it has just gone, it comes once more, without a sound.
     function publishQuietly(n, summary, body, banner) {
+        if (!banner && n.own === true && Date.now() - n.bannerAt < 10000) banner = true
+        if (banner && n.own === true) n.bannerAt = Date.now()
         setCategory(n, false)
         n.sound = ""
         n.summary = summary
@@ -2169,6 +2179,26 @@ ApplicationWindow {
         target: callRoute
         //% "The sound could not be switched"
         onFailed: Notices.show(qsTrId("threesea-la-call-route-failed"), Notice.Short, Notice.Center)
+    }
+
+    // The media volume is the call's and the voice message's at the ear, zero included (user
+    // decision 2026-11-10): nothing is heard then, and this says why. Once more when the phone
+    // comes away from the ear: nobody saw the first one on a black screen.
+    function noticeSilentVolume() {
+        if (!callVolume || !callVolume.silent) return
+        Notices.show(anyCallRunning
+                     //% "Turn the volume up to hear the call"
+                     ? qsTrId("threesea-la-call-volume-zero")
+                     //% "Turn the volume up to hear the message"
+                     : qsTrId("threesea-la-voice-volume-zero"), Notice.Long, Notice.Center)
+    }
+    Connections {
+        target: callVolume
+        onSilentChanged: noticeSilentVolume()
+    }
+    Connections {
+        target: proximity
+        onCoveredChanged: if (!proximity.covered) noticeSilentVolume()
     }
 
     // The camera page is filming.

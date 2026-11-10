@@ -5004,5 +5004,13 @@
             <source>New in this version</source>
             <translation type="unfinished" />
         </message>
+        <message id="threesea-la-call-volume-zero">
+            <source>Turn the volume up to hear the call</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-voice-volume-zero">
+            <source>Turn the volume up to hear the message</source>
+            <translation type="unfinished" />
+        </message>
     </context>
 </TS>

@@ -18,8 +18,8 @@ class ThreeseBackend;
 // are decoded by the core and played as PCM.
 //
 // Routes: the loudspeaker through Qt, the earpiece (phone at the ear) through a GStreamer
-// pipeline with the PulseAudio role "phone", like the call engines — the only route that
-// reaches the earpiece on Sailfish, and Full-flavour only (EarpiecePlayer).
+// pipeline while the app holds the audio policy's call class, like the calls (ADR 0034) —
+// Full-flavour only (EarpiecePlayer).
 //
 // Only the user starts the sound. Sailfish's resource policy pauses a QMediaPlayer when something
 // else takes the audio and resumes it by itself when it comes back; here that stays a pause.

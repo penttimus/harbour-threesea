@@ -100,7 +100,7 @@ VoicePlayer::VoicePlayer(const ThreeseBackend *backend, QObject *parent)
     connect(m_earpiecePlayer, &EarpiecePlayer::playingChanged, this, &VoicePlayer::playingChanged);
     connect(m_earpiecePlayer, &EarpiecePlayer::finished, this, &VoicePlayer::onEarpieceFinished);
     connect(m_earpiecePlayer, &EarpiecePlayer::failed, this, [this](const QString &error) {
-        // The earpiece did not take the sound (no route for the "phone" role, a codec the
+        // The earpiece did not take the sound (no earpiece or the policy keeps it shut, a codec the
         // system lacks): the message keeps playing on the loudspeaker where it stood, rather
         // than standing still at the user's ear.
         if (m_earpiece && m_messageId != -1 && !m_data.isEmpty()) {
@@ -298,15 +298,17 @@ void VoicePlayer::setEarpiece(bool earpiece)
     if (m_earpiece == earpiece || (earpiece && !earpieceAvailable())) {
         return;
     }
+    // Reroute the loaded message: same position, same play/pause state, asked of the route in use
+    // while m_earpiece still names it (issue 10: read after, the message stopped at the ear).
+    const bool wasPlaying = playing();
+    const int at = position();
     m_earpiece = earpiece;
     emit earpieceChanged();
     if (m_messageId == -1 || m_data.isEmpty()) {
         return;
     }
-    // Reroute the loaded message: same position, same play/pause state. Everything of the old
-    // route goes first — a second reader on the same buffer played scrambled audio.
-    const bool wasPlaying = playing();
-    const int at = position();
+    // Everything of the old route goes first — a second reader on the same buffer played
+    // scrambled audio.
     releaseRoute();
     if (!startRoute(at, wasPlaying)) {
         // No earpiece route on this device: stay on the loudspeaker instead of going silent.
