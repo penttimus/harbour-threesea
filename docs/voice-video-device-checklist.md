@@ -1386,3 +1386,12 @@ need neither a sensor nor a real network.
     - Expect: the fixed sentences, and the log line has the code.
 28. Settings → About.
     - Expect: the two licence buttons open readable pages; the source link opens the browser.
+
+# Added 2026-11-10 (the empty banner)
+
+1. Have someone send two messages a few seconds apart while the app is in the background, and
+   edit or delete a message right after sending it.
+   - Expect: the first message's banner changes to the newer text, without a second sound; never
+     an empty banner with the blue information icon. (The cause was read from lipstick's
+     `NotificationPreview.qml`: a notification updated without banner text while its banner is
+     up keeps the banner, empty. Not reproduced before the fix.)
