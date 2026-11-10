@@ -1588,5 +1588,4 @@ us. Not yet run on a phone: the loudspeaker button's new way, the fallback on a 
 earpiece, the recovery after a crash on the loudspeaker (device checklist, "Ringing, routes and the
 screen in calls", 8 and 10), and the volume keys: `bridge/callvolume.cpp` asks the policy for
 them while the class is held and the app is in front, moves the media volume with them and follows
-it with a gain of our own (the keys with a level of our own worked on the phone; with the media
-volume not run there yet).
+it with a gain of our own, silent at zero with a notice to turn it up (heard on the phone).

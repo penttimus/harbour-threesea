@@ -619,7 +619,7 @@ Full, unless it says otherwise. With a second phone calling.
      keeps it shut; the log then says `call class`).
    - Music playing in another app when the call starts: it pauses and stays paused after the call.
    - The volume keys during the call, also at the ear with the screen off, and during a voice
-     message at the ear. **Not run on a phone yet.** Expect: the call gets louder and quieter with the media
+     message at the ear. Heard on a phone on 2026-11-10. Expect: the call gets louder and quieter with the media
      volume, without a volume bar; at zero nothing is heard and a notice in the middle of the
      screen says to turn the volume up (again when the phone comes away from the ear); afterwards the media
      volume is where the keys left it (Settings → Sounds). With another app in front the keys do what they always do. If nothing
