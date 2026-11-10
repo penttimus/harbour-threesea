@@ -6,6 +6,7 @@
 #include "earpieceplayer.h"
 
 #include "callclass.h"
+#include "callvolume.h"
 
 #include <QDebug>
 
@@ -147,9 +148,9 @@ bool EarpiecePlayer::start(const QByteArray &data, bool raw, int startMs, bool p
     const bool stretch = !raw && gst_element_factory_find("scaletempo") != nullptr;
     const QString tempo = stretch ? QStringLiteral("scaletempo ! ") : QString();
     const QString description = raw
-        ? QStringLiteral("appsrc name=src ! audioconvert ! audioresample ! %1"
+        ? QStringLiteral("appsrc name=src ! audioconvert ! audioresample ! %1volume name=gain ! "
                          "pulsesink name=sink stream-properties=\"props,media.role=phone\"").arg(tempo)
-        : QStringLiteral("appsrc name=src ! decodebin ! audioconvert ! audioresample ! %1"
+        : QStringLiteral("appsrc name=src ! decodebin ! audioconvert ! audioresample ! %1volume name=gain ! "
                          "pulsesink name=sink stream-properties=\"props,media.role=phone\"").arg(tempo);
     GError *error = nullptr;
     m_pipeline = gst_parse_launch(description.toUtf8().constData(), &error);
@@ -158,6 +159,11 @@ bool EarpiecePlayer::start(const QByteArray &data, bool raw, int startMs, bool p
         g_error_free(error);
         release();
         return false;
+    }
+    // The volume keys (CallVolume).
+    if (GstElement *gain = gst_bin_get_by_name(GST_BIN(m_pipeline), "gain")) {
+        CallVolume::instance()->follow(gain);
+        gst_object_unref(gain);
     }
     m_source = gst_bin_get_by_name(GST_BIN(m_pipeline), "src");
     if (!m_source) {

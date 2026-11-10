@@ -57,6 +57,7 @@ void CallClass::hold(const void *who)
     m_granted = false;
     m_output.clear();
     m_wait.start();
+    emit held(true);
     busListen(true);
     policyAcquire();
 }
@@ -78,6 +79,7 @@ void CallClass::release()
     m_wait.stop();
     busListen(false);
     policyRelease();
+    emit held(false);
 }
 
 void CallClass::policyAcquire()

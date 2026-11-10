@@ -618,7 +618,10 @@ Full, unless it says otherwise. With a second phone calling.
    - No button at all: the sound isn't on the earpiece (a headset, or a device where the policy
      keeps it shut; the log then says `call class`).
    - Music playing in another app when the call starts: it pauses and stays paused after the call.
-   - The volume keys during the call: note what they change (known: not the call's volume).
+   - The volume keys during the call, also at the ear with the screen off, and during a voice
+     message at the ear. **Not run on a phone yet.** Expect: the system's volume bar, and the
+     call gets louder and quieter with it (quiet, not silent, at the lowest step; half a second
+     may pass). If nothing changes: the log's line with `the system's volume`.
    - On another device than the one of 2026-11-10: say how the call sounds on both sides. The
      policy puts the audio hardware into its call mode without a call on the modem.
 9. A voice call from **Threema for Android**, answered here (it says "video" on every call).

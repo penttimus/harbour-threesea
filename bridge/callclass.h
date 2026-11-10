@@ -33,6 +33,8 @@ public:
     bool refused() const { return m_state == Loudspeaker; }
 
 signals:
+    // The class is asked for (a call or a voice message at the ear begins), or let go of.
+    void held(bool held);
     // After hold(): the sound is at the ear (the earpiece, or a headset), or it didn't get there
     // (no earpiece on this device, the policy refused): the loudspeaker has it.
     void settled(bool earpiece);
