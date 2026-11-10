@@ -25,23 +25,29 @@ class ResourceSet;
 //  - the step, whoever moved it, becomes a gain on our own playback pipelines. A gain element of
 //    our own, not the stream's volume: that one is stored under the role the system's phone
 //    calls share.
-// Full only.
+//
+// Zero is zero (user decision 2026-11-10): at the media volume's lowest step a call or a message
+// is silent, and `silent` has the UI say so, rather than the app deciding that something is to
+// be heard. Full only.
 class CallVolume : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool silent READ silent NOTIFY silentChanged)
 public:
     // First called at the start (main.cpp), on the main thread.
     static CallVolume *instance();
 
     // A pipeline's `volume` element follows from now on, until the call class is let go of. From
-    // any thread (the engines link their playback on a streaming thread). `silentAtZero`: a voice
-    // message is silent at media volume zero, as media is. A call is not (the default): it stays
-    // quiet there like a phone call's lowest step, or whoever keeps the media volume at zero
-    // would take every call for a broken one.
-    void follow(GstElement *volume, bool silentAtZero = false);
+    // any thread (the engines link their playback on a streaming thread).
+    void follow(GstElement *volume);
+    // A call or a voice message at the ear runs with the media volume at zero.
+    bool silent() const { return m_silent; }
 
-    // The top step plays as it comes, the lowest 24 dB below it.
+    // The top step plays as it comes, the first step 24 dB below it, zero is silent.
     static double gainFor(uint stepCount, uint currentStep);
+
+signals:
+    void silentChanged();
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -58,12 +64,7 @@ private:
     void apply();
 
     std::mutex m_lock;
-    struct Follower {
-        GstElement *element;
-        bool silentAtZero;
-    };
-    double gainOf(const Follower &follower) const;
-    QVector<Follower> m_elements;
+    QVector<GstElement *> m_elements;
     double m_gain = 1.0;
     // The media volume as last heard of. Without the system's answer: the top, as the sound comes.
     uint m_stepCount = 0;
@@ -71,6 +72,7 @@ private:
     // On a headset the system warns above this step; the keys stop there. 0: no such step.
     uint m_safeStep = 0;
     bool m_held = false;
+    bool m_silent = false;
     bool m_listening = false;
     bool m_keysAsked = false;
     ResourcePolicy::ResourceSet *m_keys = nullptr;

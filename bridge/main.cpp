@@ -265,7 +265,9 @@ int main(int argc, char *argv[])
     callRoute->recover();
     // Here, on this thread and before anything holds the call class: it listens for that and for
     // the keys, and the engines first reach it from a streaming thread.
-    CallVolume::instance();
+    view->rootContext()->setContextProperty(QStringLiteral("callVolume"), CallVolume::instance());
+#else
+    view->rootContext()->setContextProperty(QStringLiteral("callVolume"), static_cast<QObject *>(nullptr));
 #endif
     QObject::connect(calls, &CallManager::stateChanged, callRoute, followCalls);
     QObject::connect(calls, &CallManager::cameraChanged, callRoute, followCalls);

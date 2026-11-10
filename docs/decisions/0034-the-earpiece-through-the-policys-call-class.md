@@ -76,12 +76,14 @@ Not chosen:
     volume's step over PulseAudio's `MainVolume2` interface (the system's volume bar uses it;
     its socket is in the folder the Audio permission shows); on a headset not above the step
     the system warns at;
-  - turns the step, whoever moved it, into a gain element in our playback pipelines, 24 dB from
-    the top step to the lowest. At zero a voice message is silent, as media is; a call stays
-    quiet there like a phone call's lowest step, or whoever keeps the media volume at zero would
-    take every call for a broken one. Not the stream's own volume:
+  - turns the step, whoever moved it, into a gain element in our playback pipelines: the top
+    step as the sound comes, the first 24 dB below it, zero silent. Not the stream's own volume:
     PulseAudio stores that under the role the system's phone calls share.
 
+  Zero is respected (user decision 2026-11-10; first built with a quiet minimum for calls): the
+  app doesn't decide that something is to be heard. A notice in the middle of the screen says
+  "Turn the volume up to hear the call" (or "the message"), as WhatsApp does, when a call or a
+  message at the ear runs at zero, and again when the phone comes away from the ear.
   A call starts at the media volume's level, and the keys leave the media volume changed after
   it. No volume bar shows. Behind another app the keys stay the system's.
 - Lite is untouched: no calls, no voice at the ear, no library.

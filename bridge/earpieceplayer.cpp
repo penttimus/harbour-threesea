@@ -162,7 +162,7 @@ bool EarpiecePlayer::start(const QByteArray &data, bool raw, int startMs, bool p
     }
     // The volume keys (CallVolume).
     if (GstElement *gain = gst_bin_get_by_name(GST_BIN(m_pipeline), "gain")) {
-        CallVolume::instance()->follow(gain, true);
+        CallVolume::instance()->follow(gain);
         gst_object_unref(gain);
     }
     m_source = gst_bin_get_by_name(GST_BIN(m_pipeline), "src");

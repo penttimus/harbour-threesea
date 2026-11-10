@@ -2171,6 +2171,26 @@ ApplicationWindow {
         onFailed: Notices.show(qsTrId("threesea-la-call-route-failed"), Notice.Short, Notice.Center)
     }
 
+    // The media volume is the call's and the voice message's at the ear, zero included (user
+    // decision 2026-11-10): nothing is heard then, and this says why. Once more when the phone
+    // comes away from the ear: nobody saw the first one on a black screen.
+    function noticeSilentVolume() {
+        if (!callVolume || !callVolume.silent) return
+        Notices.show(anyCallRunning
+                     //% "Turn the volume up to hear the call"
+                     ? qsTrId("threesea-la-call-volume-zero")
+                     //% "Turn the volume up to hear the message"
+                     : qsTrId("threesea-la-voice-volume-zero"), Notice.Long, Notice.Center)
+    }
+    Connections {
+        target: callVolume
+        onSilentChanged: noticeSilentVolume()
+    }
+    Connections {
+        target: proximity
+        onCoveredChanged: if (!proximity.covered) noticeSilentVolume()
+    }
+
     // The camera page is filming.
     property bool cameraRecording: false
     readonly property bool videoCallShowing: {
