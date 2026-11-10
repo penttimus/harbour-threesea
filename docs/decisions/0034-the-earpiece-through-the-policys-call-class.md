@@ -77,7 +77,9 @@ Not chosen:
     its socket is in the folder the Audio permission shows); on a headset not above the step
     the system warns at;
   - turns the step, whoever moved it, into a gain element in our playback pipelines, 24 dB from
-    the top step to the lowest: quiet at zero, not silent. Not the stream's own volume:
+    the top step to the lowest. At zero a voice message is silent, as media is; a call stays
+    quiet there like a phone call's lowest step, or whoever keeps the media volume at zero would
+    take every call for a broken one. Not the stream's own volume:
     PulseAudio stores that under the role the system's phone calls share.
 
   A call starts at the media volume's level, and the keys leave the media volume changed after

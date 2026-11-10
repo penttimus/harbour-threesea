@@ -620,7 +620,8 @@ Full, unless it says otherwise. With a second phone calling.
    - Music playing in another app when the call starts: it pauses and stays paused after the call.
    - The volume keys during the call, also at the ear with the screen off, and during a voice
      message at the ear. **Not run on a phone yet.** Expect: the call gets louder and quieter with the media
-     volume, quiet but not silent at its lowest step, without a volume bar; afterwards the media
+     volume, without a volume bar; at its lowest step a call is quiet but not silent, a voice
+     message silent; afterwards the media
      volume is where the keys left it (Settings → Sounds). With another app in front the keys do what they always do. If nothing
      changes: say whether the system's bar shows instead, and the log's line with `volume keys`.
    - On another device than the one of 2026-11-10: say how the call sounds on both sides. The

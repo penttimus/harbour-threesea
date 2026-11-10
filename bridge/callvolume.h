@@ -34,11 +34,13 @@ public:
     static CallVolume *instance();
 
     // A pipeline's `volume` element follows from now on, until the call class is let go of. From
-    // any thread (the engines link their playback on a streaming thread).
-    void follow(GstElement *volume);
+    // any thread (the engines link their playback on a streaming thread). `silentAtZero`: a voice
+    // message is silent at media volume zero, as media is. A call is not (the default): it stays
+    // quiet there like a phone call's lowest step, or whoever keeps the media volume at zero
+    // would take every call for a broken one.
+    void follow(GstElement *volume, bool silentAtZero = false);
 
-    // The top step plays as it comes; the lowest is quiet, not silent, like a phone call's:
-    // media volume at zero must not make a call that can't be heard.
+    // The top step plays as it comes, the lowest 24 dB below it.
     static double gainFor(uint stepCount, uint currentStep);
 
 protected:
@@ -56,7 +58,12 @@ private:
     void apply();
 
     std::mutex m_lock;
-    QVector<GstElement *> m_elements;
+    struct Follower {
+        GstElement *element;
+        bool silentAtZero;
+    };
+    double gainOf(const Follower &follower) const;
+    QVector<Follower> m_elements;
     double m_gain = 1.0;
     // The media volume as last heard of. Without the system's answer: the top, as the sound comes.
     uint m_stepCount = 0;

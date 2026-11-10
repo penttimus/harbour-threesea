@@ -69,7 +69,12 @@ double CallVolume::gainFor(uint stepCount, uint currentStep)
     return std::pow(10.0, -RangeDb * (1.0 - position) / 20.0);
 }
 
-void CallVolume::follow(GstElement *volume)
+double CallVolume::gainOf(const Follower &follower) const
+{
+    return follower.silentAtZero && m_stepCount >= 2 && m_step == 0 ? 0.0 : m_gain;
+}
+
+void CallVolume::follow(GstElement *volume, bool silentAtZero)
 {
     if (!volume) {
         return;
@@ -77,21 +82,22 @@ void CallVolume::follow(GstElement *volume)
     std::lock_guard<std::mutex> guard(m_lock);
     // Those of pipelines that are gone (they have no parent any more).
     for (int i = m_elements.size() - 1; i >= 0; --i) {
-        if (!GST_OBJECT_PARENT(m_elements.at(i))) {
-            gst_object_unref(m_elements.at(i));
+        if (!GST_OBJECT_PARENT(m_elements.at(i).element)) {
+            gst_object_unref(m_elements.at(i).element);
             m_elements.remove(i);
         }
     }
-    g_object_set(volume, "volume", m_gain, nullptr);
-    m_elements.append(GST_ELEMENT(gst_object_ref(volume)));
+    const Follower follower = { GST_ELEMENT(gst_object_ref(volume)), silentAtZero };
+    g_object_set(volume, "volume", gainOf(follower), nullptr);
+    m_elements.append(follower);
 }
 
 void CallVolume::apply()
 {
     std::lock_guard<std::mutex> guard(m_lock);
     m_gain = gainFor(m_stepCount, m_step);
-    for (GstElement *element : m_elements) {
-        g_object_set(element, "volume", m_gain, nullptr);
+    for (const Follower &follower : m_elements) {
+        g_object_set(follower.element, "volume", gainOf(follower), nullptr);
     }
 }
 
@@ -102,8 +108,8 @@ void CallVolume::onHeld(bool held)
     updateKeys();
     if (!held) {
         std::lock_guard<std::mutex> guard(m_lock);
-        for (GstElement *element : m_elements) {
-            gst_object_unref(element);
+        for (const Follower &follower : m_elements) {
+            gst_object_unref(follower.element);
         }
         m_elements.clear();
     }
