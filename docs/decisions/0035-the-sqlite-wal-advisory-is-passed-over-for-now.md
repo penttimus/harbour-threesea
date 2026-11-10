@@ -1,4 +1,4 @@
-# 0034 — The SQLite WAL advisory is passed over for now
+# 0035 — The SQLite WAL advisory is passed over for now
 
 ## Context
 RUSTSEC-2026-0459 (CVE-2026-119375, 2026-10-30): SQLite before 3.54.0 can return uninitialised
