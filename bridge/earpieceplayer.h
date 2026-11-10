@@ -6,6 +6,8 @@
 #include <QObject>
 #include <QTimer>
 
+#include <mutex>
+
 typedef struct _GstElement GstElement;
 typedef struct _GstBus GstBus;
 typedef struct _GstMessage GstMessage;
@@ -68,8 +70,10 @@ private:
     unsigned m_busWatch = 0;
     QTimer m_ticker;
     QByteArray m_data;
-    // The appsrc's read position, touched only by its callbacks (one streaming thread).
+    // The appsrc's read position, touched by its callbacks (one streaming thread).
     qint64 m_offset = 0;
+    // Over m_data and m_offset, between the callbacks and release().
+    std::mutex m_dataLock;
     bool m_raw = false;
     bool m_playing = false;
     bool m_prerolled = false;

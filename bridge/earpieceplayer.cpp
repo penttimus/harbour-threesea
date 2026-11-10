@@ -8,6 +8,7 @@
 #include <QDebug>
 
 #include <chrono>
+#include <cstring>
 #include <condition_variable>
 #include <memory>
 #include <mutex>
@@ -43,6 +44,14 @@ bool stopsInTime(GstElement *pipeline)
     }).detach();
     std::unique_lock<std::mutex> guard(state->lock);
     return state->finished.wait_for(guard, std::chrono::milliseconds(StopWaitMs), [&state] { return state->done; });
+}
+
+// The bytes themselves to zero, where they are: also what a pipeline left behind still holds.
+void wipeInPlace(const QByteArray &data)
+{
+    if (!data.isEmpty()) {
+        memset(const_cast<char *>(data.constData()), 0, static_cast<size_t>(data.size()));
+    }
 }
 
 } // namespace
@@ -81,7 +90,10 @@ bool EarpiecePlayer::start(const QByteArray &data, bool raw, int startMs, bool p
     }
     // A copy of its own: a pipeline that hangs can go on reading it, and the caller's must stay
     // whole for the loudspeaker to take over.
-    m_data = QByteArray(data.constData(), data.size());
+    {
+        std::lock_guard<std::mutex> guard(m_dataLock);
+        m_data = QByteArray(data.constData(), data.size());
+    }
     m_raw = raw;
     m_speed = speed > 0.0 ? speed : 1.0;
     m_autoplay = playing;
@@ -90,7 +102,10 @@ bool EarpiecePlayer::start(const QByteArray &data, bool raw, int startMs, bool p
     // Raw audio has no parser in the pipeline that could turn a byte offset into a time, so
     // the data is pushed from that offset on and the pipeline's own position starts at zero.
     m_baseMs = raw ? m_seekMs : 0;
-    m_offset = raw ? qMin<qint64>(static_cast<qint64>(m_seekMs) * PcmBytesPerMs & ~1LL, m_data.size()) : 0;
+    {
+        std::lock_guard<std::mutex> guard(m_dataLock);
+        m_offset = raw ? qMin<qint64>(static_cast<qint64>(m_seekMs) * PcmBytesPerMs & ~1LL, m_data.size()) : 0;
+    }
 
     // The speed changes the pitch too in raw mode (the data is simply declared faster); the
     // encoded route has scaletempo for that, where the system has it.
@@ -210,8 +225,10 @@ void EarpiecePlayer::seek(int ms)
     }
     if (m_raw) {
         // Push mode: start over at the new offset (the pipeline cannot seek in the appsrc).
+        // start() takes a copy of its own; the old bytes are wiped once it has it.
         const QByteArray data = m_data;
         start(data, true, ms, m_playing, m_speed);
+        wipeInPlace(data);
         return;
     }
     if (m_prerolled) {
@@ -238,6 +255,7 @@ void EarpiecePlayer::setSpeed(double speed)
         const QByteArray data = m_data;
         m_speed = wanted;
         start(data, true, at, wasPlaying, wanted);
+        wipeInPlace(data);
         return;
     }
     m_speed = wanted;
@@ -319,21 +337,31 @@ void EarpiecePlayer::release()
         }
         m_pipeline = nullptr;
     }
-    // Wiped either way. If the pipeline hangs, its threads may still read this memory: it is left
-    // allocated for them, with nothing in it (the reference is never given back, on purpose).
-    m_data.fill('\0');
-    if (hung) {
-        new QByteArray(m_data);
+    // Disconnecting doesn't wait for a callback that is running: with a pipeline that hangs one
+    // may still be in there, so the data change hands under the lock the callbacks take.
+    QByteArray old;
+    {
+        std::lock_guard<std::mutex> guard(m_dataLock);
+        old.swap(m_data);
+        m_offset = 0;
     }
-    m_data.clear();
-    m_offset = 0;
+    // Wiped where they are, unless seek() or setSpeed() still hold them to start again: those
+    // wipe them afterwards. If the pipeline hangs, its threads may still read this memory: it is
+    // left allocated for them (the reference is never given back, on purpose).
+    if (old.isDetached()) {
+        wipeInPlace(old);
+    }
+    if (hung) {
+        new QByteArray(old);
+    }
     m_prerolled = false;
     m_autoplay = false;
 }
 
 // --- GStreamer callbacks. The bus watch runs on this thread (GLib main loop = Qt's event
 // loop); the appsrc's run on its streaming thread and touch nothing but m_offset and m_data,
-// which stand still while the pipeline is alive. ---
+// under m_dataLock: they stand still while the pipeline is alive, but release() changes them
+// under a pipeline that didn't stop. ---
 
 int EarpiecePlayer::onBusMessage(GstBus *, GstMessage *message, void *self)
 {
@@ -370,30 +398,41 @@ int EarpiecePlayer::onBusMessage(GstBus *, GstMessage *message, void *self)
 void EarpiecePlayer::onNeedData(GstElement *source, unsigned length, void *self)
 {
     EarpiecePlayer *player = static_cast<EarpiecePlayer *>(self);
-    const qint64 size = player->m_data.size();
-    if (player->m_offset >= size) {
+    GstBuffer *buffer = nullptr;
+    {
+        std::lock_guard<std::mutex> guard(player->m_dataLock);
+        const qint64 size = player->m_data.size();
+        if (player->m_offset < size) {
+            // A file is read at random, and the demuxer takes what it gets for one frame: anything
+            // longer than it asked for reached the decoder as one giant frame, and the phone's
+            // hardware AAC decoder hung on it (issue 10). Raw audio is a plain stream, any size
+            // will do.
+            const bool exact = !player->m_raw && length != 0 && length != static_cast<unsigned>(-1);
+            const qint64 wanted = exact ? static_cast<qint64>(length)
+                                        : qBound<qint64>(ChunkSize, length, 4 * ChunkSize);
+            const qint64 count = qMin(wanted, size - player->m_offset);
+            // Read-only view of the data; the pipeline is stopped before it is cleared, or the
+            // memory is left to it.
+            buffer = gst_buffer_new_wrapped_full(
+                GST_MEMORY_FLAG_READONLY, const_cast<char *>(player->m_data.constData()) + player->m_offset,
+                static_cast<gsize>(count), 0, static_cast<gsize>(count), nullptr, nullptr);
+            player->m_offset += count;
+        }
+    }
+    if (!buffer) {
         gst_app_src_end_of_stream(GST_APP_SRC(source));
         return;
     }
-    // A file is read at random, and the demuxer takes what it gets for one frame: anything longer
-    // than it asked for reached the decoder as one giant frame, and the phone's hardware AAC
-    // decoder hung on it (issue 10). Raw audio is a plain stream, any size will do.
-    const bool exact = !player->m_raw && length != 0 && length != static_cast<unsigned>(-1);
-    const qint64 wanted = exact ? static_cast<qint64>(length) : qBound<qint64>(ChunkSize, length, 4 * ChunkSize);
-    const qint64 count = qMin(wanted, size - player->m_offset);
-    // Read-only view of the data; the pipeline is stopped before it is cleared.
-    GstBuffer *buffer = gst_buffer_new_wrapped_full(
-        GST_MEMORY_FLAG_READONLY, const_cast<char *>(player->m_data.constData()) + player->m_offset,
-        static_cast<gsize>(count), 0, static_cast<gsize>(count), nullptr, nullptr);
-    player->m_offset += count;
     if (gst_app_src_push_buffer(GST_APP_SRC(source), buffer) != GST_FLOW_OK) {
-        player->m_offset = size;
+        std::lock_guard<std::mutex> guard(player->m_dataLock);
+        player->m_offset = player->m_data.size();
     }
 }
 
 int EarpiecePlayer::onSeekData(GstElement *, quint64 offset, void *self)
 {
     EarpiecePlayer *player = static_cast<EarpiecePlayer *>(self);
+    std::lock_guard<std::mutex> guard(player->m_dataLock);
     if (static_cast<qint64>(offset) > player->m_data.size()) {
         return FALSE;
     }
