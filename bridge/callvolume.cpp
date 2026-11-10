@@ -9,8 +9,8 @@
 #include <QDBusConnection>
 #include <QDBusMessage>
 #include <QDBusObjectPath>
-#include <QDBusPendingCallWatcher>
 #include <QDBusPendingReply>
+#include <QDBusReply>
 #include <QDBusVariant>
 #include <QGuiApplication>
 #include <QKeyEvent>
@@ -159,22 +159,19 @@ void CallVolume::listen(bool on)
     QDBusMessage all = QDBusMessage::createMethodCall(QString(), QLatin1String(VolumePath),
                                                       QLatin1String(Properties), QStringLiteral("GetAll"));
     all << QLatin1String(VolumeInterface);
-    auto *watcher = new QDBusPendingCallWatcher(bus.asyncCall(all), this);
-    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this](QDBusPendingCallWatcher *call) {
-        QDBusPendingReply<QVariantMap> reply = *call;
-        call->deleteLater();
-        if (!m_listening) {
-            return;
-        }
-        if (!reply.isValid()) {
-            qWarning("threesea: the system's volume gave no answer");
-            return;
-        }
-        const QVariantMap values = reply.value();
-        m_safeStep = values.value(QStringLiteral("HighVolumeStep")).toUInt();
-        onSteps(values.value(QStringLiteral("StepCount")).toUInt(),
-                values.value(QStringLiteral("CurrentStep")).toUInt());
-    });
+    // Waited for (a local socket): the first sound must come at the volume that is set. Playing
+    // at once and correcting on the answer let a message begin at full level with the media
+    // volume at zero.
+    const QDBusReply<QVariantMap> reply = bus.call(all, QDBus::Block, 500);
+    if (!reply.isValid()) {
+        // What was last heard of stays.
+        qWarning("threesea: the system's volume gave no answer");
+        apply();
+        return;
+    }
+    const QVariantMap values = reply.value();
+    m_safeStep = values.value(QStringLiteral("HighVolumeStep")).toUInt();
+    onSteps(values.value(QStringLiteral("StepCount")).toUInt(), values.value(QStringLiteral("CurrentStep")).toUInt());
 }
 
 void CallVolume::onSteps(uint stepCount, uint currentStep)
