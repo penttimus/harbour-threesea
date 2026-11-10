@@ -1386,3 +1386,20 @@ need neither a sensor nor a real network.
     - Expect: the fixed sentences, and the log line has the code.
 28. Settings → About.
     - Expect: the two licence buttons open readable pages; the source link opens the browser.
+
+# Added 2026-11-10 (video calls, answered and started)
+
+Seen on the phone with the changes before they moved onto `fix/camera-deadlock`; this branch's
+combination still has to be tried once.
+
+1. A video call from Threema for Android, answered here, camera on.
+   - Expect: both pictures upright and moving on both phones; Android shows ours, not black.
+2. The same call started here.
+   - Expect: as before.
+3. Switch the camera, turn it off and on again, hang up.
+   - Expect: no freeze. With the log level on detailed, the journal (not the in-app log) has
+     `call video frames: sent … received …` at the end, both above zero.
+4. Our picture's shape.
+   - Expect: not squeezed; the sides are cut instead.
+5. A group call with the camera.
+   - Expect: upright (the group engine has no size limit for the camera yet: watch the load).

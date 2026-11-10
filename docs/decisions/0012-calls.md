@@ -83,3 +83,12 @@ build for three architectures.
   same way, with the same gate. tests/callengine covers both outcomes, the wrong fingerprint also
   with a delayed check (no audio may pass either way).
 
+- Header extensions (2026-11-10): our answer accepts none of the offer's, a deviation from
+  Android's SdpPatcher, which replays the remote offer's encrypted extensions in its answer.
+  Android's libwebrtc handles them; GStreamer can neither decrypt nor write RFC 6904 extensions.
+  With the replayed answer, a phone that video-called us showed our camera as black and sent its
+  own picture unrotated (the angle is in one of them); a call we offer negotiates none and
+  worked both ways. Seen on a phone with Threema for Android; `core/src/sdp.rs` has the test.
+- The camera's size (2026-11-10): droidcamsrc takes its preview size from what follows it and
+  chose its largest (2560x1440 on the test phone). A caps filter after it prefers up to
+  1280x720, and the picture is cropped to the profile's shape before scaling, not squeezed.

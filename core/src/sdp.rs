@@ -7,7 +7,11 @@
 //! - Video and the data channel section stay; unknown media sections are dropped.
 //! - RTP header extensions: off for audio-only calls; with video, only encrypted ones
 //!   (RFC 6904, `urn:ietf:params:rtp-hdrext:encrypt`), never audio levels or frame marking,
-//!   IDs renumbered in local offers, the remote offer's extensions replayed in local answers.
+//!   IDs renumbered in local offers. Unlike Android, a local answer accepts none of the remote
+//!   offer's extensions: Android replays them there because its libwebrtc handles them, while
+//!   GStreamer can neither decrypt nor write encrypted header extensions. With an answer that
+//!   accepted them, Android showed our camera as black (seen on a phone), while a call we
+//!   offer, which has none, works both ways.
 
 use std::collections::HashMap;
 
@@ -52,7 +56,6 @@ enum Action {
 /// One call's patcher: a local answer replays the extensions of the remote offer patched before.
 pub struct SdpPatcher {
     extensions: HeaderExtensions,
-    remote_offer_extensions: HashMap<Section, Vec<String>>,
 }
 
 struct Context {
@@ -67,10 +70,7 @@ struct Context {
 impl SdpPatcher {
     #[must_use]
     pub fn new(extensions: HeaderExtensions) -> Self {
-        Self {
-            extensions,
-            remote_offer_extensions: HashMap::new(),
-        }
+        Self { extensions }
     }
 
     /// Apply the rules to `sdp` (lines end with CRLF afterwards).
@@ -212,19 +212,10 @@ impl SdpPatcher {
 
     /// What audio and video share: the replay after `a=mid:` and the extension lines.
     fn media_line(&mut self, context: &mut Context, line: &str) -> Result<Action, SdpError> {
-        if context.kind == SdpKind::LocalAnswer && line.starts_with("a=mid:") {
-            let mut lines = vec![line.to_owned()];
-            lines.extend(
-                self.remote_offer_extensions
-                    .remove(&context.section)
-                    .unwrap_or_default(),
-            );
-            return Ok(Action::Rewrite(lines.join("\r\n")));
-        }
         if let Some(rest) = line.strip_prefix("a=extmap:")
             && let Some((_, uri_and_attributes)) = rest.split_once(' ')
         {
-            return self.extension_line(context, line, uri_and_attributes);
+            return self.extension_line(context, uri_and_attributes);
         }
         Ok(self.rtp_attributes(line))
     }
@@ -232,7 +223,6 @@ impl SdpPatcher {
     fn extension_line(
         &mut self,
         context: &mut Context,
-        line: &str,
         uri_and_attributes: &str,
     ) -> Result<Action, SdpError> {
         const ENCRYPT: &str = "urn:ietf:params:rtp-hdrext:encrypt";
@@ -252,12 +242,6 @@ impl SdpPatcher {
             SdpKind::RemoteOffer => {
                 if !encrypted {
                     return Ok(Action::Reject);
-                }
-                if matches!(context.section, Section::Audio | Section::Video) {
-                    self.remote_offer_extensions
-                        .entry(context.section)
-                        .or_default()
-                        .push(line.to_owned());
                 }
                 Action::Accept
             }
@@ -401,7 +385,7 @@ mod tests {
     }
 
     #[test]
-    fn remote_offer_extensions_replayed_in_local_answer() {
+    fn local_answer_accepts_no_extensions() {
         let offer = "v=0\r\nm=audio 9 UDP/TLS/RTP/SAVPF 111\r\na=mid:0\r\na=rtpmap:111 opus/48000/2\r\n\
                      a=extmap:1 urn:ietf:params:rtp-hdrext:encrypt urn:x\r\na=extmap:2 urn:plain\r\n";
         let mut patcher = SdpPatcher::new(HeaderExtensions::OneAndTwoByte);
@@ -412,8 +396,7 @@ mod tests {
         let patched_answer = patcher.patch(SdpKind::LocalAnswer, answer).unwrap();
         assert_eq!(
             patched_answer,
-            "v=0\r\nm=audio 9 UDP/TLS/RTP/SAVPF 111\r\na=mid:0\r\n\
-             a=extmap:1 urn:ietf:params:rtp-hdrext:encrypt urn:x\r\na=rtpmap:111 opus/48000/2\r\n"
+            "v=0\r\nm=audio 9 UDP/TLS/RTP/SAVPF 111\r\na=mid:0\r\na=rtpmap:111 opus/48000/2\r\n"
         );
     }
 
@@ -437,10 +420,6 @@ mod tests {
         let patched_answer = patcher
             .patch(SdpKind::LocalAnswer, &format!("{audio}{answer}"))
             .unwrap();
-        assert!(patched_answer.contains("encrypt urn:x"), "{patched_answer}");
-        assert!(
-            !patched_answer.contains("video-orientation"),
-            "{patched_answer}"
-        );
+        assert!(!patched_answer.contains("a=extmap:"), "{patched_answer}");
     }
 }

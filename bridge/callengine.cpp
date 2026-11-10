@@ -108,6 +108,8 @@ bool CallEngine::build(const QVariantMap &turn, bool relayOnly, int opusPayloadT
     m_framesSent = 0;
     m_framesReceived = 0;
     m_packetsReceived = 0;
+    m_videoFramesSent = 0;
+    m_videoFramesReceived = 0;
     // Microphone → mono Opus, constant bitrate (Android's SdpPatcher asks for cbr=1). The
     // pulse role "phone" lets the audio policy route it like a call.
     const QString description = QStringLiteral(
@@ -158,6 +160,14 @@ bool CallEngine::build(const QVariantMap &turn, bool relayOnly, int opusPayloadT
     }
     g_value_unset(&item);
     gst_iterator_free(sinkPads);
+    if (m_video) {
+        // Counted for the log: what the encoder hands on once the peer is authenticated.
+        GstElement *encoder = gst_bin_get_by_name(GST_BIN(m_pipeline), "venc");
+        GstPad *encoded = gst_element_get_static_pad(encoder, "src");
+        gst_pad_add_probe(encoded, GST_PAD_PROBE_TYPE_BUFFER, reinterpret_cast<GstPadProbeCallback>(&CallEngine::onVideoEncoded), this, nullptr);
+        gst_object_unref(encoded);
+        gst_object_unref(encoder);
+    }
     m_micVolume = gst_bin_get_by_name(GST_BIN(m_pipeline), "mic");
     // Muted while there was no pipeline yet (the TURN servers take a moment).
     g_object_set(m_micVolume, "mute", m_muted ? TRUE : FALSE, nullptr);
@@ -338,6 +348,9 @@ void CallEngine::stop()
         m_busWatch = 0;
     }
     qInfo() << "call audio frames: sent" << m_framesSent << "received" << m_framesReceived;
+    if (m_video) {
+        qInfo() << "call video frames: sent" << m_videoFramesSent << "received" << m_videoFramesReceived;
+    }
     removeCamera();
     m_video = false;
     g_signal_handlers_disconnect_by_data(m_webrtc, this);
@@ -568,6 +581,15 @@ int CallEngine::onNetworkBuffer(GstPad *, GstPadProbeInfo *, void *self)
     return GST_PAD_PROBE_OK;
 }
 
+int CallEngine::onVideoEncoded(GstPad *, GstPadProbeInfo *, void *self)
+{
+    auto *engine = static_cast<CallEngine *>(self);
+    if (engine->m_verified) {
+        ++engine->m_videoFramesSent;
+    }
+    return GST_PAD_PROBE_OK;
+}
+
 int CallEngine::onVp8Frame(GstPad *, GstPadProbeInfo *info, void *filter)
 {
     return static_cast<Vp8Filter *>(filter)->passes(gst_pad_probe_info_get_buffer(info)) ? GST_PAD_PROBE_OK
@@ -621,6 +643,7 @@ QImage sampleImage(GstAppSink *sink)
 int CallEngine::onRemoteSample(GstElement *sink, void *self)
 {
     auto *engine = static_cast<CallEngine *>(self);
+    ++engine->m_videoFramesReceived;
     if (engine->m_remoteFramePending.exchange(true)) {
         // The GUI is behind: pictures must not pile up in its queue.
         GstSample *sample = gst_app_sink_pull_sample(GST_APP_SINK(sink));
@@ -670,17 +693,26 @@ void CallEngine::setCamera(bool on, bool front)
         return;
     }
     GstElementFactory *droid = gst_element_factory_find("droidcamsrc");
-    const QString source = droid ? QStringLiteral("droidcamsrc name=camsrc camera-device=%1 mode=2").arg(front ? 1 : 0)
+    // The camera picks its preview size from what comes after it, and left alone it took its
+    // largest (2560x1440 on a phone, 5 MB a picture to convert and scale on the CPU): one up to
+    // 1280x720 if it has one, else whatever it has.
+    const QString source = droid ? QStringLiteral("droidcamsrc name=camsrc camera-device=%1 mode=2 "
+                                                  "! capsfilter caps=\"video/x-raw,width=[1,1280],height=[1,720]; "
+                                                  "video/x-raw\"").arg(front ? 1 : 0)
                                  : QStringLiteral("videotestsrc is-live=true pattern=ball");
     if (droid) {
         gst_object_unref(droid);
     }
     const QString description = source + QStringLiteral(
-        " ! videoconvert name=camconv ! videoscale ! videorate ! capsfilter name=camcaps caps=%1 ! videoflip name=camflip ! tee name=camtee "
+        " ! videoconvert name=camconv ! aspectratiocrop aspect-ratio=%2/%3 ! videoscale ! videorate "
+        "! capsfilter name=camcaps caps=%1 ! videoflip name=camflip ! tee name=camtee "
         "camtee. ! queue max-size-buffers=2 leaky=downstream name=camout "
         "camtee. ! queue max-size-buffers=1 leaky=downstream ! videoconvert ! video/x-raw,format=BGRx "
         "! appsink name=localvideo emit-signals=true sync=false max-buffers=1 drop=true")
-                                    .arg(cameraCaps());
+                                    .arg(cameraCaps())
+                                    // Cut to the profile's shape, not squeezed into it.
+                                    .arg(m_videoWidth)
+                                    .arg(m_videoHeight);
     GError *error = nullptr;
     GstElement *bin = gst_parse_bin_from_description(description.toUtf8().constData(), FALSE, &error);
     if (error) {
@@ -794,8 +826,14 @@ int CallEngine::onBusMessage(GstBus *, GstMessage *message, void *self)
 {
     if (GST_MESSAGE_TYPE(message) == GST_MESSAGE_ERROR) {
         GError *error = nullptr;
-        gst_message_parse_error(message, &error, nullptr);
-        qWarning() << "call pipeline error:" << (error ? error->message : "");
+        gchar *debug = nullptr;
+        gst_message_parse_error(message, &error, &debug);
+        // Which element, and what it says about it: the text alone ("Could not write to
+        // resource") fits half of the pipeline.
+        // log-ok: GStreamer's own element name and its own account of the error, no user data
+        qWarning() << "call pipeline error:" << (error ? error->message : "") << "from"
+                   << GST_OBJECT_NAME(GST_MESSAGE_SRC(message)) << (debug ? debug : "");
+        g_free(debug);
         if (error) {
             g_error_free(error);
         }

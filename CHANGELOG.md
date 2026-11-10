@@ -19,6 +19,9 @@ Fixed:
 - A notification light goes off when the message is read: the notification that only vibrates
   stayed active until now, by [jmpx448](https://github.com/jmpx448)
   ([#5](https://github.com/penttimus/harbour-threesea/pull/5)).
+- In a video call that someone on Threema for Android started, they see your camera's picture
+  (it stayed black), and theirs is upright. Your picture keeps its proportions, and the camera
+  runs at a size the phone can handle (Full), by [penttimus](https://github.com/penttimus).
 
 Added:
 
