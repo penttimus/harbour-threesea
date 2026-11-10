@@ -619,9 +619,10 @@ Full, unless it says otherwise. With a second phone calling.
      keeps it shut; the log then says `call class`).
    - Music playing in another app when the call starts: it pauses and stays paused after the call.
    - The volume keys during the call, also at the ear with the screen off, and during a voice
-     message at the ear. **Not run on a phone yet.** Expect: the system's volume bar, and the
-     call gets louder and quieter with it (quiet, not silent, at the lowest step; half a second
-     may pass). If nothing changes: the log's line with `the system's volume`.
+     message at the ear. **Not run on a phone yet.** Expect: the call gets louder and quieter, nine levels,
+     quiet but not silent at the lowest, without a volume bar; the next call starts at the level
+     the last one ended on. With another app in front the keys do what they always do. If nothing
+     changes: say whether the system's bar shows instead, and the log's line with `volume keys`.
    - On another device than the one of 2026-11-10: say how the call sounds on both sides. The
      policy puts the audio hardware into its call mode without a call on the modem.
 9. A voice call from **Threema for Android**, answered here (it says "video" on every call).

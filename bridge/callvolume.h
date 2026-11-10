@@ -8,40 +8,51 @@
 #include <mutex>
 
 typedef struct _GstElement GstElement;
+namespace ResourcePolicy {
+class ResourceSet;
+}
 
 // The volume keys during a call and a voice message at the ear (ADR 0034). The system ties them
-// to the call's volume only while its own call state is active, which the modem or App Support
-// set; for us they go on changing the media volume, which our streams (the policy's group
-// "call") don't follow. So while the call class is held, this follows the media volume's steps
-// (PulseAudio's MainVolume2 interface, the one the system's volume bar uses) and turns them into
-// a gain on our playback pipelines: the bar the keys bring up is what one hears. A gain element
-// of our own, not the stream's volume: that one is stored under the role the system's phone
-// calls share. Full only.
+// to a call's volume only while its own call state is active, which the modem or App Support
+// set; during ours they changed the ringtone's volume (no media plays as far as the system
+// knows), and our streams, in the policy's group "call", follow neither that nor the media
+// volume. So while the call class is held and the app is in front, the app asks the policy for
+// the volume keys, as a camera or a player does, and turns them into a gain on our own
+// playback pipelines. The level is kept for the next call. A gain element of our own, not the
+// stream's volume: that one is stored under the role the system's phone calls share. Full only.
 class CallVolume : public QObject
 {
     Q_OBJECT
 public:
+    // First called at the start (main.cpp), on the main thread.
     static CallVolume *instance();
 
     // A pipeline's `volume` element follows from now on, until the call class is let go of. From
     // any thread (the engines link their playback on a streaming thread).
     void follow(GstElement *volume);
 
-    // The top step plays as it comes; the lowest is quiet, not silent, like a phone call's.
-    static double gainFor(uint stepCount, uint currentStep);
+    // The top level plays as it comes; the lowest is quiet, not silent, like a phone call's.
+    static const int Levels = 9;
+    static double gainFor(int level);
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private slots:
     void onHeld(bool held);
-    void onSteps(uint stepCount, uint currentStep);
+    void updateKeys();
 
 private:
     explicit CallVolume(QObject *parent = nullptr);
-    void apply(double gain);
+    void setLevel(int level);
 
     std::mutex m_lock;
     QVector<GstElement *> m_elements;
     double m_gain = 1.0;
-    bool m_listening = false;
+    int m_level = Levels - 1;
+    bool m_held = false;
+    bool m_keysAsked = false;
+    ResourcePolicy::ResourceSet *m_keys = nullptr;
 };
 
 #endif // CALLVOLUME_H

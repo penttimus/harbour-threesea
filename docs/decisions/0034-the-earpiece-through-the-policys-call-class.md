@@ -65,14 +65,15 @@ Not chosen:
   settings, `CallRoute::recover`; Full starts with the session).
 - A headset connected while the loudspeaker is preferred doesn't get the sound until the button
   is turned off.
-- The volume keys: the system ties them to the call's volume only while the policy's own call
-  state is active, which the modem or App Support set. For us they go on changing the media
-  volume, which our streams (group `call`, 100 %) don't follow. So while the class is held,
-  `bridge/callvolume.h` follows the media volume's steps over PulseAudio's `MainVolume2`
-  interface (the system's volume bar uses it; its socket is in the folder the Audio permission
-  shows) and sets a gain element in our playback pipelines, 24 dB from the top step to the
-  lowest: the bar the keys bring up is what one hears, also with the screen off at the ear. Not
-  the stream's own volume: PulseAudio stores that under the role the system's phone calls share.
-  A call therefore starts at the media volume's level, and the keys leave the media volume
-  changed after it.
+- The volume keys: the system ties them to a call's volume only while the policy's own call
+  state is active, which the modem or App Support set. During ours they changed the ringtone's
+  volume (to the system no media plays), and our streams (group `call`, 100 %) follow neither
+  that nor the media volume. So while the class is held and the app is in front,
+  `bridge/callvolume.h` asks the policy for the volume keys (the `ScaleButton` resource, as a
+  camera or a player does), which hands the key presses to our window, and turns them into a
+  gain element in our playback pipelines: nine levels, 3 dB apart, the top one as the sound
+  comes, the level kept for the next call. Not the stream's own volume: PulseAudio stores that
+  under the role the system's phone calls share. No volume bar shows (the system's isn't in
+  play). Behind another app the keys stay the system's. Tried first and dropped: following the
+  media volume's steps over PulseAudio's `MainVolume2`; on the phone the keys didn't move them.
 - Lite is untouched: no calls, no voice at the ear, no library.

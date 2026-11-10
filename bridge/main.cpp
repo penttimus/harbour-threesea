@@ -263,8 +263,8 @@ int main(int argc, char *argv[])
     };
 #ifdef THREESEA_FULL
     callRoute->recover();
-    // Here, on this thread and before anything holds the call class: it listens for that, and
-    // the engines first reach it from a streaming thread.
+    // Here, on this thread and before anything holds the call class: it listens for that and for
+    // the keys, and the engines first reach it from a streaming thread.
     CallVolume::instance();
 #endif
     QObject::connect(calls, &CallManager::stateChanged, callRoute, followCalls);
