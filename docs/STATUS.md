@@ -1573,3 +1573,17 @@ Qt 5.6 can use); whether Qt's image cache may keep decoded pictures of non-priva
 Open: the German and French texts for everything new or reworded (the translation step, last);
 the phone checks, collected in `docs/voice-video-device-checklist.md`; the OrganizationName
 (CLAUDE.md §11).
+
+## The earpiece on phones without App Support (2026-11-10)
+
+Calls and voice at the ear came from the loudspeaker on a phone (issues 8 and 10): the streams'
+role `phone` opens nothing in the audio policy, and its `speaker` feature is only offered during a
+phone call. The policy's own rule opens the earpiece to whoever holds a resource set of the class
+`call`, which an ordinary app gets (ADR 0034). `bridge/callclass.cpp` holds it while a call or a
+voice message at the ear runs; the loudspeaker button now asks the route manager to prefer the
+loudspeaker (`bridge/callroute.cpp`, its test rewritten).
+
+Heard on a phone with a test build: a voice message and a call at the ear, the other side hearing
+us. Not yet run on a phone: the loudspeaker button's new way, the fallback on a device without an
+earpiece, the recovery after a crash on the loudspeaker (device checklist, "Ringing, routes and the
+screen in calls", 8 and 10). Open: the volume keys don't change the call's volume.

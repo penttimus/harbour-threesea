@@ -34,7 +34,9 @@ build for three architectures.
   project's extraction of WebRTC's audio processing, BSD), pinned, as our own processing step.
 - Phone tests stay in the last phase (earpiece/speaker routing, echo, ringing while locked,
   proximity): built from documentation and emulator checks, fixed then.
-- Earpiece or loudspeaker goes through the audio policy's route manager (its `speaker` feature,
+- (Replaced by ADR 0034: the earpiece comes with the policy's call class, the loudspeaker is the
+  route manager's preferred device.) Earpiece or loudspeaker goes through the audio policy's
+  route manager (its `speaker` feature,
   only offered if it says so at runtime; `bridge/callroute.h`), not through another stream role:
   the echo canceller stays in the path and the engines change nothing. A call moves there by
   itself only once a camera is on, since Android's voice calls say "video" too. Whether the

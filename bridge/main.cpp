@@ -26,6 +26,9 @@
 #include "applifecycle.h"
 #include "callmanager.h"
 #include "callroute.h"
+#ifdef THREESEA_FULL
+#include "callclass.h"
+#endif
 #include "callvideo.h"
 #include "groupcallmanager.h"
 #include "dbusinterface.h"
@@ -246,9 +249,20 @@ int main(int argc, char *argv[])
             && one != QLatin1String("ended");
         // Only a camera that is on takes a call away from the ear, as on Android: `video` only says
         // both sides can do video, which Android's voice calls say too.
+#ifdef THREESEA_FULL
+        // What puts a call on the earpiece (ADR 0034). Before the route is looked at below.
+        if (inCall || inGroup) {
+            CallClass::instance()->hold(callRoute);
+        } else {
+            CallClass::instance()->drop(callRoute);
+        }
+#endif
         callRoute->setCall(inCall || inGroup, (inCall && (calls->camera() || calls->remoteCamera()))
                                                   || (inGroup && groupCalls->camera()));
     };
+#ifdef THREESEA_FULL
+    callRoute->recover();
+#endif
     QObject::connect(calls, &CallManager::stateChanged, callRoute, followCalls);
     QObject::connect(calls, &CallManager::cameraChanged, callRoute, followCalls);
     QObject::connect(calls, &CallManager::remoteChanged, callRoute, followCalls);

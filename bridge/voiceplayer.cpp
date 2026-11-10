@@ -100,7 +100,7 @@ VoicePlayer::VoicePlayer(const ThreeseBackend *backend, QObject *parent)
     connect(m_earpiecePlayer, &EarpiecePlayer::playingChanged, this, &VoicePlayer::playingChanged);
     connect(m_earpiecePlayer, &EarpiecePlayer::finished, this, &VoicePlayer::onEarpieceFinished);
     connect(m_earpiecePlayer, &EarpiecePlayer::failed, this, [this](const QString &error) {
-        // The earpiece did not take the sound (no route for the "phone" role, a codec the
+        // The earpiece did not take the sound (no earpiece or the policy keeps it shut, a codec the
         // system lacks): the message keeps playing on the loudspeaker where it stood, rather
         // than standing still at the user's ear.
         if (m_earpiece && m_messageId != -1 && !m_data.isEmpty()) {

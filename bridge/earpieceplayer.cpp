@@ -5,6 +5,8 @@
 
 #include "earpieceplayer.h"
 
+#include "callclass.h"
+
 #include <QDebug>
 
 #include <chrono>
@@ -75,6 +77,27 @@ EarpiecePlayer::EarpiecePlayer(QObject *parent)
         setPlaying(false);
         emit failed(QStringLiteral("earpiece route"));
     });
+    connect(CallClass::instance(), &CallClass::settled, this, &EarpiecePlayer::onRouteSettled);
+}
+
+void EarpiecePlayer::onRouteSettled(bool earpiece)
+{
+    if (!m_pipeline) {
+        return;
+    }
+    if (!earpiece) {
+        // No earpiece on this device, or the policy keeps it shut: not at call volume from the
+        // loudspeaker beside the user's ear.
+        qWarning() << "earpiece pipeline: the sound did not get to the earpiece";
+        release();
+        setPlaying(false);
+        emit failed(QStringLiteral("earpiece route"));
+        return;
+    }
+    m_routed = true;
+    if (m_autoplay) {
+        resume();
+    }
 }
 
 EarpiecePlayer::~EarpiecePlayer()
@@ -93,6 +116,18 @@ bool EarpiecePlayer::start(const QByteArray &data, bool raw, int startMs, bool p
     {
         std::lock_guard<std::mutex> guard(m_dataLock);
         m_data = QByteArray(data.constData(), data.size());
+    }
+    // The policy moves the sound to the earpiece for whoever holds its call class (ADR 0034).
+    // Nothing plays before it has: the first moment would come from the loudspeaker.
+    CallClass::instance()->hold(this);
+    m_routed = CallClass::instance()->earpiece();
+    if (CallClass::instance()->refused()) {
+        // Known already (a call on the loudspeaker holds it too). Not from inside start().
+        QTimer::singleShot(0, this, [this]() {
+            if (CallClass::instance()->refused()) {
+                onRouteSettled(false);
+            }
+        });
     }
     m_raw = raw;
     m_speed = speed > 0.0 ? speed : 1.0;
@@ -202,7 +237,7 @@ void EarpiecePlayer::resume()
         return;
     }
     m_autoplay = true;
-    if (m_prerolled) { // else it plays once prerolled
+    if (m_prerolled && m_routed) { // else it plays once prerolled and at the earpiece
         gst_element_set_state(m_pipeline, GST_STATE_PLAYING);
     }
     setPlaying(true);
@@ -315,6 +350,7 @@ int EarpiecePlayer::duration() const
 
 void EarpiecePlayer::release()
 {
+    CallClass::instance()->drop(this);
     m_ticker.stop();
     m_watchdog.stop();
     if (m_busWatch) {

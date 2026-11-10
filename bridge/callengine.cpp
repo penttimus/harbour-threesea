@@ -105,7 +105,8 @@ bool CallEngine::build(const QVariantMap &turn, bool relayOnly, int opusPayloadT
     m_framesReceived = 0;
     m_packetsReceived = 0;
     // Microphone → mono Opus, constant bitrate (Android's SdpPatcher asks for cbr=1). The
-    // pulse role "phone" lets the audio policy route it like a call.
+    // earpiece comes with the audio policy's call class, held while a call runs (CallClass,
+    // ADR 0034), not with the pulse role.
     const QString description = QStringLiteral(
         "webrtcbin name=webrtc bundle-policy=max-bundle latency=100 "
         "pulsesrc stream-properties=\"props,media.role=phone\" ! audioconvert ! audioresample "

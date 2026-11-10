@@ -13,8 +13,8 @@ typedef struct _GstBus GstBus;
 typedef struct _GstMessage GstMessage;
 
 // Plays a voice message through the earpiece, the way the call engines reach it: a GStreamer
-// pipeline into PulseAudio with the media role "phone", which Sailfish's audio policy routes
-// to the earpiece at call volume. Qt's player has no such route — with QMediaPlayer's
+// pipeline into PulseAudio while the app holds the audio policy's call class (CallClass,
+// ADR 0034), which is what moves the sound to the earpiece. Qt's player has no such route — with QMediaPlayer's
 // voice-communication role the phone played scrambled silence (user report 2026-10-29), while
 // the calls' pipeline is known to work on the same device.
 //
@@ -57,12 +57,13 @@ private:
     static int onSeekData(GstElement *source, quint64 offset, void *self);
 
     void prerolled();
+    void onRouteSettled(bool earpiece);
     void setPlaying(bool playing);
     bool sendSeek(int ms);
     void release();
 
     // The pipeline must reach PAUSED for playback to start; if it never does (no audio
-    // route for the "phone" role, a codec the system does not have), this gives up instead
+    // earpiece route, a codec the system does not have), this gives up instead
     // of leaving the message standing still.
     QTimer m_watchdog;
     GstElement *m_pipeline = nullptr;
@@ -78,6 +79,8 @@ private:
     bool m_playing = false;
     bool m_prerolled = false;
     bool m_autoplay = false;
+    // The policy has moved the sound to the earpiece (CallClass).
+    bool m_routed = false;
     // Added to the pipeline's own position: in raw mode the data is pushed from this point on
     // (no parser that could turn a byte offset into a time), so the pipeline starts at zero.
     int m_baseMs = 0;
