@@ -248,8 +248,6 @@ int main(int argc, char *argv[])
             || group == QLatin1String("connected");
         const bool inCall = one != QLatin1String("idle") && one != QLatin1String("incoming")
             && one != QLatin1String("ended");
-        // Only a camera that is on takes a call away from the ear, as on Android: `video` only says
-        // both sides can do video, which Android's voice calls say too.
 #ifdef THREESEA_FULL
         // What puts a call on the earpiece (ADR 0034). Before the route is looked at below.
         if (inCall || inGroup) {
@@ -258,8 +256,7 @@ int main(int argc, char *argv[])
             CallClass::instance()->drop(callRoute);
         }
 #endif
-        callRoute->setCall(inCall || inGroup, (inCall && (calls->camera() || calls->remoteCamera()))
-                                                  || (inGroup && groupCalls->camera()));
+        callRoute->setCall(inCall || inGroup);
     };
 #ifdef THREESEA_FULL
     callRoute->recover();

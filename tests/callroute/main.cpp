@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // What the loudspeaker button says has to be what the audio policy did: a wrong "on" takes the
-// ear guard away with the sound still at the ear. And a voice call stays off the loudspeaker.
+// ear guard away with the sound still at the ear. And only the user moves a call.
 // Exit 0: passed.
 #include "callroute.h"
 
@@ -37,9 +37,9 @@ public:
     using CallRoute::confirmTimedOut;
     using CallRoute::onRouteChanged;
 
-    void started(bool prefer = false)
+    void started()
     {
-        setCall(true, prefer);
+        setCall(true);
         // What it was before the call class was ours, then the policy's move.
         answeredRoute(QStringLiteral("speaker"));
         route("earpiece");
@@ -55,7 +55,7 @@ protected:
 void testLightsOnlyWhenConfirmed()
 {
     Route r;
-    r.setCall(true, false);
+    r.setCall(true);
     r.answeredRoute(QStringLiteral("speaker"));
     check(!r.available(), "no button before the sound is on the earpiece");
     r.route("earpiece");
@@ -121,51 +121,22 @@ void testNoEarpiece()
 {
     // A device without one, or the policy keeps it shut: the sound is on the loudspeaker already.
     Route r;
-    r.setCall(true, true);
+    r.setCall(true);
     r.answeredRoute(QStringLiteral("speaker"));
     check(!r.available(), "no earpiece: no button");
     check(!r.speaker(), "no earpiece: not lit either, it is not our doing");
     r.setSpeaker(true);
-    check(r.sent.isEmpty(), "no earpiece: nothing sent, also not for a camera");
+    check(r.sent.isEmpty(), "no earpiece: nothing sent");
 }
 
-void testPreference()
+void testHeadset()
 {
-    Route voice;
-    voice.started(false);
-    voice.setCall(true, false);
-    check(voice.sent.isEmpty(), "a voice call stays on the earpiece");
-
-    voice.setCall(true, true);
-    check(voice.sent == QList<bool>{ true }, "a camera comes on: loudspeaker");
-    voice.route("speaker");
-    check(voice.speaker(), "confirmed");
-    voice.setCall(true, false);
-    check(voice.speaker(), "the camera going off changes nothing");
-    voice.setSpeaker(false);
-    voice.route("earpiece");
-    voice.setCall(true, true);
-    check(voice.sent.size() == 2, "after the user's choice a camera doesn't move it");
-
-    Route early;
-    early.setCall(true, true);
-    early.answeredRoute(QStringLiteral("speaker"));
-    check(early.sent.isEmpty(), "a camera from the start waits for the earpiece");
-    early.route("earpiece");
-    check(early.sent == QList<bool>{ true }, "and then moves the call off it");
-
     Route headset;
-    headset.setCall(true, true);
+    headset.setCall(true);
     headset.answeredRoute(QStringLiteral("headset"));
-    check(headset.sent.isEmpty(), "a headset stays as it is");
-    check(!headset.available(), "and has no button");
-
-    Route failing;
-    failing.started(true);
-    failing.answeredSend(false, true);
-    check(failing.failed == 0, "nobody asked: no notice");
-    failing.route("earpiece");
-    check(failing.sent.size() == 2, "and no second try by itself");
+    check(!headset.available(), "a headset has no button");
+    headset.setSpeaker(true);
+    check(headset.sent.isEmpty(), "and stays as it is");
 }
 
 void testEnd()
@@ -174,19 +145,19 @@ void testEnd()
     r.started();
     r.setSpeaker(true);
     r.route("speaker");
-    r.setCall(false, false);
+    r.setCall(false);
     check(r.sent.last() == false, "taken back with the call");
     check(!r.speaker() && !r.available(), "nothing shown after it");
 
     Route waiting;
     waiting.started();
     waiting.setSpeaker(true);
-    waiting.setCall(false, false);
+    waiting.setCall(false);
     check(waiting.sent.last() == false, "taken back with the call also while unconfirmed");
 
     Route untouched;
     untouched.started();
-    untouched.setCall(false, false);
+    untouched.setCall(false);
     check(untouched.sent.isEmpty(), "nothing to take back from a call left on the earpiece");
 }
 
@@ -200,7 +171,7 @@ int main(int argc, char **argv)
     testPolicyDoesNotMoveIt();
     testOtherSignalsDoNotCount();
     testNoEarpiece();
-    testPreference();
+    testHeadset();
     testEnd();
     if (failures == 0) {
         std::printf("passed\n");

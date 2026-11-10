@@ -38,7 +38,8 @@ with audio playback (our process's streams) and recording: `bridge/callclass.h`,
   preferred device (`Prefer("speaker", output, 1)`) and takes that back for the earpiece. In the
   policy this is what the `speaker` feature does too (`set_preferred_audio_entry`), without the
   feature's gate. The button shows while the sound is on the earpiece or on the loudspeaker by
-  our doing, and is lit only once the route itself says so.
+  our doing, and is lit only once the route itself says so. Only the button moves a call: a
+  camera coming on no longer does (user decision 2026-11-10: no automatism).
 - The streams keep the role `phone`: that is what was tested.
 
 New dependency: `libresourceqt5` (LGPL, Jolla's client library of the resource policy, installed

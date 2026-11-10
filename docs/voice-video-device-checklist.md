@@ -629,8 +629,8 @@ Full, unless it says otherwise. With a second phone calling.
 9. A voice call from **Threema for Android**, answered here (it says "video" on every call).
    - Expect: "Incoming call", the earpiece, the screen allowed to blank, black at the ear; the
      camera button is there. Then turn a camera on, on either side.
-   - Expect: it moves to the loudspeaker with the button lit, and stays there when the camera goes
-     off. A group call does this only for our own camera.
+   - Expect: the sound stays where it is; only the speaker button moves it (user decision
+     2026-11-10: no automatism. Until then a camera coming on moved the call to the loudspeaker).
 10. After a call on the loudspeaker: make a normal phone call; and once kill the process during such
     a call first (`pkill -9 harbour-threesea`), play some music, then start the app again.
     - Expect: the phone call is on the earpiece. After the kill the music is on the loudspeaker

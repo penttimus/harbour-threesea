@@ -122,7 +122,7 @@ void CallRoute::show()
     }
 }
 
-void CallRoute::setCall(bool running, bool preferSpeaker)
+void CallRoute::setCall(bool running)
 {
     if (running != m_running) {
         m_running = running;
@@ -135,22 +135,11 @@ void CallRoute::setCall(bool running, bool preferSpeaker)
             m_pending = false;
             m_ours = false;
             m_output.clear();
-            m_lastPrefer = false;
-            m_preferSpeaker = false;
             show();
             return;
         }
-        m_chosen = false;
         busListen(true);
         busQuery();
-    }
-    if (!running) {
-        return;
-    }
-    if (preferSpeaker != m_lastPrefer) {
-        m_lastPrefer = preferSpeaker;
-        m_preferSpeaker = preferSpeaker;
-        applyPreference();
     }
 }
 
@@ -160,16 +149,6 @@ void CallRoute::answeredRoute(const QString &device)
         m_output = device;
         settle();
         show();
-        applyPreference();
-    }
-}
-
-// Only from the earpiece: a headset stays as it is.
-void CallRoute::applyPreference()
-{
-    if (m_preferSpeaker && !m_chosen && !m_ours && !m_pending && m_output == QLatin1String(Earpiece)) {
-        m_preferSpeaker = false;
-        request(true, false);
     }
 }
 
@@ -178,15 +157,13 @@ void CallRoute::setSpeaker(bool on)
     if (!m_running || !m_available || m_pending || on == m_speaker) {
         return;
     }
-    m_chosen = true;
-    request(on, true);
+    request(on);
 }
 
-void CallRoute::request(bool on, bool byUser)
+void CallRoute::request(bool on)
 {
     m_pending = true;
     m_wanted = on;
-    m_byUser = byUser;
     m_confirm.start();
     busSend(on);
 }
@@ -233,9 +210,7 @@ void CallRoute::giveUp()
         busSend(false);
     }
     show();
-    if (m_byUser) {
-        emit failed();
-    }
+    emit failed();
 }
 
 void CallRoute::onRouteChanged(const QString &device, uint type)
@@ -244,6 +219,5 @@ void CallRoute::onRouteChanged(const QString &device, uint type)
         m_output = device;
         settle();
         show();
-        applyPreference();
     }
 }

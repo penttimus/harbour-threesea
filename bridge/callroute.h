@@ -30,10 +30,9 @@ public:
     bool available() const { return m_available; }
     bool speaker() const { return m_speaker; }
     void setSpeaker(bool on);
-    // A call runs or not. `preferSpeaker`: it is held away from the ear now (a camera is on). Each
-    // time that begins the call goes to the loudspeaker if it would be on the earpiece, unless
-    // the user chose in this call.
-    void setCall(bool running, bool preferSpeaker);
+    // A call runs or not. Where its sound goes is the user's choice alone: a camera coming on
+    // doesn't move it (user decision 2026-11-10; it did until then, as on Android).
+    void setCall(bool running);
     // At the start: takes back a preference that a crash during a call left behind.
     void recover();
 
@@ -56,17 +55,12 @@ protected slots:
     void onRouteChanged(const QString &device, uint type);
 
 private:
-    void applyPreference();
-    void request(bool on, bool byUser);
+    void request(bool on);
     void settle();
     void giveUp();
     void show();
 
     bool m_running = false;
-    bool m_lastPrefer = false;
-    bool m_preferSpeaker = false;
-    // The user chose: nothing else changes the route of this call any more.
-    bool m_chosen = false;
     bool m_available = false;
     bool m_speaker = false;
     // We made the loudspeaker the preferred device, so it is ours to take back.
@@ -74,7 +68,6 @@ private:
     // A request waits for the manager to confirm it.
     bool m_pending = false;
     bool m_wanted = false;
-    bool m_byUser = false;
     QString m_output;
     QTimer m_confirm;
 };

@@ -39,7 +39,8 @@ build for three architectures.
   route manager (its `speaker` feature,
   only offered if it says so at runtime; `bridge/callroute.h`), not through another stream role:
   the echo canceller stays in the path and the engines change nothing. A call moves there by
-  itself only once a camera is on, since Android's voice calls say "video" too. Whether the
+  itself only once a camera is on, since Android's voice calls say "video" too (no longer: only
+  the button moves a call, user decision 2026-11-10, ADR 0034). Whether the
   feature's name holds and moves these streams is the phone's to say. No Bluetooth entry and no
   "end the call when Bluetooth goes" setting unless the phone test shows they are needed
   (docs/voice-video-device-checklist.md, "Ringing, routes and the screen in calls").
