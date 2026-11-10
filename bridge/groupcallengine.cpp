@@ -570,14 +570,19 @@ void GroupCallEngine::setCamera(bool on, bool front)
     g_signal_connect(preview, "new-sample", G_CALLBACK(&GroupCallEngine::onLocalSample), this);
     gst_object_unref(preview);
     CameraBranch::keepCameraNegotiated(bin, "camconv");
-    const bool turned = CameraBranch::standUpright(bin);
+    // The layers' sizes follow the camera's angle, known only once it is open.
+    std::vector<GstElement *> sizes;
     for (int i = 0; i < VIDEO_LAYERS; ++i) {
-        GstElement *size = gst_bin_get_by_name(GST_BIN(m_pipeline), QStringLiteral("vsize%1").arg(i).toUtf8().constData());
-        GstCaps *caps = gst_caps_from_string(layerSize(i, turned).toUtf8().constData());
-        g_object_set(size, "caps", caps, nullptr);
-        gst_caps_unref(caps);
-        gst_object_unref(size);
+        sizes.push_back(gst_bin_get_by_name(GST_BIN(m_pipeline), QStringLiteral("vsize%1").arg(i).toUtf8().constData()));
     }
+    const auto turned = [sizes](bool swapped) {
+        for (int i = 0; i < VIDEO_LAYERS; ++i) {
+            GstCaps *caps = gst_caps_from_string(layerSize(i, swapped).toUtf8().constData());
+            g_object_set(sizes[i], "caps", caps, nullptr);
+            gst_caps_unref(caps);
+            gst_object_unref(sizes[i]);
+        }
+    };
 
     gst_bin_add(GST_BIN(m_pipeline), bin);
     m_cameraPad = gst_element_request_pad_simple(m_videoInput, "sink_%u");
@@ -587,7 +592,7 @@ void GroupCallEngine::setCamera(bool on, bool front)
     }
     gst_object_unref(binPad);
     m_camera = bin;
-    if (!CameraBranch::start(bin)) {
+    if (!CameraBranch::start(bin, turned)) {
         qWarning() << "group call: the camera did not start";
     }
 }

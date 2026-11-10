@@ -61,6 +61,10 @@ inline void keepCameraNegotiated(GstElement *bin, const char *first)
 // pages are portrait only, so `camflip` stands the picture upright for a phone held upright, for
 // our preview and the other side alike: no video orientation extension tells them (sdp.rs). True
 // if that swapped its width and height. (The emulator's test pattern has no `camsrc`.)
+//
+// droidcamsrc knows the angle only once the camera is open: before, it says 90 for every camera,
+// while a Jolla Phone's front camera is at 270 (issue 7). So this opens it, which can hang, and
+// belongs on start()'s thread.
 inline bool standUpright(GstElement *bin)
 {
     GstElement *camera = gst_bin_get_by_name(GST_BIN(bin), "camsrc");
@@ -68,20 +72,29 @@ inline bool standUpright(GstElement *bin)
         return false;
     }
     int angle = 0;
-    g_object_get(camera, "sensor-mount-angle", &angle, nullptr);
+    if (gst_element_set_state(camera, GST_STATE_READY) != GST_STATE_CHANGE_FAILURE
+        && g_object_class_find_property(G_OBJECT_GET_CLASS(camera), "sensor-orientation")) {
+        g_object_get(camera, "sensor-orientation", &angle, nullptr);
+    }
     gst_object_unref(camera);
     // Degrees clockwise; videoflip's directions go identity, 90R, 180, 90L.
+    const int quarters = (angle % 360 + 360 + 45) / 90 % 4;
     GstElement *flip = gst_bin_get_by_name(GST_BIN(bin), "camflip");
-    g_object_set(flip, "video-direction", static_cast<GstVideoOrientationMethod>(angle / 90 % 4), nullptr);
+    g_object_set(flip, "video-direction", static_cast<GstVideoOrientationMethod>(quarters), nullptr);
     gst_object_unref(flip);
-    return angle % 180 != 0;
+    return quarters % 2 != 0;
 }
 
-// The camera branch into its state.
-inline bool start(GstElement *bin)
+// The camera branch into its state, standing upright. `turned` hears on that thread, before the
+// first frame, whether width and height swapped; it must own what it uses, like the thread.
+inline bool start(GstElement *bin, std::function<void(bool)> turned = nullptr)
 {
     gst_object_ref(bin);
-    return finishesInTime([bin] {
+    return finishesInTime([bin, turned] {
+        const bool swapped = standUpright(bin);
+        if (turned) {
+            turned(swapped);
+        }
         gst_element_sync_state_with_parent(bin);
         gst_object_unref(bin);
     });

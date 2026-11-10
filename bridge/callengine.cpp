@@ -736,7 +736,6 @@ void CallEngine::setCamera(bool on, bool front)
     g_signal_connect(preview, "new-sample", G_CALLBACK(&CallEngine::onLocalSample), this);
     gst_object_unref(preview);
     CameraBranch::keepCameraNegotiated(bin, "camconv");
-    CameraBranch::standUpright(bin);
 
     gst_bin_add(GST_BIN(m_pipeline), bin);
     GstElement *funnel = gst_bin_get_by_name(GST_BIN(m_pipeline), "vin");
