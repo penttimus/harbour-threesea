@@ -19,6 +19,9 @@ Fixed:
 - A notification light goes off when the message is read: the notification that only vibrates
   stayed active until now, by [jmpx448](https://github.com/jmpx448)
   ([#5](https://github.com/penttimus/harbour-threesea/pull/5)).
+- No more empty banner with the system's information icon when a second message, an edit or a
+  deletion comes while a message's banner is still showing: the banner shows the new text, by
+  [penttimus](https://github.com/penttimus).
 
 Added:
 
