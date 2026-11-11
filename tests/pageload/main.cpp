@@ -141,7 +141,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "%s\n", qPrintable(fakesComponent.errorString()));
         return 2;
     }
-    for (const char *name : { "backend", "dbus", "lifecycle", "calls", "groupCalls", "voicePlayer", "videoPlayer", "voiceRecorder", "proximity", "callRoute", "softSound" }) {
+    for (const char *name : { "backend", "dbus", "lifecycle", "calls", "groupCalls", "voicePlayer", "videoPlayer", "voiceRecorder", "proximity", "callRoute", "callVolume", "softSound" }) {
         engine.rootContext()->setContextProperty(QString::fromLatin1(name), fakes->property(name));
     }
     Harness harness;
