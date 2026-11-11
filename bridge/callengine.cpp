@@ -8,6 +8,8 @@
 #include <gst/video/video.h>
 
 #include "callengine.h"
+#include "callvolume.h"
+#include "camerabranch.h"
 #include "dtlscertificate.h"
 #include "vp8filter.h"
 #include "aec/echocanceller.h"
@@ -99,13 +101,19 @@ bool CallEngine::build(const QVariantMap &turn, bool relayOnly, int opusPayloadT
 {
     // Remote candidates can arrive before the user accepts.
     const QVariantList pending = m_pendingCandidates;
+    if (m_left) {
+        return false;
+    }
     stop();
     m_pendingCandidates = pending;
     m_framesSent = 0;
     m_framesReceived = 0;
     m_packetsReceived = 0;
+    m_videoFramesSent = 0;
+    m_videoFramesReceived = 0;
     // Microphone → mono Opus, constant bitrate (Android's SdpPatcher asks for cbr=1). The
-    // pulse role "phone" lets the audio policy route it like a call.
+    // earpiece comes with the audio policy's call class, held while a call runs (CallClass,
+    // ADR 0034), not with the pulse role.
     const QString description = QStringLiteral(
         "webrtcbin name=webrtc bundle-policy=max-bundle latency=100 "
         "pulsesrc stream-properties=\"props,media.role=phone\" ! audioconvert ! audioresample "
@@ -123,8 +131,12 @@ bool CallEngine::build(const QVariantMap &turn, bool relayOnly, int opusPayloadT
         "! vp8enc name=venc deadline=1 cpu-used=8 end-usage=cbr target-bitrate=600000 "
         "keyframe-max-dist=60 lag-in-frames=0 error-resilient=default threads=2 "
         "! rtpvp8pay pt=%1 picture-id-mode=15-bit mtu=1200 ! queue "
-        "! application/x-rtp,media=video,encoding-name=VP8,clock-rate=90000,payload=%1 "
-        "! webrtc. ").arg(vp8PayloadType));
+        // The SSRC is fixed here so that the SDP can name it: webrtcbin takes it from these caps,
+        // and without the camera nothing else sets them when the answer is made. libwebrtc drops
+        // what it can't assign, and in a call we answer the MID extension it would go by is
+        // negotiated but never sent (issue 7).
+        "! application/x-rtp,media=video,encoding-name=VP8,clock-rate=90000,payload=%1,ssrc=(uint)%2 "
+        "! webrtc. ").arg(vp8PayloadType).arg(g_random_int_range(1, G_MAXINT32)));
     GError *error = nullptr;
     m_pipeline = gst_parse_launch(description.toUtf8().constData(), &error);
     if (error) {
@@ -150,6 +162,14 @@ bool CallEngine::build(const QVariantMap &turn, bool relayOnly, int opusPayloadT
     }
     g_value_unset(&item);
     gst_iterator_free(sinkPads);
+    if (m_video) {
+        // Counted for the log: what the encoder hands on once the peer is authenticated.
+        GstElement *encoder = gst_bin_get_by_name(GST_BIN(m_pipeline), "venc");
+        GstPad *encoded = gst_element_get_static_pad(encoder, "src");
+        gst_pad_add_probe(encoded, GST_PAD_PROBE_TYPE_BUFFER, reinterpret_cast<GstPadProbeCallback>(&CallEngine::onVideoEncoded), this, nullptr);
+        gst_object_unref(encoded);
+        gst_object_unref(encoder);
+    }
     m_micVolume = gst_bin_get_by_name(GST_BIN(m_pipeline), "mic");
     // Muted while there was no pipeline yet (the TURN servers take a moment).
     g_object_set(m_micVolume, "mute", m_muted ? TRUE : FALSE, nullptr);
@@ -330,10 +350,13 @@ void CallEngine::stop()
         m_busWatch = 0;
     }
     qInfo() << "call audio frames: sent" << m_framesSent << "received" << m_framesReceived;
+    if (m_video) {
+        qInfo() << "call video frames: sent" << m_videoFramesSent << "received" << m_videoFramesReceived;
+    }
     removeCamera();
     m_video = false;
     g_signal_handlers_disconnect_by_data(m_webrtc, this);
-    gst_element_set_state(m_pipeline, GST_STATE_NULL);
+    const bool stopped = CameraBranch::stop(m_pipeline);
     if (m_channel) {
         g_signal_handlers_disconnect_by_data(m_channel, this);
         g_object_unref(m_channel);
@@ -341,9 +364,16 @@ void CallEngine::stop()
     }
     gst_object_unref(m_micVolume);
     gst_object_unref(m_webrtc);
-    gst_object_unref(m_pipeline);
-    // After the pipeline stopped: no probe runs any more.
-    m_echoCanceller.reset();
+    if (stopped) {
+        gst_object_unref(m_pipeline);
+        // After the pipeline stopped: no probe runs any more.
+        m_echoCanceller.reset();
+    } else {
+        // It hangs: better a pipeline left behind than a frozen app. Its probes and handlers
+        // still point here, so the canceller stays for them and this engine takes no other call.
+        qWarning() << "call: the pipeline did not stop";
+        m_left = true;
+    }
     m_micVolume = nullptr;
     m_webrtc = nullptr;
     m_pipeline = nullptr;
@@ -357,6 +387,7 @@ void CallEngine::stop()
     // must not reach the next one, nor the manager after the user hung up.
     QCoreApplication::removePostedEvents(this, QEvent::MetaCall);
     m_remoteFramePending = false;
+    m_localFramePending = false;
 }
 
 // --- GStreamer threads: hand everything over to this object's thread. ---
@@ -483,7 +514,8 @@ void CallEngine::onPadAdded(GstElement *, GstPad *pad, void *self)
     // dropped.
     const char *description = opus
         ? "queue ! rtpopusdepay ! opusdec plc=true use-inband-fec=true ! audioconvert ! audioresample "
-          "! audio/x-raw,format=S16LE,channels=1,rate=48000 ! audiobuffersplit output-buffer-duration=1/100 "
+          "! audio/x-raw,format=S16LE,channels=1,rate=48000 ! volume name=gain "
+          "! audiobuffersplit output-buffer-duration=1/100 "
           "! identity name=aecplayback ! pulsesink stream-properties=\"props,media.role=phone\""
         : vp8 ? "queue ! rtpvp8depay name=depay ! vp8dec threads=2 ! videoconvert ! video/x-raw,format=BGRx "
                 "! appsink name=remotevideo emit-signals=true sync=false max-buffers=1 drop=true"
@@ -512,6 +544,10 @@ void CallEngine::onPadAdded(GstElement *, GstPad *pad, void *self)
         gst_pad_add_probe(playbackPad, GST_PAD_PROBE_TYPE_BUFFER, reinterpret_cast<GstPadProbeCallback>(&CallEngine::onPlaybackBuffer), engine, nullptr);
         gst_object_unref(playbackPad);
         gst_object_unref(playback);
+        // The volume keys (CallVolume); before the echo canceller's tap, which must see what plays.
+        GstElement *gain = gst_bin_get_by_name(GST_BIN(bin), "gain");
+        CallVolume::instance()->follow(gain);
+        gst_object_unref(gain);
     }
     gst_bin_add(GST_BIN(engine->m_pipeline), bin);
     gst_element_sync_state_with_parent(bin);
@@ -549,6 +585,15 @@ int CallEngine::onMediaBuffer(GstPad *, GstPadProbeInfo *, void *self)
 int CallEngine::onNetworkBuffer(GstPad *, GstPadProbeInfo *, void *self)
 {
     ++static_cast<CallEngine *>(self)->m_packetsReceived;
+    return GST_PAD_PROBE_OK;
+}
+
+int CallEngine::onVideoEncoded(GstPad *, GstPadProbeInfo *, void *self)
+{
+    auto *engine = static_cast<CallEngine *>(self);
+    if (engine->m_verified) {
+        ++engine->m_videoFramesSent;
+    }
     return GST_PAD_PROBE_OK;
 }
 
@@ -605,6 +650,7 @@ QImage sampleImage(GstAppSink *sink)
 int CallEngine::onRemoteSample(GstElement *sink, void *self)
 {
     auto *engine = static_cast<CallEngine *>(self);
+    ++engine->m_videoFramesReceived;
     if (engine->m_remoteFramePending.exchange(true)) {
         // The GUI is behind: pictures must not pile up in its queue.
         GstSample *sample = gst_app_sink_pull_sample(GST_APP_SINK(sink));
@@ -624,11 +670,21 @@ int CallEngine::onRemoteSample(GstElement *sink, void *self)
 
 int CallEngine::onLocalSample(GstElement *sink, void *self)
 {
-    const QImage image = sampleImage(GST_APP_SINK(sink));
-    if (!image.isNull()) {
-        QMetaObject::invokeMethod(static_cast<CallEngine *>(self), "localFrame", Qt::QueuedConnection,
-                                  Q_ARG(QImage, image));
+    auto *engine = static_cast<CallEngine *>(self);
+    if (engine->m_localFramePending.exchange(true)) {
+        // The GUI is behind: pictures must not pile up in its queue.
+        GstSample *sample = gst_app_sink_pull_sample(GST_APP_SINK(sink));
+        if (sample) {
+            gst_sample_unref(sample);
+        }
+        return GST_FLOW_OK;
     }
+    const QImage image = sampleImage(GST_APP_SINK(sink));
+    if (image.isNull()) {
+        engine->m_localFramePending = false;
+        return GST_FLOW_OK;
+    }
+    QMetaObject::invokeMethod(engine, "onLocalFrame", Qt::QueuedConnection, Q_ARG(QImage, image));
     return GST_FLOW_OK;
 }
 
@@ -644,17 +700,26 @@ void CallEngine::setCamera(bool on, bool front)
         return;
     }
     GstElementFactory *droid = gst_element_factory_find("droidcamsrc");
-    const QString source = droid ? QStringLiteral("droidcamsrc camera-device=%1 mode=2").arg(front ? 1 : 0)
+    // The camera picks its preview size from what comes after it, and left alone it took its
+    // largest (2560x1440 on a phone, 5 MB a picture to convert and scale on the CPU): one up to
+    // 1280x720 if it has one, else whatever it has.
+    const QString source = droid ? QStringLiteral("droidcamsrc name=camsrc camera-device=%1 mode=2 "
+                                                  "! capsfilter caps=\"video/x-raw,width=[1,1280],height=[1,720]; "
+                                                  "video/x-raw\"").arg(front ? 1 : 0)
                                  : QStringLiteral("videotestsrc is-live=true pattern=ball");
     if (droid) {
         gst_object_unref(droid);
     }
     const QString description = source + QStringLiteral(
-        " ! videoconvert ! videoscale ! videorate ! capsfilter name=camcaps caps=%1 ! tee name=camtee "
+        " ! videoconvert name=camconv ! aspectratiocrop aspect-ratio=%2/%3 ! videoscale ! videorate "
+        "! capsfilter name=camcaps caps=%1 ! videoflip name=camflip ! tee name=camtee "
         "camtee. ! queue max-size-buffers=2 leaky=downstream name=camout "
         "camtee. ! queue max-size-buffers=1 leaky=downstream ! videoconvert ! video/x-raw,format=BGRx "
         "! appsink name=localvideo emit-signals=true sync=false max-buffers=1 drop=true")
-                                    .arg(cameraCaps());
+                                    .arg(cameraCaps())
+                                    // Cut to the profile's shape, not squeezed into it.
+                                    .arg(m_videoWidth)
+                                    .arg(m_videoHeight);
     GError *error = nullptr;
     GstElement *bin = gst_parse_bin_from_description(description.toUtf8().constData(), FALSE, &error);
     if (error) {
@@ -670,6 +735,7 @@ void CallEngine::setCamera(bool on, bool front)
     GstElement *preview = gst_bin_get_by_name(GST_BIN(bin), "localvideo");
     g_signal_connect(preview, "new-sample", G_CALLBACK(&CallEngine::onLocalSample), this);
     gst_object_unref(preview);
+    CameraBranch::keepCameraNegotiated(bin, "camconv");
 
     gst_bin_add(GST_BIN(m_pipeline), bin);
     GstElement *funnel = gst_bin_get_by_name(GST_BIN(m_pipeline), "vin");
@@ -678,8 +744,10 @@ void CallEngine::setCamera(bool on, bool front)
     GstPad *binPad = gst_element_get_static_pad(bin, "src");
     gst_pad_link(binPad, m_cameraPad);
     gst_object_unref(binPad);
-    gst_element_sync_state_with_parent(bin);
     m_camera = bin;
+    if (!CameraBranch::start(bin)) {
+        qWarning() << "call: the camera did not start";
+    }
 }
 
 void CallEngine::removeCamera()
@@ -687,23 +755,13 @@ void CallEngine::removeCamera()
     if (!m_camera) {
         return;
     }
-    GstElement *bin = m_camera;
+    GstElement *funnel = gst_bin_get_by_name(GST_BIN(m_pipeline), "vin");
+    if (!CameraBranch::remove(m_pipeline, funnel, m_camera, m_cameraPad)) {
+        qWarning() << "call: the camera did not stop";
+    }
+    gst_object_unref(funnel);
     m_camera = nullptr;
-    // No EOS (it would end the encoder's stream for good): unlink, then stop the branch.
-    GstPad *binPad = gst_element_get_static_pad(bin, "src");
-    gst_pad_unlink(binPad, m_cameraPad);
-    gst_object_unref(binPad);
-    if (m_pipeline) {
-        GstElement *funnel = gst_bin_get_by_name(GST_BIN(m_pipeline), "vin");
-        gst_element_release_request_pad(funnel, m_cameraPad);
-        gst_object_unref(funnel);
-    }
-    gst_object_unref(m_cameraPad);
     m_cameraPad = nullptr;
-    gst_element_set_state(bin, GST_STATE_NULL);
-    if (m_pipeline) {
-        gst_bin_remove(GST_BIN(m_pipeline), bin);
-    }
 }
 
 // What the encoder may send (Android's quality profiles, capped for software VP8).
@@ -774,8 +832,14 @@ int CallEngine::onBusMessage(GstBus *, GstMessage *message, void *self)
 {
     if (GST_MESSAGE_TYPE(message) == GST_MESSAGE_ERROR) {
         GError *error = nullptr;
-        gst_message_parse_error(message, &error, nullptr);
-        qWarning() << "call pipeline error:" << (error ? error->message : "");
+        gchar *debug = nullptr;
+        gst_message_parse_error(message, &error, &debug);
+        // Which element, and what it says about it: the text alone ("Could not write to
+        // resource") fits half of the pipeline.
+        // log-ok: GStreamer's own element name and its own account of the error, no user data
+        qWarning() << "call pipeline error:" << (error ? error->message : "") << "from"
+                   << GST_OBJECT_NAME(GST_MESSAGE_SRC(message)) << (debug ? debug : "");
+        g_free(debug);
         if (error) {
             g_error_free(error);
         }
@@ -960,6 +1024,12 @@ void CallEngine::onRemoteFrame(const QImage &image)
 {
     m_remoteFramePending = false;
     emit remoteFrame(image);
+}
+
+void CallEngine::onLocalFrame(const QImage &image)
+{
+    m_localFramePending = false;
+    emit localFrame(image);
 }
 
 void CallEngine::onError(const QString &reason)

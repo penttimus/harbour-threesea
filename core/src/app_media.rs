@@ -1542,7 +1542,14 @@ fn remove_shared_folder(folder: &Path) {
 }
 
 /// Our folders for sharing in `directory`, each with its deadline (none if its name has none).
+/// Only this user's: the folder is everyone's, and one under our name that someone else made can
+/// neither be removed nor should it count against what may be shared.
 fn shared_folders_in(directory: &Path) -> Vec<(PathBuf, Option<u64>)> {
+    shared_folders_of(directory, rustix::process::geteuid().as_raw())
+}
+
+fn shared_folders_of(directory: &Path, owner: u32) -> Vec<(PathBuf, Option<u64>)> {
+    use std::os::unix::fs::MetadataExt as _;
     let Ok(entries) = std::fs::read_dir(directory) else {
         return Vec::new();
     };
@@ -1551,6 +1558,10 @@ fn shared_folders_in(directory: &Path) -> Vec<(PathBuf, Option<u64>)> {
         .filter_map(|entry| {
             let name = entry.file_name();
             let rest = name.to_str()?.strip_prefix(SHARED_FOLDER_PREFIX)?;
+            // Of the entry itself, not of what a link points at.
+            if entry.metadata().ok()?.uid() != owner {
+                return None;
+            }
             let deadline = rest.split_once('-').and_then(|(at, _)| at.parse().ok());
             Some((entry.path(), deadline))
         })
@@ -6128,6 +6139,17 @@ garbage";
     }
 
     /// What is still shared counts: past the limit, nothing more is written.
+    /// A folder under our name that another user made is not ours to count, sweep or remove.
+    #[test]
+    fn shared_folders_of_other_users_are_left_alone() {
+        let dir = tempfile::tempdir().unwrap();
+        let folder = dir.path().join(format!("{SHARED_FOLDER_PREFIX}1-abcd"));
+        private_folder(&folder).unwrap();
+        let own = rustix::process::geteuid().as_raw();
+        assert_eq!(shared_folders_of(dir.path(), own).len(), 1);
+        assert!(shared_folders_of(dir.path(), own.wrapping_add(1)).is_empty());
+    }
+
     #[test]
     fn shares_stay_within_their_limit() {
         let (dir, app) = app();

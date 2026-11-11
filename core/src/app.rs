@@ -4436,6 +4436,49 @@ mod tests {
             .clone()
     }
 
+    /// The chat list under a chat has what was written there before the chat is left: nothing
+    /// else tells it, a send's ack names a message it doesn't show yet.
+    #[test]
+    fn what_is_written_in_a_chat_reaches_the_chat_list() {
+        fn told_the_list(
+            app: &App,
+            events: &mut tokio::sync::mpsc::UnboundedReceiver<crate::providers::CoreEvent>,
+        ) -> bool {
+            let mut told = false;
+            while let Ok(event) = events.try_recv() {
+                told |= event.to_json(&app.store, true)["event"] == "chatPreviewChanged";
+            }
+            told
+        }
+
+        let (_dir, mut app) = app();
+        let mut events = app.take_media_events().unwrap();
+        app.store
+            .upsert_contact(&crate::contacts::test_contact("ABCD1234"))
+            .unwrap();
+
+        for (id, cmd) in [
+            (
+                1,
+                json!({"cmd": "setDraft", "identity": "ABCD1234", "text": "typed"}),
+            ),
+            (
+                2,
+                json!({"cmd": "setDraft", "identity": "ABCD1234", "text": " "}),
+            ),
+            (
+                3,
+                json!({"cmd": "sendText", "identity": "ABCD1234", "text": "hello"}),
+            ),
+        ] {
+            let mut request = cmd.clone();
+            request["id"] = id.into();
+            let reply = call(&mut app, request);
+            assert_eq!(reply["ok"], true, "{reply}");
+            assert!(told_the_list(&app, &mut events), "{cmd}");
+        }
+    }
+
     /// A draft comes back as it was written: mentions as tags with the names beside them, and
     /// what it quotes.
     #[test]

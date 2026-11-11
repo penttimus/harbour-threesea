@@ -1,11 +1,19 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import QtQuick 2.6
 import Sailfish.Silica 1.0
+import "../components/Contributors.js" as Contributors
 
 // Settings → About: version, the European Commission's "AI generated" label, the disclaimer,
-// credits, the license with its texts and where the source code is (the same as the README).
+// contributors, credits, the license with its texts and where the source code is (the same as the
+// README).
 Page {
     allowedOrientations: Orientation.All
+
+    // By the local calendar: new Date("2026-11-08") is midnight UTC, the day before in America.
+    function sinceDate(day) {
+        var parts = day.split("-")
+        return Format.formatDate(new Date(parts[0], parts[1] - 1, parts[2]), Formatter.DateLong)
+    }
 
     SilicaFlickable {
         anchors.fill: parent
@@ -69,6 +77,52 @@ Page {
             }
 
             SectionHeader {
+                //% "Contributors"
+                text: qsTrId("threesea-se-contributors")
+            }
+
+            Repeater {
+                model: Contributors.list
+                Column {
+                    // Until the next release, which ends it by itself.
+                    readonly property bool isNew: modelData.release === "next"
+                                                  || modelData.release === backend.coreVersion
+                    x: Theme.horizontalPageMargin
+                    width: column.width - 2 * Theme.horizontalPageMargin
+                    Row {
+                        spacing: Theme.paddingSmall
+                        Image {
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: isNew
+                            source: "image://theme/icon-s-new?" + Theme.highlightColor
+                        }
+                        Label {
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: isNew ? Theme.highlightColor : Theme.secondaryHighlightColor
+                            text: modelData.login
+                        }
+                    }
+                    Label {
+                        width: parent.width
+                        wrapMode: Text.Wrap
+                        font.pixelSize: Theme.fontSizeExtraSmall
+                        color: Theme.secondaryHighlightColor
+                        //% "since %1"
+                        text: qsTrId("threesea-la-contributor-since").arg(sinceDate(modelData.since))
+                    }
+                    Label {
+                        width: parent.width
+                        wrapMode: Text.Wrap
+                        visible: isNew
+                        font.pixelSize: Theme.fontSizeExtraSmall
+                        color: Theme.highlightColor
+                        //% "New in this version"
+                        text: qsTrId("threesea-la-contributor-new")
+                    }
+                }
+            }
+
+            SectionHeader {
                 //% "Credits"
                 text: qsTrId("threesea-se-credits")
             }
@@ -96,8 +150,6 @@ Page {
                             qsTrId("threesea-la-credit-whisperfish"),
                             //% "SQLCipher, GStreamer, Qt and many Rust libraries (tokio, rustls, reqwest, rusqlite, RustCrypto and others)."
                             qsTrId("threesea-la-credit-libraries"),
-                            //% "The Finnish translation: jmpx448 (github.com/jmpx448), a first-time contributor."
-                            qsTrId("threesea-la-credit-finnish"),
                             //% "The “AI generated” label is the European Commission's icon for AI-generated content."
                             qsTrId("threesea-la-credit-eu-icon")]
                     // Only the Full flavour has calls and links the echo canceller.

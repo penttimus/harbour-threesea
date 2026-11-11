@@ -18,7 +18,7 @@
 %endif
 Name:       harbour-threesea
 Summary:    Unofficial Threema client for Sailfish OS
-Version:    0.3.0
+Version:    0.3.1
 Release:    1
 License:    AGPLv3
 URL:        https://github.com/penttimus/harbour-threesea
@@ -49,6 +49,8 @@ BuildRequires:  pkgconfig(gstreamer-app-1.0)
 BuildRequires:  pkgconfig(gstreamer-video-1.0)
 BuildRequires:  pkgconfig(gstreamer-rtp-1.0)
 BuildRequires:  pkgconfig(nice)
+# The audio policy's call class, which opens the earpiece (ADR 0034).
+BuildRequires:  pkgconfig(libresourceqt5)
 # Echo cancellation: third_party/webrtc-audio-processing (BSD), built here and linked statically.
 BuildRequires:  meson
 BuildRequires:  ninja

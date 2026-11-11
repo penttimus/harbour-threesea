@@ -13,6 +13,8 @@
 #include <openssl/rand.h>
 
 #include "groupcallengine.h"
+#include "callvolume.h"
+#include "camerabranch.h"
 #include "aec/echocanceller.h"
 #include "dtlscertificate.h"
 #include "vp8filter.h"
@@ -62,6 +64,14 @@ const SimulcastLayer SIMULCAST[GroupCallEngine::VIDEO_LAYERS] = {
     {"m", 2, 250000},
     {"h", 1, 600000},
 };
+
+// What a layer is encoded at: the other way round when the picture stands upright.
+QString layerSize(int layer, bool turned)
+{
+    const int width = CAMERA_WIDTH / SIMULCAST[layer].scaleDown;
+    const int height = CAMERA_HEIGHT / SIMULCAST[layer].scaleDown;
+    return QStringLiteral("video/x-raw,width=%1,height=%2").arg(turned ? height : width).arg(turned ? width : height);
+}
 
 // A frame through the core's frame encryption (`participant` < 0: ours, encrypt); a new buffer
 // with the same timing, or nullptr to drop the frame.
@@ -271,6 +281,10 @@ void GroupCallEngine::start(const QString &offer, const QVariantList &candidates
         emit failed(QStringLiteral("certificate"));
         return;
     }
+    if (m_left) {
+        emit failed(QStringLiteral("pipeline"));
+        return;
+    }
     // Our video stream's RTP numbers start at random values (RFC 3550).
     for (int i = 0; i < VIDEO_LAYERS; ++i) {
         VideoLayer &layer = m_videoLayers[i];
@@ -345,7 +359,8 @@ bool GroupCallEngine::buildAudio(const QString &offer)
         // (Opus DTX sends almost nothing while someone is silent).
         "audiomixer name=mix force-live=true ignore-inactive-pads=true latency=60000000 "
         "! audioconvert ! audioresample "
-        "! audio/x-raw,format=S16LE,channels=1,rate=48000 ! audiobuffersplit output-buffer-duration=1/100 "
+        "! audio/x-raw,format=S16LE,channels=1,rate=48000 ! volume name=gain "
+        "! audiobuffersplit output-buffer-duration=1/100 "
         "! identity name=aecplayback ! pulsesink stream-properties=\"props,media.role=phone\"");
     GError *error = nullptr;
     // The microphone joins the pipeline only when it can be linked (linkMicrophone), or it would
@@ -402,6 +417,10 @@ bool GroupCallEngine::buildAudio(const QString &offer)
                       reinterpret_cast<GstPadProbeCallback>(&GroupCallEngine::onPlaybackBuffer), this, nullptr);
     gst_object_unref(playbackPad);
     gst_object_unref(playback);
+    // The volume keys (CallVolume); before the echo canceller's tap, which must see what plays.
+    GstElement *gain = gst_bin_get_by_name(GST_BIN(bin), "gain");
+    CallVolume::instance()->follow(gain);
+    gst_object_unref(gain);
     m_micVolume = gst_bin_get_by_name(GST_BIN(sendBin), "mic");
     // Muted while there was no pipeline yet ("Joining…" takes seconds).
     g_object_set(m_micVolume, "mute", m_muted ? TRUE : FALSE, nullptr);
@@ -446,12 +465,12 @@ bool GroupCallEngine::buildVideo(const QString &offer)
         const SimulcastLayer &layer = SIMULCAST[i];
         const QString encode = QStringLiteral(
             "queue max-size-buffers=2 leaky=downstream ! videoscale "
-            "! video/x-raw,width=%1,height=%2 "
+            "! capsfilter name=vsize%1 caps=%2 "
             "! vp8enc name=venc deadline=1 cpu-used=8 end-usage=cbr target-bitrate=%3 "
             "keyframe-max-dist=60 lag-in-frames=0 error-resilient=default threads=%4 "
             "! appsink name=vout emit-signals=true sync=false")
-                                   .arg(CAMERA_WIDTH / layer.scaleDown)
-                                   .arg(CAMERA_HEIGHT / layer.scaleDown)
+                                   .arg(i)
+                                   .arg(layerSize(i, false))
                                    .arg(layer.bitrate)
                                    .arg(layer.scaleDown == 1 ? 2 : 1);
         GstElement *encodeBin = gst_parse_bin_from_description(encode.toUtf8().constData(), TRUE, &error);
@@ -524,13 +543,13 @@ void GroupCallEngine::setCamera(bool on, bool front)
     }
     m_frontCamera = front;
     GstElementFactory *droid = gst_element_factory_find("droidcamsrc");
-    const QString source = droid ? QStringLiteral("droidcamsrc camera-device=%1 mode=2").arg(front ? 1 : 0)
+    const QString source = droid ? QStringLiteral("droidcamsrc name=camsrc camera-device=%1 mode=2").arg(front ? 1 : 0)
                                  : QStringLiteral("videotestsrc is-live=true pattern=ball");
     if (droid) {
         gst_object_unref(droid);
     }
     const QString description = source + QStringLiteral(
-        " ! videoconvert ! videoscale ! videorate ! capsfilter caps=%1 ! tee name=camtee "
+        " ! videoconvert name=camconv ! videoscale ! videorate ! capsfilter caps=%1 ! videoflip name=camflip ! tee name=camtee "
         "camtee. ! queue max-size-buffers=2 leaky=downstream name=camout "
         "camtee. ! queue max-size-buffers=1 leaky=downstream ! videoconvert ! video/x-raw,format=BGRx "
         "! appsink name=localvideo emit-signals=true sync=false max-buffers=1 drop=true")
@@ -550,6 +569,20 @@ void GroupCallEngine::setCamera(bool on, bool front)
     GstElement *preview = gst_bin_get_by_name(GST_BIN(bin), "localvideo");
     g_signal_connect(preview, "new-sample", G_CALLBACK(&GroupCallEngine::onLocalSample), this);
     gst_object_unref(preview);
+    CameraBranch::keepCameraNegotiated(bin, "camconv");
+    // The layers' sizes follow the camera's angle, known only once it is open.
+    std::vector<GstElement *> sizes;
+    for (int i = 0; i < VIDEO_LAYERS; ++i) {
+        sizes.push_back(gst_bin_get_by_name(GST_BIN(m_pipeline), QStringLiteral("vsize%1").arg(i).toUtf8().constData()));
+    }
+    const auto turned = [sizes](bool swapped) {
+        for (int i = 0; i < VIDEO_LAYERS; ++i) {
+            GstCaps *caps = gst_caps_from_string(layerSize(i, swapped).toUtf8().constData());
+            g_object_set(sizes[i], "caps", caps, nullptr);
+            gst_caps_unref(caps);
+            gst_object_unref(sizes[i]);
+        }
+    };
 
     gst_bin_add(GST_BIN(m_pipeline), bin);
     m_cameraPad = gst_element_request_pad_simple(m_videoInput, "sink_%u");
@@ -558,8 +591,10 @@ void GroupCallEngine::setCamera(bool on, bool front)
         qWarning() << "group call camera: cannot link it to the encoder";
     }
     gst_object_unref(binPad);
-    gst_element_sync_state_with_parent(bin);
     m_camera = bin;
+    if (!CameraBranch::start(bin, turned)) {
+        qWarning() << "group call: the camera did not start";
+    }
 }
 
 void GroupCallEngine::removeCamera()
@@ -567,17 +602,11 @@ void GroupCallEngine::removeCamera()
     if (!m_camera) {
         return;
     }
-    GstElement *bin = m_camera;
+    if (!CameraBranch::remove(m_pipeline, m_videoInput, m_camera, m_cameraPad)) {
+        qWarning() << "group call: the camera did not stop";
+    }
     m_camera = nullptr;
-    // No EOS (it would end the encoder's stream for good): unlink, then stop the branch.
-    GstPad *binPad = gst_element_get_static_pad(bin, "src");
-    gst_pad_unlink(binPad, m_cameraPad);
-    gst_object_unref(binPad);
-    gst_element_release_request_pad(m_videoInput, m_cameraPad);
-    gst_object_unref(m_cameraPad);
     m_cameraPad = nullptr;
-    gst_element_set_state(bin, GST_STATE_NULL);
-    gst_bin_remove(GST_BIN(m_pipeline), bin);
     emit localVideoStopped();
 }
 
@@ -725,9 +754,16 @@ void GroupCallEngine::stop()
     }
     g_signal_handlers_disconnect_by_data(m_webrtc, this);
     g_signal_handlers_disconnect_by_data(m_pipeline, this);
-    gst_element_set_state(m_pipeline, GST_STATE_NULL);
-    // After the pipeline stopped: no probe runs any more.
-    m_echoCanceller.reset();
+    const bool stopped = CameraBranch::stop(m_pipeline);
+    if (stopped) {
+        // After the pipeline stopped: no probe runs any more.
+        m_echoCanceller.reset();
+    } else {
+        // It hangs: better a pipeline left behind than a frozen app. Its probes and handlers
+        // still point here, so the canceller stays for them and this engine takes no other call.
+        qWarning() << "group call: the pipeline did not stop";
+        m_left = true;
+    }
     if (m_sendTail) {
         gst_object_unref(m_sendTail);
         m_sendTail = nullptr;
@@ -768,7 +804,9 @@ void GroupCallEngine::stop()
         m_channel = nullptr;
     }
     gst_object_unref(m_webrtc);
-    gst_object_unref(m_pipeline);
+    if (stopped) {
+        gst_object_unref(m_pipeline);
+    }
     m_webrtc = nullptr;
     m_pipeline = nullptr;
     // The pipeline's threads are gone. What they queued belongs to this call: an error or a
@@ -776,6 +814,7 @@ void GroupCallEngine::stop()
     QCoreApplication::removePostedEvents(this, QEvent::MetaCall);
     QMutexLocker locker(&m_framesLock);
     m_pendingFrames.clear();
+    m_localFramePending = false;
 }
 
 // --- GStreamer threads: hand everything over to this object's thread. ---
@@ -1157,12 +1196,38 @@ int GroupCallEngine::onKeyFrameRequest(GstPad *, GstPadProbeInfo *info, void *se
 
 int GroupCallEngine::onLocalSample(GstElement *sink, void *self)
 {
-    const QImage image = sampleImage(GST_APP_SINK(sink));
-    if (!image.isNull()) {
-        QMetaObject::invokeMethod(static_cast<GroupCallEngine *>(self), "localFrame", Qt::QueuedConnection,
-                                  Q_ARG(QImage, image));
+    auto *engine = static_cast<GroupCallEngine *>(self);
+    bool wanted;
+    {
+        QMutexLocker locker(&engine->m_framesLock);
+        // The GUI is behind: pictures must not pile up in its queue.
+        wanted = !engine->m_localFramePending;
+        engine->m_localFramePending = true;
     }
+    if (!wanted) {
+        GstSample *sample = gst_app_sink_pull_sample(GST_APP_SINK(sink));
+        if (sample) {
+            gst_sample_unref(sample);
+        }
+        return GST_FLOW_OK;
+    }
+    const QImage image = sampleImage(GST_APP_SINK(sink));
+    if (image.isNull()) {
+        QMutexLocker locker(&engine->m_framesLock);
+        engine->m_localFramePending = false;
+        return GST_FLOW_OK;
+    }
+    QMetaObject::invokeMethod(engine, "onLocalFrame", Qt::QueuedConnection, Q_ARG(QImage, image));
     return GST_FLOW_OK;
+}
+
+void GroupCallEngine::onLocalFrame(const QImage &image)
+{
+    {
+        QMutexLocker locker(&m_framesLock);
+        m_localFramePending = false;
+    }
+    emit localFrame(image);
 }
 
 // A participant's decoded picture, turned upright.

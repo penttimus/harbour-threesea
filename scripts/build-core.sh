@@ -47,7 +47,10 @@ export "CFLAGS_$TRIPLE_US=-fstack-protector-strong -D_FORTIFY_SOURCE=2"
 # It builds against the target's OpenSSL (libcrypto).
 case "$ARCH" in aarch64) LIBDIR=usr/lib64 ;; *) LIBDIR=usr/lib ;; esac
 export OPENSSL_INCLUDE_DIR="$SYSROOT/usr/include" OPENSSL_LIB_DIR="$SYSROOT/$LIBDIR"
-export PROTOC="${PROTOC:-$("$ROOT/scripts/fetch-protoc.sh")}"
+# Not in one with the export: that would hide a failed fetch from `set -e`, and cargo would stop
+# much later at an empty PROTOC, saying only that it can't find protoc.
+PROTOC="${PROTOC:-$("$ROOT/scripts/fetch-protoc.sh")}"
+export PROTOC
 # The SDK image ships exactly this toolchain (scripts/sdk/Dockerfile); do not let rustup fetch.
 export RUSTUP_TOOLCHAIN="${RUSTUP_TOOLCHAIN:-1.95.0}"
 export CARGO_HOME="${CARGO_HOME_OVERRIDE:-$ROOT/target/cargo-home}"

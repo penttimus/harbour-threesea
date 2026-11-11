@@ -132,12 +132,21 @@ Page {
     }
     Timer {
         id: reloadTimer
-        interval: 50
+        interval: page.seen ? 50 : 1500
         onTriggered: page.load()
     }
 
     // The list follows every change, also under other pages and with the window closed: one that
-    // caught up only on coming back jumped in front of the user (user 2026-11-07).
+    // caught up only on coming back jumped in front of the user (user 2026-11-07). With nobody
+    // looking it follows at a slower pace (a burst after a login would otherwise reload it twenty
+    // times a second for no one), and what is still due when it comes into sight runs at once.
+    readonly property bool seen: page.status === PageStatus.Active && Qt.application.state === Qt.ApplicationActive
+    onSeenChanged: {
+        if (seen && reloadTimer.running) {
+            reloadTimer.stop()
+            load()
+        }
+    }
 
     // Whether changed messages show in this list: of a row, only the newest message does (its
     // delivery icon, its text). While a reload is under way the list can't tell yet which is the
@@ -284,7 +293,7 @@ Page {
     Connections {
         target: backend
         onCoreEvent: {
-            if (name === "messageAdded" || name === "contactsChanged"
+            if (name === "messageAdded" || name === "contactsChanged" || name === "chatPreviewChanged"
                     || name === "conversationRead" || name === "groupsChanged" || name === "chatsChanged") {
                 page.reload()
             } else if (name === "privateChanged") {

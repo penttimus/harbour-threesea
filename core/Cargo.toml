@@ -37,7 +37,8 @@ libthreema = { path = "../third_party/libthreema/lib" }
 # How much room a backup folder's storage has (statvfs, safe API; std has none, and libc directly
 # would need unsafe). Goes into the shipped binary with errno, both new there (until now rustix
 # was only a test dependency, through tempfile). Over libc, which every target here has.
-rustix = { version = "=1.1.5", default-features = false, features = ["std", "fs", "use-libc"] }
+# `process`: who we are (geteuid), to tell our folders in the shared temporary folder from others'.
+rustix = { version = "=1.1.5", default-features = false, features = ["std", "fs", "process", "use-libc"] }
 
 # Runtime + HTTPS. Same families libthreema's own CLI uses (tokio, reqwest, rustls); TLS via rustls
 # with the ring provider (no system OpenSSL on the network path), our own verifier does pinning.

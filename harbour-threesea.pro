@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 TARGET = harbour-threesea
 
-VERSION = 0.3.0
+VERSION = 0.3.1
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 # i18n: id-based (qsTrId) like Jolla's apps. The base .ts carries the engineering English
@@ -145,9 +145,14 @@ full {
     INSTALLS += callnotification
     # Calls (ADR 0012): the media engine on the system's GStreamer webrtcbin.
     PKGCONFIG += gstreamer-1.0 gstreamer-sdp-1.0 gstreamer-webrtc-1.0 gstreamer-app-1.0 gstreamer-video-1.0 gstreamer-rtp-1.0 nice
+    # The audio policy's call class, which opens the earpiece (ADR 0034): Jolla's client library
+    # of the resource policy, on every device.
+    PKGCONFIG += libresourceqt5
+    SOURCES += bridge/callclass.cpp bridge/callvolume.cpp
+    HEADERS += bridge/callclass.h bridge/callvolume.h
     SOURCES += bridge/callengine.cpp bridge/dtlscertificate.cpp bridge/groupcallengine.cpp \
         bridge/earpieceplayer.cpp bridge/videotranscoder.cpp
-    HEADERS += bridge/callengine.h bridge/dtlscertificate.h bridge/groupcallengine.h bridge/vp8filter.h bridge/aec/echocanceller.h \
+    HEADERS += bridge/callengine.h bridge/dtlscertificate.h bridge/groupcallengine.h bridge/vp8filter.h bridge/camerabranch.h bridge/aec/echocanceller.h \
         bridge/earpieceplayer.h bridge/videotranscoder.h
     # Echo cancellation: the bundled webrtc-audio-processing, built statically by the spec file
     # into WAP_PREFIX (meson, third_party/webrtc-audio-processing). Our wrapper is the only file
@@ -165,8 +170,9 @@ full {
     LIBS += $$system($$WAP_PC --static --libs webrtc-audio-processing-2)
 }
 DISTFILES += bridge/callengine.cpp bridge/callengine.h bridge/dtlscertificate.cpp bridge/dtlscertificate.h \
-    bridge/groupcallengine.cpp bridge/groupcallengine.h bridge/vp8filter.h bridge/aec/echocanceller.cpp bridge/aec/echocanceller.h \
-    bridge/earpieceplayer.cpp bridge/earpieceplayer.h bridge/videotranscoder.cpp bridge/videotranscoder.h
+    bridge/groupcallengine.cpp bridge/groupcallengine.h bridge/vp8filter.h bridge/camerabranch.h bridge/aec/echocanceller.cpp bridge/aec/echocanceller.h \
+    bridge/earpieceplayer.cpp bridge/earpieceplayer.h bridge/videotranscoder.cpp bridge/videotranscoder.h \
+    bridge/callclass.cpp bridge/callclass.h bridge/callvolume.cpp bridge/callvolume.h
 DISTFILES += systemd/harbour-threesea.service
 
 TRANSLATIONS += translations/harbour-threesea.ts \

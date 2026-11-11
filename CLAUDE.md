@@ -66,6 +66,8 @@ harbour-threesea/
   LICENSE                   AGPL-3.0
   THIRD-PARTY-NOTICES.txt   licences of everything bundled (scripts/make-notices.py; installed
                             with LICENSE, shown under About)
+  contributors.json         who has committed here, source of the README's and About's list
+                            (scripts/make-contributors.py)
   docs/
     decisions/              one short markdown file per architectural decision (ADR style)
     android-mapping.md      which upstream Kotlin/Java package maps to which module here
@@ -120,7 +122,7 @@ harbour-threesea/
                             checks; hooks/pre-commit runs its quick part), check-qml.py (UI
                             against core, imports, texts), test-*.sh (one per tests/ program, all
                             run by run-sdk-tests.sh), check-package.sh (inside built RPMs: no demo
-                            data, licences), make-notices.py
+                            data, licences), make-notices.py, make-contributors.py
   .github/                  CI on every push but Markdown-only ones (checks, libthreema's tests, every SDK test, both
                             flavours for all architectures), weekly cargo audit, Dependabot for
                             the actions, releases from the `release` branch (docs/release.md),
@@ -187,7 +189,9 @@ Rules:
 - Platform integration where it is simplest: notifications (Nemo.Notifications, actions over
   `DBusInterface` with a per-chat token), keepalive (`BackgroundJob`) and sharing
   (Sailfish.Share) in QML; address book matching through `AddressBookReader.qml` (opt-in,
-  hashed in Rust); voice recording, players, camera and calls in their own C++ classes. The
+  hashed in Rust); voice recording, players, camera and calls in their own C++ classes; the
+  earpiece comes with the audio policy's call class, held while a call or a voice message at the
+  ear runs (Full, ADR 0034). The
   Full flavour adds a systemd user unit (ADR 0010).
 - `SecretStore`: the database key lives in Sailfish Secrets (required by the RPM; without it
   the app fails closed, no plaintext fallback). Optionally it is wrapped with a passphrase
@@ -299,9 +303,9 @@ Work phase by phase. Each phase ends with: it builds in the SDK, tests pass, `RE
 `docs/` updated, a short status note in `docs/STATUS.md`. Do not start the next phase while the
 current one has known-broken core functionality.
 
-Status 2026-11-05: Phases 0–4.5 done (phone tests collected for the end), Phase 5 in progress:
-0.2.0 is out, and the fixes of the audit of 2026-11-04 are on `audit-fixes` for the next release;
-details in `docs/STATUS.md`.
+Status 2026-11-11: Phases 0–4.5 done (phone tests collected for the end), Phase 5 in progress:
+0.3.0 is out with the fixes of the audit of 2026-11-04, and 0.3.1 is prepared (the earpiece, the
+volume keys and video calls after the first tries on a phone); details in `docs/STATUS.md`.
 
 ### Phase 0 — Toolchain and skeleton (highest risk, do first)
 - Add upstream as submodule; pin `libthreema`.
@@ -454,14 +458,14 @@ details in `docs/STATUS.md`.
   (`scripts/check.sh`; on GitHub every push runs the checks, libthreema's and the SDK tests and
   all builds), release workflow, Lite/Full for GitHub releases with an opt-in update check
   (ADR 0014; `STORE=1` builds without it), German and French, README/CHANGELOG/SECURITY, a clean
-  public history, releases 0.1.0 and 0.2.0. The audit of 2026-11-04 (about 570 points; the
-  report itself stays local): fixed on `audit-fixes` in some 70 packages, with ADRs 0017–0030,
+  public history, releases 0.1.0, 0.2.0 and 0.3.0. The audit of 2026-11-04 (about 570 points; the
+  report itself stays local): fixed in some 70 packages (released with 0.3.0), with ADRs 0017–0030,
   the long commands beside the core loop (ADR 0028), a fake chat server and every page on real
   Silica in the tests, and Android's extras the user chose (drawing on photos, a place from
   Threema's map server, a chat's polls, square profile pictures, names for Web sessions).
 - Open: phone tests, all collected in `docs/voice-video-device-checklist.md` (calls, camera,
   battery, video, the media controls, and everything the audit's fixes left to a phone);
-  German and French for the texts added or reworded since 0.2.0 (§6); the questions the
+  the SQLite advisory passed over until `rusqlite` 0.42 is out (ADR 0035, issue 9); the questions the
   audit's packages left for the user (in `docs/STATUS.md`: sharing media with other apps, a
   map); P01 for Threema Web's
   picture and contact commands (still wait in the core loop, ADR 0028); the OrganizationName
@@ -524,6 +528,12 @@ details in `docs/STATUS.md`.
   of substance) is credited in the README's Credits and on the About page; both carry the EU
   "AI generated" label and the disclaimer (made with Claude Code, audited with OpenAI Codex,
   research project, no warranty, not affiliated with Threema).
+- **Contributors:** people who commit to this repository are in `contributors.json` (GitHub name,
+  day of the first commit, the release they are new in), not in Credits and without a description
+  of their work. `scripts/make-contributors.py` writes the README's section and
+  `qml/components/Contributors.js`; whoever is new is highlighted for that one release
+  (user decision 2026-11-09; docs/release.md). Every CHANGELOG entry says who did it: "by
+  [name](https://github.com/name)", with the pull request if there is one.
 - **Keep this file current.** If the layout, stack, or phases change, update `CLAUDE.md` in the
   same commit.
 
@@ -552,8 +562,8 @@ Facts:
   open (BSD). Whisperfish (AGPL, Rust) is the closest reference app.
 - Phase 0 RPMs pass `mb2 check` (Harbour validator) on all three architectures; CI runs Jolla's
   validator on the Lite RPMs on every push (`scripts/validate-rpm.sh`).
-- Released: 0.1.0 (2026-10-27) and 0.2.0 (2026-11-03), on GitHub. The next release carries the
-  audit fixes of 2026-11-04.
+- Released: 0.1.0 (2026-10-27), 0.2.0 (2026-11-03) and 0.3.0 (2026-11-08), on GitHub. 0.3.1 is
+  prepared on `main` (2026-11-11) and goes out with its merge into `release`.
 - Our only hosts outside Threema's are GitHub for the opt-in update check and self-hosted
   Threema Web servers the user allows (§7.6); places come from Threema's `poi.threema.ch`
   (ADR 0030), the map from `map.threema.ch`, drawn by a bundled MapLibre held to that origin

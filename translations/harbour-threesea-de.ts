@@ -4984,9 +4984,33 @@
             <source>After a restart the phone asks once whether Threesea may read the key to its data. Confirm that to receive messages.</source>
             <translation>Nach einem Neustart fragt das Telefon einmal, ob Threesea den Schlüssel zu seinen Daten lesen darf. Bestätige das, um Nachrichten zu empfangen.</translation>
         </message>
-        <message id="threesea-la-credit-finnish">
-            <source>The Finnish translation: jmpx448 (github.com/jmpx448), a first-time contributor.</source>
-            <translation>Die finnische Übersetzung: jmpx448 (github.com/jmpx448), zum ersten Mal mit einem Beitrag dabei.</translation>
+        <message id="threesea-la-starting-video-call">
+            <source>Starting video call</source>
+            <translation>Videoanruf wird gestartet</translation>
+        </message>
+        <message id="threesea-la-starting-call">
+            <source>Calling</source>
+            <translation>Anruf wird gestartet</translation>
+        </message>
+        <message id="threesea-se-contributors">
+            <source>Contributors</source>
+            <translation>Mitwirkende</translation>
+        </message>
+        <message id="threesea-la-contributor-since">
+            <source>since %1</source>
+            <translation>seit %1</translation>
+        </message>
+        <message id="threesea-la-contributor-new">
+            <source>New in this version</source>
+            <translation>Neu in dieser Version</translation>
+        </message>
+        <message id="threesea-la-call-volume-zero">
+            <source>Turn the volume up to hear the call</source>
+            <translation>Erhöhe die Lautstärke, um den Anruf zu hören</translation>
+        </message>
+        <message id="threesea-la-voice-volume-zero">
+            <source>Turn the volume up to hear the message</source>
+            <translation>Erhöhe die Lautstärke, um die Nachricht zu hören</translation>
         </message>
     </context>
 </TS>

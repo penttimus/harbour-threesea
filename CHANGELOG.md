@@ -3,6 +3,61 @@
 All notable changes. Versions follow `MAJOR.MINOR.PATCH`; each release is built from the
 `release` branch and tagged `v<version>` (see [docs/release.md](docs/release.md)).
 
+## [0.3.1] - 2026-11-11
+
+Calls on a phone: the earpiece, the volume keys and video calls with the phone's camera, after the
+first tries on one, and a few fixes around notifications.
+
+Changed:
+
+- Calls from a chat's pull-down menu start after a short countdown you can cancel, and they moved
+  to the top of the menu, so a pull that goes wrong doesn't ring anyone, by
+  [jmpx448](https://github.com/jmpx448) ([#4](https://github.com/penttimus/harbour-threesea/pull/4)).
+- During a call or a voice message at the ear, the volume keys change the media volume, and what
+  you hear follows it. At zero nothing is heard, and a notice says so (Full), by
+  [penttimus](https://github.com/penttimus) ([#12](https://github.com/penttimus/harbour-threesea/pull/12)).
+
+Fixed:
+
+- Calls and voice messages at the ear come from the earpiece, also on phones without Android App
+  Support, where they came from the loudspeaker. While one runs the system treats it as a call:
+  music from other apps pauses. The loudspeaker button in calls shows on these phones now (Full),
+  by [penttimus](https://github.com/penttimus) ([#12](https://github.com/penttimus/harbour-threesea/pull/12)).
+- A voice message held to the ear no longer freezes the app when the phone's decoder hangs (the
+  loudspeaker takes over), and a message that was already playing goes on at the ear where it
+  was (Full), by [penttimus](https://github.com/penttimus) ([#12](https://github.com/penttimus/harbour-threesea/pull/12)).
+- Turning the camera on in a call no longer freezes the app, in calls with one person and in
+  group calls (Full), by [penttimus](https://github.com/penttimus) ([#13](https://github.com/penttimus/harbour-threesea/pull/13)).
+- Video calls show both pictures upright, with the front and the back camera. When someone on
+  Threema for Android started the call, they see your camera's picture (it stayed black). Your
+  picture keeps its proportions, and the camera runs at a size the phone can handle (Full), by
+  [penttimus](https://github.com/penttimus) ([#13](https://github.com/penttimus/harbour-threesea/pull/13)).
+- No more empty banner with the system's information icon when a second message, an edit or a
+  deletion comes while a message's banner is still showing: the banner shows the new text, by
+  [penttimus](https://github.com/penttimus) ([#14](https://github.com/penttimus/harbour-threesea/pull/14)).
+- A notification light goes off when the message is read: the notification that only vibrates
+  stayed active until now, by [jmpx448](https://github.com/jmpx448) ([#5](https://github.com/penttimus/harbour-threesea/pull/5)).
+- The chat list shows a message you sent or a draft you changed right away, not only after going
+  back to it, by [penttimus](https://github.com/penttimus) ([#6](https://github.com/penttimus/harbour-threesea/pull/6)).
+- While nobody looks at it, the chat list reloads at a slower pace: less work in the background
+  after a login, when the servers hand out what they kept, by [penttimus](https://github.com/penttimus) ([#15](https://github.com/penttimus/harbour-threesea/pull/15)).
+- A folder that another user of the device left in the temporary folder no longer counts against
+  what can be shared with other apps, nor keeps the cleanup of shared copies busy, by
+  [penttimus](https://github.com/penttimus) ([#15](https://github.com/penttimus/harbour-threesea/pull/15)).
+
+Added:
+
+- The README and the About page list the contributors, with the day of their first commit. Whoever
+  is new is highlighted for that release, by [penttimus](https://github.com/penttimus).
+- German, French and Finnish for the new texts, by [penttimus](https://github.com/penttimus).
+
+Known:
+
+- The bundled SQLite still has the fault of RUSTSEC-2026-0459 (a crafted file beside the app's own
+  database, which takes write access to its private folder). The fixed SQLCipher build can be
+  used once `rusqlite` 0.42 is released
+  ([#9](https://github.com/penttimus/harbour-threesea/issues/9)).
+
 ## [0.3.0] - 2026-11-08
 
 A large round of fixes after a review of the whole app, and the features from Threema for Android

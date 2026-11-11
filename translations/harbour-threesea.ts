@@ -4984,8 +4984,32 @@
             <source>After a restart the phone asks once whether Threesea may read the key to its data. Confirm that to receive messages.</source>
             <translation type="unfinished" />
         </message>
-        <message id="threesea-la-credit-finnish">
-            <source>The Finnish translation: jmpx448 (github.com/jmpx448), a first-time contributor.</source>
+        <message id="threesea-la-starting-video-call">
+            <source>Starting video call</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-starting-call">
+            <source>Calling</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-se-contributors">
+            <source>Contributors</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-contributor-since">
+            <source>since %1</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-contributor-new">
+            <source>New in this version</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-call-volume-zero">
+            <source>Turn the volume up to hear the call</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-voice-volume-zero">
+            <source>Turn the volume up to hear the message</source>
             <translation type="unfinished" />
         </message>
     </context>

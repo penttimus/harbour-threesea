@@ -139,6 +139,15 @@ git clone --recurse-submodules --shallow-submodules <repo> && cd harbour-threese
 scripts/sdk-build.sh aarch64
 ```
 
+## Contributors
+
+Everyone who has worked on Threesea, with the day of their first commit:
+
+<!-- contributors: written by scripts/make-contributors.py from contributors.json -->
+- **[penttimus](https://github.com/penttimus)**, since 27 October 2026
+- **[jmpx448](https://github.com/jmpx448)**, since 8 November 2026
+<!-- /contributors -->
+
 ## Credits
 
 Threesea stands on the work of others; thank you:
@@ -175,8 +184,6 @@ Threesea stands on the work of others; thank you:
   and its `webrtcbin` (LGPL), **[Qt](https://www.qt.io/)** (LGPL), and the Rust crates in
   [Cargo.lock](Cargo.lock), among them tokio, rustls, reqwest, rusqlite, RustCrypto, prost and
   image.
-- **[jmpx448](https://github.com/jmpx448)**: the Finnish translation, as a first-time contributor
-  ([#1](https://github.com/penttimus/harbour-threesea/pull/1)).
 - The **"AI generated" label** is the European Commission's icon for AI-generated content, free
   to use.
 

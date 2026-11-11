@@ -34,10 +34,13 @@ build for three architectures.
   project's extraction of WebRTC's audio processing, BSD), pinned, as our own processing step.
 - Phone tests stay in the last phase (earpiece/speaker routing, echo, ringing while locked,
   proximity): built from documentation and emulator checks, fixed then.
-- Earpiece or loudspeaker goes through the audio policy's route manager (its `speaker` feature,
+- (Replaced by ADR 0034: the earpiece comes with the policy's call class, the loudspeaker is the
+  route manager's preferred device.) Earpiece or loudspeaker goes through the audio policy's
+  route manager (its `speaker` feature,
   only offered if it says so at runtime; `bridge/callroute.h`), not through another stream role:
   the echo canceller stays in the path and the engines change nothing. A call moves there by
-  itself only once a camera is on, since Android's voice calls say "video" too. Whether the
+  itself only once a camera is on, since Android's voice calls say "video" too (no longer: only
+  the button moves a call, user decision 2026-11-10, ADR 0034). Whether the
   feature's name holds and moves these streams is the phone's to say. No Bluetooth entry and no
   "end the call when Bluetooth goes" setting unless the phone test shows they are needed
   (docs/voice-video-device-checklist.md, "Ringing, routes and the screen in calls").
@@ -83,3 +86,12 @@ build for three architectures.
   same way, with the same gate. tests/callengine covers both outcomes, the wrong fingerprint also
   with a delayed check (no audio may pass either way).
 
+- Header extensions (2026-11-10): our answer accepts none of the offer's, a deviation from
+  Android's SdpPatcher, which replays the remote offer's encrypted extensions in its answer.
+  Android's libwebrtc handles them; GStreamer can neither decrypt nor write RFC 6904 extensions.
+  With the replayed answer, a phone that video-called us showed our camera as black and sent its
+  own picture unrotated (the angle is in one of them); a call we offer negotiates none and
+  worked both ways. Seen on a phone with Threema for Android; `core/src/sdp.rs` has the test.
+- The camera's size (2026-11-10): droidcamsrc takes its preview size from what follows it and
+  chose its largest (2560x1440 on the test phone). A caps filter after it prefers up to
+  1280x720, and the picture is cropped to the profile's shape before scaling, not squeezed.

@@ -3663,9 +3663,6 @@ FR = {
     "threesea-la-key-confirmation-notification-body":
         ("After a restart the phone asks once whether Threesea may read the key to its data. Confirm that to receive messages.",
          "Après un redémarrage, le téléphone demande une fois si Threesea peut lire la clé de ses données. Confirmez pour recevoir les messages."),
-    "threesea-la-credit-finnish":
-        ("The Finnish translation: jmpx448 (github.com/jmpx448), a first-time contributor.",
-         "La traduction finnoise : jmpx448 (github.com/jmpx448), dont c’est la première contribution."),
     "threesea-me-open-in-maps":
         ("Open in maps app",
          "Ouvrir dans l’app de cartes"),
@@ -3687,6 +3684,27 @@ FR = {
     "threesea-la-location-map-server":
         ("The map comes from Threema's map server, which learns the area shown. The places on it come from Threema's places server, which gets the middle of the map.",
          "La carte vient du serveur de cartes de Threema, qui apprend la zone affichée. Les lieux affichés viennent du serveur de lieux de Threema, qui reçoit le centre de la carte."),
+    "threesea-la-starting-video-call":
+        ("Starting video call",
+         "Lancement de l'appel vidéo"),
+    "threesea-la-starting-call":
+        ("Calling",
+         "Lancement de l'appel"),
+    "threesea-se-contributors":
+        ("Contributors",
+         "Contributeurs"),
+    "threesea-la-contributor-since":
+        ("since %1",
+         "depuis le %1"),
+    "threesea-la-contributor-new":
+        ("New in this version",
+         "Nouveau dans cette version"),
+    "threesea-la-call-volume-zero":
+        ("Turn the volume up to hear the call",
+         "Augmentez le volume pour entendre l'appel"),
+    "threesea-la-voice-volume-zero":
+        ("Turn the volume up to hear the message",
+         "Augmentez le volume pour entendre le message"),
 }
 
 

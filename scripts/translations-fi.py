@@ -3657,9 +3657,12 @@ FI = {
     "threesea-la-key-confirmation-notification-body":
         ("After a restart the phone asks once whether Threesea may read the key to its data. Confirm that to receive messages.",
          "Uudelleenkäynnistyksen jälkeen puhelin kysyy kerran, saako Threesea lukea tietojensa avaimen. Vahvista se, jotta voit vastaanottaa viestejä."),
-    "threesea-la-credit-finnish":
-        ("The Finnish translation: jmpx448 (github.com/jmpx448), a first-time contributor.",
-         "Suomennos: jmpx448 (github.com/jmpx448), ensikertalainen avustaja."),
+    "threesea-la-starting-video-call":
+        ("Starting video call",
+         "Aloitetaan videopuhelu"),
+    "threesea-la-starting-call":
+        ("Calling",
+         "Soitetaan"),
     "threesea-me-open-in-maps":
         ("Open in maps app",
          "Avaa karttasovelluksessa"),
@@ -3681,6 +3684,21 @@ FI = {
     "threesea-la-location-map-server":
         ("The map comes from Threema's map server, which learns the area shown. The places on it come from Threema's places server, which gets the middle of the map.",
          "Kartta tulee Threeman karttapalvelimelta, joka saa tietää näytetyn alueen. Kartan paikat tulevat Threeman paikkapalvelimelta, joka saa kartan keskipisteen."),
+    "threesea-se-contributors":
+        ("Contributors",
+         "Avustajat"),
+    "threesea-la-contributor-since":
+        ("since %1",
+         "%1 alkaen"),
+    "threesea-la-contributor-new":
+        ("New in this version",
+         "Uusi tässä versiossa"),
+    "threesea-la-call-volume-zero":
+        ("Turn the volume up to hear the call",
+         "Lisää äänenvoimakkuutta kuullaksesi puhelun"),
+    "threesea-la-voice-volume-zero":
+        ("Turn the volume up to hear the message",
+         "Lisää äänenvoimakkuutta kuullaksesi viestin"),
 }
 
 
