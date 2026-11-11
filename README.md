@@ -145,7 +145,7 @@ Everyone who has worked on Threesea, with the day of their first commit:
 
 <!-- contributors: written by scripts/make-contributors.py from contributors.json -->
 - **[penttimus](https://github.com/penttimus)**, since 27 October 2026
-- **[jmpx448](https://github.com/jmpx448)**, since 8 November 2026: **new in 0.3.0**
+- **[jmpx448](https://github.com/jmpx448)**, since 8 November 2026
 <!-- /contributors -->
 
 ## Credits

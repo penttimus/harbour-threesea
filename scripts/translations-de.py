@@ -3681,6 +3681,27 @@ DE = {
     "threesea-la-location-map-server":
         ("The map comes from Threema's map server, which learns the area shown. The places on it come from Threema's places server, which gets the middle of the map.",
          "Die Karte kommt vom Kartenserver von Threema, der den gezeigten Ausschnitt erfährt. Die Orte darauf kommen vom Ortsserver von Threema, der die Mitte der Karte bekommt."),
+    "threesea-la-starting-video-call":
+        ("Starting video call",
+         "Videoanruf wird gestartet"),
+    "threesea-la-starting-call":
+        ("Calling",
+         "Anruf wird gestartet"),
+    "threesea-se-contributors":
+        ("Contributors",
+         "Mitwirkende"),
+    "threesea-la-contributor-since":
+        ("since %1",
+         "seit %1"),
+    "threesea-la-contributor-new":
+        ("New in this version",
+         "Neu in dieser Version"),
+    "threesea-la-call-volume-zero":
+        ("Turn the volume up to hear the call",
+         "Erhöhe die Lautstärke, um den Anruf zu hören"),
+    "threesea-la-voice-volume-zero":
+        ("Turn the volume up to hear the message",
+         "Erhöhe die Lautstärke, um die Nachricht zu hören"),
 }
 
 # The engineering-English base file: only the plural forms need filling in.
