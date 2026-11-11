@@ -2251,7 +2251,9 @@ QtObject {
                 check("gone with the chat opened", window.notifications["replyNotSent:" + chat], undefined)
             }, 0],
         ],
-        // Deleted by its sender: the words leave the notification, without another alert.
+        // Deleted by its sender: the words leave the notification, without another alert. Its
+        // banner may still be up, and lipstick goes on showing that with what the notification
+        // says: the banner's text follows, or it would stand there empty.
         deletedLeavesNotification: [
             [function() { ready(false) }, 100],
             [function() { incoming("the words") }, 50],
@@ -2261,11 +2263,26 @@ QtObject {
                 check("the banner", n.previewBody, "the words")
                 changed({ id: "mthe words", kind: "deleted" })
                 check("the words are gone", n.body, "threesea-la-message-deleted")
-                check("no banner", n.previewBody, "")
+                check("gone from the banner too", n.previewBody, "threesea-la-message-deleted")
                 check("no sound", n.sound, "")
                 check("only the light", n.category, "im.received")
                 check("not counted", n.itemCount, 1)
                 check("the same title", n.summary, "A Contact")
+            }, 0],
+        ],
+        // Once the banner is long gone, the deletion brings none.
+        deletedAfterTheBannerIsQuiet: [
+            [function() { ready(false) }, 100],
+            [function() { incoming("the words") }, 50],
+            [function() {
+                var n = window.notifications[chat]
+                check("the banner", n.previewBody, "the words")
+                n.bannerAt = Date.now() - 60000
+                changed({ id: "mthe words", kind: "deleted" })
+                check("the words are gone", n.body, "threesea-la-message-deleted")
+                check("no banner", n.previewBody, "")
+                check("no sound", n.sound, "")
+                check("only the light", n.category, "im.received")
             }, 0],
         ],
         // Edited: the new words, with who wrote them in a group.
