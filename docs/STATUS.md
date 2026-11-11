@@ -1589,3 +1589,22 @@ earpiece, the recovery after a crash on the loudspeaker (device checklist, "Ring
 screen in calls", 8 and 10), and the volume keys: `bridge/callvolume.cpp` asks the policy for
 them while the class is held and the app is in front, moves the media volume with them and follows
 it with a gain of our own, silent at zero with a notice to turn it up (heard on the phone).
+
+## 0.3.1 prepared (2026-11-11)
+
+Version 0.3.1 in the spec, the workspace and the project file, its CHANGELOG section, and German,
+French and Finnish for the seven texts added since 0.3.0 (the Finnish ones written here, not by
+a native speaker: worth a look by one). The store's schema is the one of 0.3.0, so there is no
+new fixture. Nobody is new among the contributors.
+
+In it since 0.3.0: the earpiece through the policy's call class and the volume keys (ADR 0034),
+voice at the ear no longer freezing behind a hanging decoder, video calls on a phone (the camera's
+deadlock, upright pictures, an answer without header extensions, the camera's size; ADR 0012's
+notes), the empty banner, the audit of 2026-11-10's fixes, the SQLite advisory passed over
+(ADR 0035, issue 9).
+
+On the phone: on 2026-11-10, with builds before the merges, video calls both ways with Threema
+for Android showed both pictures upright and Android showed ours; on 2026-11-11 the user's tests
+of a build of `main` (asked for: both cameras upright, video calls both ways, switching the
+camera and turning it off and on, the earpiece and the volume keys, two messages in a row for
+the banner) "look good", without a word on each. Not tried: a group call with the camera.

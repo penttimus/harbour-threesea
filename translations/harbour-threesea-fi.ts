@@ -4994,23 +4994,23 @@
         </message>
         <message id="threesea-se-contributors">
             <source>Contributors</source>
-            <translation type="unfinished" />
+            <translation>Avustajat</translation>
         </message>
         <message id="threesea-la-contributor-since">
             <source>since %1</source>
-            <translation type="unfinished" />
+            <translation>%1 alkaen</translation>
         </message>
         <message id="threesea-la-contributor-new">
             <source>New in this version</source>
-            <translation type="unfinished" />
+            <translation>Uusi tässä versiossa</translation>
         </message>
         <message id="threesea-la-call-volume-zero">
             <source>Turn the volume up to hear the call</source>
-            <translation type="unfinished" />
+            <translation>Lisää äänenvoimakkuutta kuullaksesi puhelun</translation>
         </message>
         <message id="threesea-la-voice-volume-zero">
             <source>Turn the volume up to hear the message</source>
-            <translation type="unfinished" />
+            <translation>Lisää äänenvoimakkuutta kuullaksesi viestin</translation>
         </message>
     </context>
 </TS>
