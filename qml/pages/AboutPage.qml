@@ -4,8 +4,8 @@ import Sailfish.Silica 1.0
 import "../components/Contributors.js" as Contributors
 
 // Settings → About: version, the European Commission's "AI generated" label, the disclaimer,
-// contributors, credits, the license with its texts and where the source code is (the same as the
-// README).
+// contributors, credits, the license and where the source code is (the same as the README); the
+// license texts in the pulley.
 Page {
     allowedOrientations: Orientation.All
 
@@ -18,6 +18,21 @@ Page {
     SilicaFlickable {
         anchors.fill: parent
         contentHeight: column.height + Theme.paddingLarge
+
+        PullDownMenu {
+            MenuItem {
+                //% "Third-party licenses"
+                text: qsTrId("threesea-me-license-notices")
+                onClicked: pageStack.push(Qt.resolvedUrl("LicenseTextPage.qml"),
+                                          { title: text, file: "THIRD-PARTY-NOTICES.txt" })
+            }
+            MenuItem {
+                //% "License text"
+                text: qsTrId("threesea-me-license-agpl")
+                onClicked: pageStack.push(Qt.resolvedUrl("LicenseTextPage.qml"),
+                                          { title: "GNU Affero General Public License", file: "LICENSE" })
+            }
+        }
 
         Column {
             id: column
@@ -60,11 +75,11 @@ Page {
             }
 
             Repeater {
-                //% "Threesea was developed with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. It is a research and experimentation project."
+                //% "Made with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. A research and experimentation project."
                 model: [qsTrId("threesea-la-disclaimer-ai"),
-                        //% "AI makes mistakes. The code, including its security-relevant parts, can contain errors nobody noticed. The developers give no warranty of any kind; you use the app at your own risk."
+                        //% "AI makes mistakes, also in security-relevant code. There is no warranty: you use Threesea at your own risk."
                         qsTrId("threesea-la-disclaimer-warranty"),
-                        //% "Threesea is based on Threema Libre's open-source code and tries to play fair with Threema's APIs and licensing. Threema told us it doesn't actively block third-party apps that cause no stability issues or high server load, are clearly marked as unofficial without using its branding, and don't circumvent the licensing. Threesea aims to meet that. This is not a permission, and Threesea is not affiliated with, endorsed or supported by Threema AG. As with any Threema app, keep a backup of your ID."
+                        //% "Unofficial: not affiliated with, endorsed or supported by Threema AG. Threema doesn't actively block third-party apps that play fair, as Threesea aims to, but that isn't a permission. Keep a backup of your ID."
                         qsTrId("threesea-la-disclaimer-threema")]
                 Label {
                     x: Theme.horizontalPageMargin
@@ -180,7 +195,7 @@ Page {
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.highlightColor
-                //% "An unofficial Threema client for Sailfish OS, licensed under the GNU AGPL v3. Uses libthreema by Threema AG. Requires a Threema Libre license from the Threema Shop. Not affiliated with or supported by Threema AG."
+                //% "Free software under the GNU AGPL v3."
                 text: qsTrId("threesea-la-license-text")
             }
 
@@ -204,22 +219,6 @@ Page {
                 linkColor: Theme.primaryColor
                 //% "Source code and bug reports: %1"
                 plainText: qsTrId("threesea-la-license-source").arg("https://github.com/penttimus/harbour-threesea")
-            }
-
-            Button {
-                anchors.horizontalCenter: parent.horizontalCenter
-                //% "License text"
-                text: qsTrId("threesea-bt-license-agpl")
-                onClicked: pageStack.push(Qt.resolvedUrl("LicenseTextPage.qml"),
-                                          { title: "GNU Affero General Public License", file: "LICENSE" })
-            }
-
-            Button {
-                anchors.horizontalCenter: parent.horizontalCenter
-                //% "Third-party licenses"
-                text: qsTrId("threesea-bt-license-notices")
-                onClicked: pageStack.push(Qt.resolvedUrl("LicenseTextPage.qml"),
-                                          { title: text, file: "THIRD-PARTY-NOTICES.txt" })
             }
         }
 

@@ -63,7 +63,7 @@ jobs:
         # mb2 also produces debug info packages; the release carries the app only.
         run: |
           mkdir out
-          cp RPMS/${{ matrix.flavour }}/harbour-threesea-${{ matrix.flavour }}-${{ needs.version.outputs.version }}-*.${{ matrix.arch }}.rpm out/
+          cp RPMS/${{ matrix.flavour }}/harbour-threesea-${{ needs.version.outputs.version }}-*.${{ matrix.arch }}-${{ matrix.flavour }}.rpm out/
           ls -l out
       - name: Look inside the package
         # The licence texts in it; no demo data in a phone build (CLAUDE.md §10; i486 is the
@@ -107,7 +107,7 @@ jobs:
           ---
           Install **one** flavour for your phone's architecture (`aarch64` for current devices,
           `armv7hl` for older ones), e.g. `devel-su pkcon install-local
-          harbour-threesea-full-….aarch64.rpm` in developer mode. `SHA256SUMS` lists the files' checksums; `gh attestation verify
+          harbour-threesea-….aarch64-full.rpm` in developer mode. `SHA256SUMS` lists the files' checksums; `gh attestation verify
           <file> --repo ${{ github.repository }}` checks that a file was built here from this
           release's source.
           EOF

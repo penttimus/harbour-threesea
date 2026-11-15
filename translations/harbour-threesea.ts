@@ -73,7 +73,8 @@
             <translation type="unfinished" />
         </message>
         <message id="threesea-la-license-text">
-            <source>An unofficial Threema client for Sailfish OS, licensed under the GNU AGPL v3. Uses libthreema by Threema AG. Requires a Threema Libre license from the Threema Shop. Not affiliated with or supported by Threema AG.</source>
+            <source>Free software under the GNU AGPL v3.</source>
+            <oldsource>An unofficial Threema client for Sailfish OS, licensed under the GNU AGPL v3. Uses libthreema by Threema AG. Requires a Threema Libre license from the Threema Shop. Not affiliated with or supported by Threema AG.</oldsource>
             <translation type="unfinished" />
         </message>
         <message id="threesea-he-add">
@@ -2420,15 +2421,18 @@
             <translation type="unfinished" />
         </message>
         <message id="threesea-la-disclaimer-ai">
-            <source>Threesea was developed with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. It is a research and experimentation project.</source>
+            <source>Made with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. A research and experimentation project.</source>
+            <oldsource>Threesea was developed with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. It is a research and experimentation project.</oldsource>
             <translation type="unfinished" />
         </message>
         <message id="threesea-la-disclaimer-warranty">
-            <source>AI makes mistakes. The code, including its security-relevant parts, can contain errors nobody noticed. The developers give no warranty of any kind; you use the app at your own risk.</source>
+            <source>AI makes mistakes, also in security-relevant code. There is no warranty: you use Threesea at your own risk.</source>
+            <oldsource>AI makes mistakes. The code, including its security-relevant parts, can contain errors nobody noticed. The developers give no warranty of any kind; you use the app at your own risk.</oldsource>
             <translation type="unfinished" />
         </message>
         <message id="threesea-la-disclaimer-threema">
-            <source>Threesea is based on Threema Libre's open-source code and tries to play fair with Threema's APIs and licensing. Threema told us it doesn't actively block third-party apps that cause no stability issues or high server load, are clearly marked as unofficial without using its branding, and don't circumvent the licensing. Threesea aims to meet that. This is not a permission, and Threesea is not affiliated with, endorsed or supported by Threema AG. As with any Threema app, keep a backup of your ID.</source>
+            <source>Unofficial: not affiliated with, endorsed or supported by Threema AG. Threema doesn't actively block third-party apps that play fair, as Threesea aims to, but that isn't a permission. Keep a backup of your ID.</source>
+            <oldsource>Threesea is based on Threema Libre's open-source code and tries to play fair with Threema's APIs and licensing. Threema told us it doesn't actively block third-party apps that cause no stability issues or high server load, are clearly marked as unofficial without using its branding, and don't circumvent the licensing. Threesea aims to meet that. This is not a permission, and Threesea is not affiliated with, endorsed or supported by Threema AG. As with any Threema app, keep a backup of your ID.</oldsource>
             <translation type="unfinished" />
         </message>
         <message id="threesea-se-credits">
@@ -3933,14 +3937,6 @@
             <source>Source code and bug reports: %1</source>
             <translation type="unfinished" />
         </message>
-        <message id="threesea-bt-license-agpl">
-            <source>License text</source>
-            <translation type="unfinished" />
-        </message>
-        <message id="threesea-bt-license-notices">
-            <source>Third-party licenses</source>
-            <translation type="unfinished" />
-        </message>
         <message id="threesea-la-add-scanned-contact">
             <source>Adds this Threema ID to your contacts with the key from Threema's directory. To verify it, scan the QR code in the other person's app.</source>
             <translation type="unfinished" />
@@ -5010,6 +5006,14 @@
         </message>
         <message id="threesea-la-voice-volume-zero">
             <source>Turn the volume up to hear the message</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-me-license-notices">
+            <source>Third-party licenses</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-me-license-agpl">
+            <source>License text</source>
             <translation type="unfinished" />
         </message>
     </context>

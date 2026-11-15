@@ -65,17 +65,19 @@ for ARCH in $ARCHES; do
       cd $B && mb2 -t SailfishOS-$SFOS-$ARCH build >&2
       tar cf - -C $B/RPMS --exclude=harbour-threesea-rpmlintrc .' | tar xf - -C "$OUT"
 done
-# The flavour into the file names (harbour-threesea-0.1.0-1.aarch64.rpm →
-# harbour-threesea-full-0.1.0-1.aarch64.rpm), so both can sit side by side in a release.
+# The flavour into the file names, after the architecture (harbour-threesea-0.1.0-1.aarch64.rpm →
+# harbour-threesea-0.1.0-1.aarch64-full.rpm), so both can sit side by side in a release. Not before
+# the version: installers that read the package from the file name (Harpoon) take what stands there
+# for its name, and the package is harbour-threesea in both flavours.
 # FLAVOUR_SUFFIX=0 keeps the plain name: the Jolla Store requires the file to be called
 # <package>-<version>-<release>.<arch>.rpm (scripts/validate-rpm.sh says so too).
 if [ "${FLAVOUR_SUFFIX:-1}" = 0 ]; then
   ls -1 "$OUT"/*.rpm
   exit 0
 fi
-for f in "$OUT"/harbour-threesea-[0-9]*.rpm "$OUT"/harbour-threesea-debug*-[0-9]*.rpm; do
+for f in "$OUT"/harbour-threesea-*.aarch64.rpm "$OUT"/harbour-threesea-*.armv7hl.rpm \
+         "$OUT"/harbour-threesea-*.i486.rpm; do
   [ -e "$f" ] || continue
-  base=${f##*/}
-  mv -f "$f" "$OUT/harbour-threesea-$FLAVOUR-${base#harbour-threesea-}"
+  mv -f "$f" "${f%.rpm}-$FLAVOUR.rpm"
 done
 ls -1 "$OUT"/*.rpm

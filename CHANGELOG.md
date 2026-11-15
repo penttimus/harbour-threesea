@@ -7,6 +7,15 @@ All notable changes. Versions follow `MAJOR.MINOR.PATCH`; each release is built 
 
 Changed:
 
+- About: the license texts are in the pull-down menu, and the disclaimer is shorter. The README
+  is shorter too, and recommends installing through
+  [Harpoon](https://github.com/JuhaniLehtimaeki/Harpoon), which keeps Threesea up to date, by
+  [penttimus](https://github.com/penttimus).
+- A release's files carry the flavour after the architecture
+  (`harbour-threesea-<version>-1.aarch64-full.rpm`, was `harbour-threesea-full-<version>-1.aarch64.rpm`):
+  Harpoon then sees one package in two builds, asks which one you want, recognises a Threesea
+  installed by hand and shows its icon, by [penttimus](https://github.com/penttimus).
+
 - Reporting a group as spam no longer waits for Threema's server, as in Threema for Android 6.6.0:
   blocking its creator, leaving and deleting happen at once, also without a connection, and the
   report is sent in the background and tried again until it is through. A call with the creator

@@ -2905,10 +2905,10 @@ FR = {
     "threesea-la-license-source":
         ("Source code and bug reports: %1",
          "Code source et signalement de bogues : %1"),
-    "threesea-bt-license-agpl":
+    "threesea-me-license-agpl":
         ("License text",
          "Texte de la licence"),
-    "threesea-bt-license-notices":
+    "threesea-me-license-notices":
         ("Third-party licenses",
          "Licences tierces"),
     "threesea-la-add-scanned-contact":
