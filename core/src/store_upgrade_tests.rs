@@ -174,13 +174,14 @@ fn seed(conn: &Connection, version: usize) {
 
 /// A store at schema version `version`, its rows put in as their tables came.
 fn store_at(path: &Path, version: usize) {
-    let conn = Connection::open(path).unwrap();
+    let mut conn = Connection::open(path).unwrap();
     conn.execute_batch(&format!(
         "PRAGMA key = \"x'{}'\"; PRAGMA synchronous = OFF;",
         data_encoding::HEXLOWER.encode(&KEY)
     ))
     .unwrap();
     let mut store = Store {
+        commits: crate::store::CommitWatch::on(&mut conn),
         conn,
         held_notifications: std::cell::RefCell::default(),
         invalid_ids: std::cell::RefCell::default(),
@@ -245,11 +246,11 @@ fn ids(messages: &[crate::messages::Message]) -> Vec<i64> {
 fn check(path: &Path, seeded: usize, walked: bool, fresh: &[String]) {
     let store = std::rc::Rc::new(Store::open(path, &KEY).unwrap());
     let at = |version: usize| seeded >= version;
-    let version: usize = store
+    let version: i64 = store
         .conn
         .query_row("PRAGMA user_version", [], |row| row.get(0))
         .unwrap();
-    assert_eq!(version, MIGRATIONS.len());
+    assert_eq!(usize::try_from(version), Ok(MIGRATIONS.len()));
     assert_eq!(schema(&store.conn), fresh, "the same schema as a new store");
     assert!(store.receiver_generation().is_ok());
 

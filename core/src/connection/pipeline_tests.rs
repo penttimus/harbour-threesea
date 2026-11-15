@@ -787,7 +787,10 @@ async fn a_commit_that_fails_takes_the_ack_with_it() {
     let test = harness();
     test.contact(ALICE);
     let message = test.incoming(ALICE, 1, "hi");
-    test.store.conn.commit_hook(Some(|| true));
+    test.store
+        .commits
+        .refuse
+        .store(true, std::sync::atomic::Ordering::Relaxed);
     let (ended, acks) = test
         .ending(None, async |server: &FakeServer, _: &Commands| {
             server.deliver(&message);
@@ -795,7 +798,10 @@ async fn a_commit_that_fails_takes_the_ack_with_it() {
             server.acks()
         })
         .await;
-    test.store.conn.commit_hook(None::<fn() -> bool>);
+    test.store
+        .commits
+        .refuse
+        .store(false, std::sync::atomic::Ordering::Relaxed);
     assert!(
         matches!(ended, Err(ConnectionError::Storage { .. })),
         "{ended:?}"
