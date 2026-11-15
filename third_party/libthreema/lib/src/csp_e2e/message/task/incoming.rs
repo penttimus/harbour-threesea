@@ -735,10 +735,11 @@ impl State {
             }
         }
 
-        // The dedicated blocking steps of a group-setup, while nothing has been created for it yet:
-        // someone on the block list can't bring the user into a group the user isn't in, and doesn't
-        // become a contact by trying. The user's other implicit block, _block unknown_, plays no part
-        // (as on Android, and ADR 0019 of the application).
+        // The dedicated blocking steps of a group-setup, while nothing has been created for it yet
+        // (Android 6.6.0's _Dedicated Group Setup Blocking Exemption Steps_): someone blocked,
+        // explicitly or as unknown under _block unknown_, can't bring the user into a group the user
+        // isn't in, and doesn't become a contact by trying. Android lets a group the user left come
+        // back; here it doesn't (ADR 0019 of the application).
         if let IncomingMessageBody::Group(group) = &message.inner.body
             && matches!(group.body, GroupMessageBody::Setup(_))
             && matches!(
@@ -747,7 +748,7 @@ impl State {
                     &*context.settings.borrow(),
                     &*context.contacts.borrow(),
                 )?,
-                CommunicationPermission::BlockExplicit
+                CommunicationPermission::BlockExplicit | CommunicationPermission::BlockUnknown
             )
             && !context.conversations.borrow().is_in_group(group.group_identity)?
         {
@@ -2638,16 +2639,10 @@ mod tests {
             .map(|(contact, _)| contact.acquaintance_level)
     }
 
-    // A stranger under _block unknown_ too: that setting plays no part for a group-setup, as on Android.
-    #[rstest]
-    #[case(InMemoryDbSettings::default())]
-    #[case(InMemoryDbSettings { block_unknown_identities: true })]
-    fn group_setup_from_a_stranger_creates_the_contact_and_reaches_the_provider(
-        #[case] settings: InMemoryDbSettings,
-    ) -> anyhow::Result<()> {
+    #[test]
+    fn group_setup_from_a_stranger_creates_the_contact_and_reaches_the_provider() -> anyhow::Result<()> {
         let mut context = Context::from(
             ContextInitBuilder::default()
-                .settings(settings)
                 .contact_lookup_cache(vec![StaticTestSender::cached()])
                 .build()?,
         );
@@ -2670,17 +2665,33 @@ mod tests {
         Ok(())
     }
 
+    // Under _block unknown_, someone the user knows only from a group they left, or not at all,
+    // counts as blocked (Android 6.6.0).
     #[rstest]
-    #[case(ContextInitBuilder::default().contact_lookup_cache(vec![StaticTestSender::cached()]))]
-    #[case(ContextInitBuilder::default().contacts(vec![StaticTestSender::contact()]))]
+    #[case(
+        ContextInitBuilder::default()
+            .blocked_identities(vec![StaticTestSender::IDENTITY])
+            .contact_lookup_cache(vec![StaticTestSender::cached()])
+    )]
+    #[case(
+        ContextInitBuilder::default()
+            .blocked_identities(vec![StaticTestSender::IDENTITY])
+            .contacts(vec![StaticTestSender::contact()])
+    )]
+    #[case(
+        ContextInitBuilder::default()
+            .settings(InMemoryDbSettings { block_unknown_identities: true })
+            .contact_lookup_cache(vec![StaticTestSender::cached()])
+    )]
+    #[case(
+        ContextInitBuilder::default()
+            .settings(InMemoryDbSettings { block_unknown_identities: true })
+            .contacts(vec![StaticTestSender::contact()])
+    )]
     fn group_setup_from_a_blocked_creator_for_a_group_the_user_is_not_in_changes_nothing(
         #[case] context_builder: ContextInitBuilder,
     ) -> anyhow::Result<()> {
-        let mut context = Context::from(
-            context_builder
-                .blocked_identities(vec![StaticTestSender::IDENTITY])
-                .build()?,
-        );
+        let mut context = Context::from(context_builder.build()?);
         let before = stored_acquaintance(&context);
 
         let body = group_setup(&context);
@@ -2699,6 +2710,47 @@ mod tests {
                 .contacts(vec![StaticTestSender::contact()])
                 .blocked_identities(vec![StaticTestSender::IDENTITY])
                 .groups(vec![(GROUP_OF_THE_SENDER, vec![StaticTestSender::IDENTITY])])
+                .build()?,
+        );
+
+        let body = group_setup(&context);
+        let _ = receive_group_message(&mut context, GROUP_OF_THE_SENDER, body)?;
+
+        assert!(
+            context
+                .database
+                .conversations
+                .borrow()
+                .contains_key(&ConversationId::Group(GROUP_OF_THE_SENDER))
+        );
+        Ok(())
+    }
+
+    // Under _block unknown_, a direct contact may still add the user to a group, and a creator
+    // known only from the group still counts for a group the user is in.
+    #[rstest]
+    #[case(protobuf_contact::AcquaintanceLevel::Direct, false)]
+    #[case(protobuf_contact::AcquaintanceLevel::GroupOrDeleted, true)]
+    fn group_setup_under_block_unknown_from_someone_known(
+        #[case] acquaintance_level: protobuf_contact::AcquaintanceLevel,
+        #[case] in_group: bool,
+    ) -> anyhow::Result<()> {
+        let contact = Contact {
+            acquaintance_level,
+            ..StaticTestSender::contact()
+        };
+        let groups = if in_group {
+            vec![(GROUP_OF_THE_SENDER, vec![StaticTestSender::IDENTITY])]
+        } else {
+            vec![]
+        };
+        let mut context = Context::from(
+            ContextInitBuilder::default()
+                .settings(InMemoryDbSettings {
+                    block_unknown_identities: true,
+                })
+                .contacts(vec![contact])
+                .groups(groups)
                 .build()?,
         );
 
