@@ -1443,6 +1443,18 @@ impl App {
         json!({})
     }
 
+    /// We are in `conversation`'s call and are leaving the group: the UI leaves the call (its
+    /// media engine ends it, then [`Self::group_call_leave`]).
+    pub(crate) fn end_group_call(&self, conversation: &str) {
+        if self
+            .group_call
+            .as_ref()
+            .is_some_and(|call| call.conversation == conversation)
+        {
+            self.emit_group_call(json!({ "event": "groupCallEnd" }));
+        }
+    }
+
     /// The ID is being removed: the call's state and frame keys go, without the refresh a
     /// leave asks for (nothing is left to show it).
     pub(crate) fn group_call_forget(&mut self) {

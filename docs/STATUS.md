@@ -1609,6 +1609,18 @@ of a build of `main` (asked for: both cameras upright, video calls both ways, sw
 camera and turning it off and on, the earpiece and the volume keys, two messages in a row for
 the banner) "look good", without a word on each. Not tried: a group call with the camera.
 
+## Spam groups as in Android 6.6.0 (2026-11-15)
+
+Android 6.6.0's "Report spam group chats and block the creator", where ours (from iOS 7.5.2's
+written steps, since 0.2.0) differed: the group's report waits in the store and goes in the
+background (right away, after connecting, hourly; 8 tries, a refusal ends it), and blocking,
+leaving and deleting no longer wait for it; a call with the creator and the group's call end with
+block and delete (the group call through a `groupCallEnd` event the bridge leaves on); a blank
+nickname goes as `null`. With "Block unknown senders", a stranger's group-setup for a group the
+user doesn't have is discarded (libthreema; ADR 0019's update). Unchanged: the detection (ours
+also leaves out named, blocked and predefined creators), the dialog and the banner, a contact's
+report (still waits, as on Android). Not tried against the real directory: the full report, as
+before (protocol notes).
 ## Upstream 6.6.0: its protocols, not its libthreema (2026-11-15)
 
 threema-android 6.6.0-1237 came out on 2026-11-03. Its libthreema is halfway through a new message

@@ -369,6 +369,12 @@ impl App {
         json!({})
     }
 
+    /// The call with someone the user just blocked ends, and they are told.
+    pub(crate) fn call_end_with_peer(&mut self) {
+        let effects = self.calls.hang_up(crate::messages::now_ms());
+        self.apply_call_effects(effects);
+    }
+
     /// The ID is being removed: whatever call there is ends, the other side is told, and
     /// nothing of it stays for the next identity's first call.
     pub(crate) fn call_end_for_removal(&mut self) {
