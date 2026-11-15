@@ -82,7 +82,7 @@ pushes).
 Developer mode on (Settings → Developer tools), and "Allow untrusted software" (Settings →
 Untrusted software). Download the RPM for the phone's architecture (`aarch64` for current
 devices, `armv7hl` for older ones), then in the terminal:
-`devel-su pkcon install-local harbour-threesea-full-….rpm`. To switch between Full and Lite,
+`devel-su pkcon install-local harbour-threesea-…-full.rpm`. To switch between Full and Lite,
 remove the installed one first (`devel-su pkcon remove harbour-threesea`; the data stays in the
 home directory), then install the other.
 
@@ -112,8 +112,9 @@ scripts/check-package.sh --store RPMS/lite/harbour-threesea-<version>-1.aarch64.
 `check-package.sh --store` makes sure of it (no GitHub host in the package, no dialog asking for
 it) and that no demo data is in it. `FLAVOUR_SUFFIX=0` keeps the plain file name: the store
 insists on `harbour-threesea-<version>-<release>.<arch>.rpm`, while a release on GitHub carries
-the flavour in the name (`…-lite-…`) so both can sit side by side. CI builds Lite for all three
-architectures on every push and runs the validator on each, so a change that would be refused
+the flavour after the architecture (`…aarch64-lite.rpm`) so both can sit side by side, and so
+that Harpoon reads the package's name, `harbour-threesea`, from the file's. CI builds Lite for all
+three architectures on every push and runs the validator on each, so a change that would be refused
 shows up at once; those are builds for GitHub (with the update check), and the store's build
 above is made and validated by hand.
 

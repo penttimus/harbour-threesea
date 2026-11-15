@@ -8,7 +8,7 @@ Note per step: OK, or what you saw or heard. A screenshot helps for the screens;
 line of the log is often enough (Settings → Advanced → View log → "Save support package" writes
 it to Downloads). The log never holds message text.
 
-Install the fresh **Full** RPM: `devel-su pkcon install-local harbour-threesea-full-….rpm`.
+Install the fresh **Full** RPM: `devel-su pkcon install-local harbour-threesea-…-full.rpm`.
 (Lite has no sensor permission and no GStreamer, so at-the-ear playback and video scaling are
 not in it at all — that is on purpose.)
 

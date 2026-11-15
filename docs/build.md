@@ -95,8 +95,8 @@ core links and their licence texts. After a change to `Cargo.lock`, run
 
 ## Install on a device
 
-Enable developer mode, then `scp RPMS/full/harbour-threesea-full-*.aarch64.rpm defaultuser@<phone>:`
-and `devel-su pkcon install-local harbour-threesea-full-*.rpm` (or `rpm -U`).
+Enable developer mode, then `scp RPMS/full/harbour-threesea-*.aarch64-full.rpm defaultuser@<phone>:`
+and `devel-su pkcon install-local harbour-threesea-*-full.rpm` (or `rpm -U`).
 
 ## Hardening
 

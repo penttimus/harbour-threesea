@@ -10,7 +10,7 @@ most). Never share the backup password or the ZIP file.
 ## Before you start
 
 1. Build fresh RPMs from the current `HEAD` (the ones in `RPMS/` can be older than the backup
-   work) and install on the phone: `devel-su pkcon install-local harbour-threesea-full-….rpm`.
+   work) and install on the phone: `devel-su pkcon install-local harbour-threesea-…-full.rpm`.
 2. Back up the app's data on the phone, because an import merges into the running identity:
    close the app, then copy `~/.local/share/org.threesea/harbour-threesea/` (the database and
    `media/`) somewhere safe, e.g. `cp -a ~/.local/share/org.threesea/harbour-threesea
