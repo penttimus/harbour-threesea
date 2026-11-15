@@ -1645,3 +1645,27 @@ only through `&mut`, so a test build's store installs its commit hook when it op
 (`store::CommitWatch`) and the tests count or refuse commits through it. A store and a WAL written
 by 0.3.1 (SQLCipher 4.6.1) are a fixture now that every later SQLCipher has to open. The licence
 notices take SQLCipher's licence from `sqlcipher-src`.
+
+## Voice messages on Bluetooth headphones (issue 22, 2026-11-15)
+
+Reported on a Jolla Phone 2026 (SFOS 5.2.0.22, 0.3.1): with A2DP headphones voice messages came
+from the loudspeaker, the stream in the policy's group `call`, after the phone had once been at the
+ear. The call class's resource set lived on after letting go, its rule filing every stream of the
+process under the call (ADR 0034's update). Letting go now gives the rule back to the player,
+leaving the ear lets go before the loudspeaker's stream starts, and with headphones or Bluetooth as
+the output (`bridge/mediaroute.h`, `tests/mediaroute`) the ear stays off. Full only.
+
+Tried on the phone (the reporter): with ad18fd3 a message played after one at the ear was silent,
+its stream in the corked `othermedia`; with bc009ed (our streams tagged by role instead) nothing
+played after the first message at the ear. PulseAudio's policy module up to 14.2.51 keeps one
+stream rule per process, shared with Qt's media player, and removing ours removed it (ADR 0034's
+update; Jolla fixed it in 14.2.52). The call class's set now stays and switches its rule's group
+between `call` and `player`. Confirmed by the reporter with 7cccef0 (pulseaudio-policy-enforcement
+14.2.50): at the ear, on the table, at the ear again, the old step 3 with headphones and a voice
+message after a call all heard where they should be; no warnings in the log.
+
+Seen on the way, not from this branch: a call with A2DP headphones connected was heard from the
+phone. The headphones offer HFP (`handsfree_head_unit`), but the card stayed on `a2dp_sink`, the
+call stream on `sink.fast`, and PulseAudio logged `dbusif.c: can't set profiles/ports to source
+voicecall` at the call's start. Not known whether 0.3.1 did the same (device checklist, "Ringing,
+routes and the screen in calls", step 11).

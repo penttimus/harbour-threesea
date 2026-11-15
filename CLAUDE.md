@@ -107,7 +107,8 @@ harbour-threesea/
   translations/             id-based .ts files
   tests/                    tests run in the SDK/emulator, each by a scripts/test-*.sh:
                             callengine (calls; CI only builds it), models, gifdecoder,
-                            secretstore, notificationtokens, lifecycle, voicerecorder, pageload (every page opened; any
+                            secretstore, notificationtokens, lifecycle, voicerecorder, callroute,
+                            mediaroute, pageload (every page opened; any
                             QML warning fails), lockstate (the window's QML on
                             real Silica, no window system)
   rpm/

@@ -1563,12 +1563,13 @@ Page {
         return candidate
     }
     // The proximity sensor runs only while it could start or carry playback here, the setting
-    // allows it, and this build can reach the earpiece at all (Full only).
+    // allows it, and this build can reach the earpiece at all (Full only). Not with headphones or
+    // Bluetooth: the message stays in them (issue 22).
     Binding {
         target: proximity
         property: "enabled"
         value: page.status === PageStatus.Active && Qt.application.state === Qt.ApplicationActive
-               && page.shown && backend.earToPlay && voicePlayer.earpieceAvailable
+               && page.shown && backend.earToPlay && voicePlayer.earpieceAvailable && !mediaRoute.headphones
                && (voicePlayer.messageId >= 0 || page.firstUnheardVoice >= 0) && !page.recordingHere
         when: page.status === PageStatus.Active
     }
@@ -1590,6 +1591,9 @@ Page {
                     voicePlayer.earpiece = true
                     page.playVoice(page.firstUnheardVoice)
                 }
+            } else if (mediaRoute.headphones) {
+                // Headphones came while at the ear (the sensor stops then): it goes on in them.
+                voicePlayer.earpiece = false
             } else {
                 // Taken off the ear: pause, back to the loudspeaker.
                 if (voicePlayer.earpiece && voicePlayer.playing) {

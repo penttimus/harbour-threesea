@@ -10,6 +10,7 @@
 #include "softsound.h"
 #include "threesebackend.h"
 #ifdef THREESEA_FULL
+#include "callclass.h"
 #include "earpieceplayer.h"
 #endif
 
@@ -285,6 +286,9 @@ void VoicePlayer::fallBackToLoudspeaker()
     m_earpiece = false;
     emit earpieceChanged();
     releaseRoute();
+#ifdef THREESEA_FULL
+    CallClass::instance()->letGoNow();
+#endif
     if (!startRoute(at, true)) {
         release();
         return;
@@ -310,6 +314,13 @@ void VoicePlayer::setEarpiece(bool earpiece)
     // Everything of the old route goes first — a second reader on the same buffer played
     // scrambled audio.
     releaseRoute();
+#ifdef THREESEA_FULL
+    // Off the ear: the call class goes before the loudspeaker's stream starts, or that stream
+    // would be the call's, away from headphones (issue 22).
+    if (!m_earpiece) {
+        CallClass::instance()->letGoNow();
+    }
+#endif
     if (!startRoute(at, wasPlaying)) {
         // No earpiece route on this device: stay on the loudspeaker instead of going silent.
         if (m_earpiece) {
