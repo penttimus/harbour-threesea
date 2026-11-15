@@ -116,4 +116,6 @@ Now:
 
 A stream gets its group when it starts and keeps it (only streams in `othermedia` are moved when a
 rule comes): one that starts in the moment between asking and the rule's arrival stays where it
-was. To be tried on the phone (device checklist A.5).
+was. Confirmed on the phone (7cccef0, pulseaudio-policy-enforcement 14.2.50, 2026-11-15): at the
+ear the `phone` stream in `call`, on the loudspeaker and in Bluetooth headphones `x-maemo` in
+`player`, also after the ear and after a call.

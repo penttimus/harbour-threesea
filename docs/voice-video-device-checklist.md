@@ -47,6 +47,8 @@ Settings → Chats: "Play voice messages at the ear" is on by default.
    - A call: the `phone` stream in `call`, and a message on the loudspeaker afterwards in
      `player`. Note the policy's version, `rpm -q pulseaudio-policy-enforcement` (14.2.52 keeps
      several rules per process, older versions one).
+   - Confirmed on a phone with 7cccef0 (pulseaudio-policy-enforcement 14.2.50, 2026-11-15): every
+     step above as expected.
 
 ## B. The sound between two voice messages
 
@@ -657,6 +659,9 @@ Full, unless it says otherwise. With a second phone calling.
     - Note where the sound goes each time, and what the output is named
       (`…Route.Manager.ActiveRoutes`, as above). Say if there is a route you'd want to choose and
       can't: a Bluetooth entry depends on this.
+    - Seen 2026-11-15 (headphones with HFP, connected before the call): the call was on the phone,
+      the card stayed on `a2dp_sink` and PulseAudio logged `can't set profiles/ports to source
+      voicecall`. Expect the card to switch to `handsfree_head_unit` and the call to be in them.
 12. Bluetooth headset goes out of range or off during a call.
     - Note where the sound goes. Android has a setting that ends the call then; we only add one if
       the sound ends up somewhere you wouldn't want.

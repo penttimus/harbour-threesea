@@ -1633,4 +1633,12 @@ its stream in the corked `othermedia`; with bc009ed (our streams tagged by role 
 played after the first message at the ear. PulseAudio's policy module up to 14.2.51 keeps one
 stream rule per process, shared with Qt's media player, and removing ours removed it (ADR 0034's
 update; Jolla fixed it in 14.2.52). The call class's set now stays and switches its rule's group
-between `call` and `player`; to be tried again (device checklist A.5).
+between `call` and `player`. Confirmed by the reporter with 7cccef0 (pulseaudio-policy-enforcement
+14.2.50): at the ear, on the table, at the ear again, the old step 3 with headphones and a voice
+message after a call all heard where they should be; no warnings in the log.
+
+Seen on the way, not from this branch: a call with A2DP headphones connected was heard from the
+phone. The headphones offer HFP (`handsfree_head_unit`), but the card stayed on `a2dp_sink`, the
+call stream on `sink.fast`, and PulseAudio logged `dbusif.c: can't set profiles/ports to source
+voicecall` at the call's start. Not known whether 0.3.1 did the same (device checklist, "Ringing,
+routes and the screen in calls", step 11).
