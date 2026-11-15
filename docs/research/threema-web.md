@@ -14,7 +14,7 @@ Abbreviations used for sources:
   It is the authoritative message reference; this note only summarises it.
 - **[SRTC]** <https://github.com/saltyrtc/saltyrtc-meta>: `Protocol.md`, `Task-RelayedData.md`,
   `Task-WebRTC.md`, `Chunking.md`
-- **[CSP]** `third_party/libthreema/threema-protocols/src/csp.struct.yml` (vendored, matches 6.5.3)
+- **[CSP]** `third_party/libthreema/threema-protocols/src/csp.struct.yml` (vendored, upstream 6.6.0's)
 
 ---
 

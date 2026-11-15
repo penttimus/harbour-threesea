@@ -14,6 +14,11 @@ Changed:
 - With "Block unknown senders" on, someone you don't know can no longer add you to a new group,
   as in Threema for Android 6.6.0. That is how spam groups mostly arrive, by
   [penttimus](https://github.com/penttimus).
+Fixed:
+
+- The bundled SQLite no longer has the fault of RUSTSEC-2026-0459: the store now uses SQLCipher
+  4.20 on SQLite 3.54.1, through `rusqlite` 0.42. Existing data opens as before, by
+  [penttimus](https://github.com/penttimus) ([#9](https://github.com/penttimus/harbour-threesea/issues/9)).
 
 ## [0.3.1] - 2026-11-11
 

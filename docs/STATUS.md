@@ -1621,3 +1621,27 @@ user doesn't have is discarded (libthreema; ADR 0019's update). Unchanged: the d
 also leaves out named, blocked and predefined creators), the dialog and the banner, a contact's
 report (still waits, as on Android). Not tried against the real directory: the full report, as
 before (protocol notes).
+## Upstream 6.6.0: its protocols, not its libthreema (2026-11-15)
+
+threema-android 6.6.0-1237 came out on 2026-11-03. Its libthreema is halfway through a new message
+layer (the wire types private, a storage model, new providers) in exactly the files our message
+support lives in, so its code is not merged (ADR 0036, the user's choice): libthreema's
+protocol files and the reference submodule are 6.6.0's, the code stays 6.5.3's with ours.
+`vendor/libthreema` is back (it was lost with the history's clean-up) and holds the pristine
+6.6.0 for the merge later.
+
+What core follows: the fields 6.6.0's protocol calls deprecated, which Android 6.6.0 still sends
+and reads alone (the contact sync and keyboard policies in the settings sync, a group call's
+participant IDs and early media keys), under their new names; a group call state's participants
+say they take part (moderator approval is new and unused); and the TLS pin of
+`test.threema.com`, new upstream. The wire stays as it was. Open from 6.6.0: Android's new
+"report spam group chats and block the creator".
+## The SQLite advisory fixed (2026-11-15)
+
+`rusqlite` 0.42 / `libsqlite3-sys` 0.40 came out on 2026-11-11 with SQLCipher 4.20.0 on SQLite
+3.54.1, so RUSTSEC-2026-0459 is fixed and no longer passed over (ADR 0035's update, issue 9). The
+API changes it brought: no `ToSql`/`FromSql` for `usize` (three places now convert), and hooks
+only through `&mut`, so a test build's store installs its commit hook when it opens
+(`store::CommitWatch`) and the tests count or refuse commits through it. A store and a WAL written
+by 0.3.1 (SQLCipher 4.6.1) are a fixture now that every later SQLCipher has to open. The licence
+notices take SQLCipher's licence from `sqlcipher-src`.

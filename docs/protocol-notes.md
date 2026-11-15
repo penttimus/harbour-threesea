@@ -113,7 +113,8 @@ Things learned while porting. Sources are upstream paths at the pinned tag.
 - HTTPS pins (SHA-256 SPKI): `app/src/main/res/xml/network_security_config.xml`
   (threema.ch, threema.com, sfu.threema.ch, …), copied into `core/src/https.rs`;
   `scripts/check-pins.py` (part of `scripts/check.sh`) fails when they differ from the
-  submodule's, so a new upstream tag with other pins is noticed.
+  submodule's, so a new upstream tag with other pins is noticed. 6.6.0 added `test.threema.com`
+  (Android's app rating, which we don't use) with a pin of its own.
 
 ## Background on Libre
 - Libre has no FCM: `forceThreemaPush = (this is Libre)`, i.e. a foreground service holding a

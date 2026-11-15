@@ -134,8 +134,10 @@ harbour-threesea/
 ```
 
 `libthreema` is **vendored** (`third_party/libthreema`, vendor branch `vendor/libthreema`, ADR 0006);
-the upstream repository is a pristine submodule pinned to the same tag for reference. Update
-both together with `scripts/update-libthreema.sh <tag>` and record the version in `docs/build.md`.
+the upstream repository is a pristine submodule for reference. Update both together with
+`scripts/update-libthreema.sh <tag>` and record the version in `docs/build.md`. Since 6.6.0 the
+two differ: libthreema's code stays on 6.5.3 (only 6.6.0's protocol files came over) until
+upstream's new message layer covers ours, the submodule is at 6.6.0 (ADR 0036).
 
 ---
 
@@ -465,11 +467,9 @@ volume keys and video calls after the first tries on a phone); details in `docs/
   Threema's map server, a chat's polls, square profile pictures, names for Web sessions).
 - Open: phone tests, all collected in `docs/voice-video-device-checklist.md` (calls, camera,
   battery, video, the media controls, and everything the audit's fixes left to a phone);
-  the SQLite advisory passed over until `rusqlite` 0.42 is out (ADR 0035, issue 9); the questions the
-  audit's packages left for the user (in `docs/STATUS.md`: sharing media with other apps, a
-  map); P01 for Threema Web's
-  picture and contact commands (still wait in the core loop, ADR 0028); the OrganizationName
-  (§11); Jolla Store and Chum packaging. Done 2026-10-28:
+  the questions the audit's packages left for the user (in `docs/STATUS.md`: sharing media with
+  other apps, a map); P01 for Threema Web's picture and contact commands (still wait in the
+  core loop, ADR 0028); the OrganizationName (§11); Jolla Store and Chum packaging. Done 2026-10-28:
   fuzzing setup and first runs (`core/fuzz/`), indexed search. Done 2026-10-29 (user asked for
   it after all): the per-chat summary (store migration 33) — SQL triggers keep it in step, so
   no write path has to, which was the risk; with the chat list's per-chat lookups batched into
@@ -544,7 +544,8 @@ volume keys and video calls after the first tries on a phone); details in `docs/
 Facts:
 - Upstream is AGPL-3.0; Threema is a paid app and an ID must be registered with a license. A
   third-party client works with a valid license but has no official support.
-- Pinned upstream: `6.5.3-1216` (`d44a2b53`). libthreema is pure Rust (no libsodium/C deps),
+- Pinned upstream: the reference submodule at `6.6.0-1237` (`097cc6b8`), libthreema's code at
+  `6.5.3-1216` (`d44a2b53`) with 6.6.0's protocol files (ADR 0036). libthreema is pure Rust (no libsodium/C deps),
   sans-I/O, not `Send`. It covers CSP transport, part of CSP-E2E, D2M, D2D rendezvous, ID backup,
   identity creation, parts of the directory API. Upstream does **not** cover groups, PFS, blobs,
   Threema Safe, most message types — Android does these in Kotlin. We do them in `core`, except
