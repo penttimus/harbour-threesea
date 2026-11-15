@@ -94,7 +94,7 @@ ghash 0.5.1: Apache-2.0 OR MIT; https://github.com/RustCrypto/universal-hashes
 h2 0.4.20: MIT; https://github.com/hyperium/h2
 hashbrown 0.15.5: MIT OR Apache-2.0; https://github.com/rust-lang/hashbrown
 hashbrown 0.17.1: MIT OR Apache-2.0; https://github.com/rust-lang/hashbrown
-hashlink 0.10.0: MIT OR Apache-2.0; https://github.com/kyren/hashlink
+hashlink 0.12.2: MIT OR Apache-2.0; https://github.com/djc/hashlink
 heck 0.5.0: MIT OR Apache-2.0; https://github.com/withoutboats/heck
 hmac 0.12.1: MIT OR Apache-2.0; https://github.com/RustCrypto/MACs
 hmac 0.13.0: MIT OR Apache-2.0; https://github.com/RustCrypto/MACs
@@ -126,7 +126,7 @@ konst 0.2.20: Zlib; https://github.com/rodrimati1992/konst/
 konst_macro_rules 0.2.19: Zlib; https://github.com/rodrimati1992/konst/
 lazy_static 1.5.1: MIT OR Apache-2.0; https://github.com/rust-lang-nursery/lazy-static.rs
 libc 0.2.191: MIT OR Apache-2.0; https://github.com/rust-lang/libc
-libsqlite3-sys 0.35.0: MIT; https://github.com/rusqlite/rusqlite
+libsqlite3-sys 0.40.0: MIT; https://github.com/rusqlite/rusqlite
 linux-raw-sys 0.12.1: Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT; https://github.com/sunfishcode/linux-raw-sys
 litemap 0.8.3: Unicode-3.0; https://github.com/unicode-org/icu4x
 log 0.4.34: MIT OR Apache-2.0; https://github.com/rust-lang/log
@@ -179,7 +179,7 @@ ring 0.17.14: Apache-2.0 AND ISC; https://github.com/briansmith/ring
 rmp 0.8.15: MIT; https://github.com/3Hren/msgpack-rust
 rmpv 1.3.1: MIT; https://github.com/3Hren/msgpack-rust
 rqrr 0.11.0: (MIT OR Apache-2.0) AND ISC; https://github.com/WanzenBug/rqrr
-rusqlite 0.37.0: MIT; https://github.com/rusqlite/rusqlite
+rusqlite 0.42.0: MIT; https://github.com/rusqlite/rusqlite
 rustc_version 0.4.1: MIT OR Apache-2.0; https://github.com/djc/rustc-version-rs
 rustix 1.1.5: Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT; https://github.com/bytecodealliance/rustix
 rustls 0.23.46: Apache-2.0 OR ISC OR MIT; https://github.com/rustls/rustls
@@ -206,6 +206,7 @@ simd-adler32 0.3.10: MIT; https://github.com/mcountryman/simd-adler32
 slab 0.4.12: MIT; https://github.com/tokio-rs/slab
 smallvec 1.16.3: MIT OR Apache-2.0; https://github.com/servo/rust-smallvec
 socket2 0.6.5: MIT OR Apache-2.0; https://github.com/rust-lang/socket2
+sqlcipher-src 420.0.0+sqlcipher-4.20.0-sqlite-3.54.1-libtomcrypt-1.18.2: MIT AND BSD-3-Clause AND blessing AND WTFPL; https://github.com/LucaCappelletti94/sqlcipher-src
 stable_deref_trait 1.2.1: MIT OR Apache-2.0; https://github.com/storyyeller/stable_deref_trait
 strum 0.28.0: MIT; https://github.com/Peternator7/strum
 strum_macros 0.28.0: MIT; https://github.com/Peternator7/strum
@@ -7115,7 +7116,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: hashlink 0.10.0 (LICENSE-APACHE)
+Used by: hashlink 0.12.2 (LICENSE-APACHE)
 ==============================================================================
 
 Apache License
@@ -7321,7 +7322,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==============================================================================
-Used by: hashlink 0.10.0 (LICENSE-MIT)
+Used by: hashlink 0.12.2 (LICENSE-MIT)
 ==============================================================================
 
 This work is derived in part from the `linked-hash-map` crate, Copyright (c)
@@ -8243,7 +8244,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: libsqlite3-sys 0.35.0 (LICENSE), rusqlite 0.37.0 (LICENSE)
+Used by: libsqlite3-sys 0.40.0 (LICENSE), rusqlite 0.42.0 (LICENSE)
 ==============================================================================
 
 Copyright (c) 2014 The rusqlite developers
@@ -8265,35 +8266,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-
-==============================================================================
-Used by: libsqlite3-sys 0.35.0 (sqlcipher/LICENSE)
-==============================================================================
-
-Copyright (c) 2008-2020 Zetetic LLC
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of the ZETETIC LLC nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY ZETETIC LLC ''AS IS'' AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL ZETETIC LLC BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==============================================================================
 Used by: linux-raw-sys 0.12.1 (COPYRIGHT)
@@ -11403,6 +11375,61 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
+
+==============================================================================
+Used by: sqlcipher-src 420.0.0+sqlcipher-4.20.0-sqlite-3.54.1-libtomcrypt-1.18.2 (LICENSE)
+==============================================================================
+
+MIT License
+
+Copyright (c) 2026 Luca Cappelletti
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+==============================================================================
+Used by: sqlcipher-src 420.0.0+sqlcipher-4.20.0-sqlite-3.54.1-libtomcrypt-1.18.2 (sqlcipher/LICENSE-sqlcipher)
+==============================================================================
+
+Copyright (c) 2025, ZETETIC LLC
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the ZETETIC LLC nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY ZETETIC LLC ''AS IS'' AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL ZETETIC LLC BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==============================================================================
 Used by: stable_deref_trait 1.2.1 (LICENSE-MIT)

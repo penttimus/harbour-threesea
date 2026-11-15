@@ -1316,7 +1316,7 @@ impl Store {
         sql: &str,
         args: &[&dyn rusqlite::ToSql],
     ) -> Result<Option<Vec<i64>>, StoreError> {
-        let limit = SEARCH_IDS_MAX + 1;
+        let limit = i64::try_from(SEARCH_IDS_MAX + 1).expect("a small limit");
         let args: Vec<&dyn rusqlite::ToSql> = args
             .iter()
             .copied()

@@ -465,11 +465,9 @@ volume keys and video calls after the first tries on a phone); details in `docs/
   Threema's map server, a chat's polls, square profile pictures, names for Web sessions).
 - Open: phone tests, all collected in `docs/voice-video-device-checklist.md` (calls, camera,
   battery, video, the media controls, and everything the audit's fixes left to a phone);
-  the SQLite advisory passed over until `rusqlite` 0.42 is out (ADR 0035, issue 9); the questions the
-  audit's packages left for the user (in `docs/STATUS.md`: sharing media with other apps, a
-  map); P01 for Threema Web's
-  picture and contact commands (still wait in the core loop, ADR 0028); the OrganizationName
-  (§11); Jolla Store and Chum packaging. Done 2026-10-28:
+  the questions the audit's packages left for the user (in `docs/STATUS.md`: sharing media with
+  other apps, a map); P01 for Threema Web's picture and contact commands (still wait in the
+  core loop, ADR 0028); the OrganizationName (§11); Jolla Store and Chum packaging. Done 2026-10-28:
   fuzzing setup and first runs (`core/fuzz/`), indexed search. Done 2026-10-29 (user asked for
   it after all): the per-chat summary (store migration 33) — SQL triggers keep it in step, so
   no write path has to, which was the risk; with the chat list's per-chat lookups batched into

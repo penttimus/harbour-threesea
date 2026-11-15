@@ -23,7 +23,7 @@ OUT = os.path.join(ROOT, "THIRD-PARTY-NOTICES.txt")
 TARGETS = ["aarch64-unknown-linux-gnu", "armv7-unknown-linux-gnueabihf", "i686-unknown-linux-gnu"]
 LICENCE_FILE = re.compile(r"(?i)^(licen[cs]e|copying|notice|unlicense|copyright|attribution)")
 # Texts a crate keeps below its top directory: the bundled C library's own licence.
-EXTRA_FILES = {"libsqlite3-sys": ["sqlcipher/LICENSE"]}
+EXTRA_FILES = {"sqlcipher-src": ["sqlcipher/LICENSE-sqlcipher"]}
 # Ours or Threema's, under the AGPL in LICENSE.
 AGPL_OWN = {"threesea-core", "libthreema", "libthreema-macros"}
 
