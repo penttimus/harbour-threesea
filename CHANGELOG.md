@@ -7,6 +7,12 @@ All notable changes. Versions follow `MAJOR.MINOR.PATCH`; each release is built 
 
 Fixed:
 
+- With Bluetooth headphones or a headset, voice messages play in them again: once the phone had
+  been at the ear, they came from the loudspeaker until Threesea closed. Holding the phone to the
+  ear changes nothing while headphones are connected, as in Threema for Android (Full), by
+  [penttimus](https://github.com/penttimus), reported by
+  [jmpx448](https://github.com/jmpx448) ([#22](https://github.com/penttimus/harbour-threesea/issues/22)).
+
 - The bundled SQLite no longer has the fault of RUSTSEC-2026-0459: the store now uses SQLCipher
   4.20 on SQLite 3.54.1, through `rusqlite` 0.42. Existing data opens as before, by
   [penttimus](https://github.com/penttimus) ([#9](https://github.com/penttimus/harbour-threesea/issues/9)).

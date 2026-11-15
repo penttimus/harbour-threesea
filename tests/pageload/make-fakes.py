@@ -29,6 +29,7 @@ OBJECTS = {
     "voiceRecorder": ("voicerecorder.h", "VoiceRecorder"),
     "proximity": ("proximitymonitor.h", "ProximityMonitor"),
     "callRoute": ("callroute.h", "CallRoute"),
+    "mediaRoute": ("mediaroute.h", "MediaRoute"),
     "callVolume": ("callvolume.h", "CallVolume"),
     "softSound": ("softsound.h", "SoftSound"),
 }

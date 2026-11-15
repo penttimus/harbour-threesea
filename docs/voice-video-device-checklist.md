@@ -31,6 +31,13 @@ Settings → Chats: "Play voice messages at the ear" is on by default.
    - Expect: it carries on from where it stood, on the earpiece.
 4. Turn the setting off and hold the phone to your ear.
    - Expect: nothing happens (the sensor is not even started).
+5. Bluetooth headphones connected (A2DP), then a wired headset (issue 22): play a voice message
+   with the phone lying face up, then cover the proximity sensor while it plays, then play the
+   next one. Also once after a message at the ear without headphones, then connect them.
+   - Expect: every message in the headphones, covering the sensor changes nothing. During
+     playback `pactl list sink-inputs` shows Threesea's stream on the Bluetooth sink, not in the
+     policy group `call` (`policy.group = "player"`, or whatever group the system's player gets).
+   - Headphones connected while a message plays at the ear: it goes on in them without a pause.
 
 ## B. The sound between two voice messages
 

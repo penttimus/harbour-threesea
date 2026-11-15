@@ -88,3 +88,22 @@ Not chosen:
   A call starts at the media volume's level, and the keys leave the media volume changed after
   it. No volume bar shows. Behind another app the keys stay the system's.
 - Lite is untouched: no calls, no voice at the ear, no library.
+
+## Update 2026-11-15: the class only while it is held, and never with headphones (issue 22)
+
+With Bluetooth headphones a voice message played on the loudspeaker, its stream in the policy's
+group `call` on the phone's own sink while the route manager said `bluetootha2dp`, after the
+phone had once been at the ear. The set's audio resource (our process, every `media.name`) files
+the process's streams under the call for as long as the set exists, and it existed from the first
+hold to the end of the process; a stream that started in the moment before letting go (600 ms) was
+the call's too. Now:
+- the set is deleted when the class is let go, and asked for anew with the next hold;
+- leaving the ear lets go at once, before the loudspeaker's stream starts (`letGoNow`);
+- with headphones, a headset or Bluetooth as the route manager's output (`bridge/mediaroute.h`)
+  the proximity sensor stays off: the message stays in them, as on Android. An output name we
+  don't know counts as headphones.
+
+Not changed, though narrower: the tag still matches every stream of the process while the class
+is held (a call, a message at the ear), as Jolla's call manager's does; a tag on our streams' role
+`phone` alone would be tighter, but no phone has shown that the policy matches a tag other than
+`media.name`. Still to see on a phone (device checklist A.5).

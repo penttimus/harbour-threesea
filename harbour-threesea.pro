@@ -52,6 +52,7 @@ SOURCES += \
     bridge/mediaimageprovider.cpp \
     bridge/photoedit.cpp \
     bridge/callroute.cpp \
+    bridge/mediaroute.cpp \
     bridge/proximitymonitor.cpp \
     bridge/secretstore.cpp \
     bridge/softsound.cpp \
@@ -84,6 +85,7 @@ HEADERS += \
     bridge/photoedit.h \
     bridge/peerimage.h \
     bridge/callroute.h \
+    bridge/mediaroute.h \
     bridge/proximitymonitor.h \
     bridge/offlinenetwork.h \
     bridge/coreresult.h \

@@ -41,6 +41,7 @@
 #include "listfilter.h"
 #include "maplogfilter.h"
 #include "mediaimageprovider.h"
+#include "mediaroute.h"
 #include "proximitymonitor.h"
 #include "softsound.h"
 #include "offlinenetwork.h"
@@ -220,6 +221,13 @@ int main(int argc, char *argv[])
     VoicePlayer *voicePlayer = new VoicePlayer(backend, view->engine());
     view->rootContext()->setContextProperty(QStringLiteral("voicePlayer"), voicePlayer);
     view->rootContext()->setContextProperty(QStringLiteral("proximity"), new ProximityMonitor(view->engine()));
+    // Headphones or Bluetooth keep a voice message off the earpiece (issue 22). Lite has no
+    // earpiece, so it never asks the route manager.
+    MediaRoute *mediaRoute = new MediaRoute(view->engine());
+#ifdef THREESEA_FULL
+    mediaRoute->start();
+#endif
+    view->rootContext()->setContextProperty(QStringLiteral("mediaRoute"), mediaRoute);
     // Android's in-app sound: a message arriving in the chat the user is reading.
     view->rootContext()->setContextProperty(QStringLiteral("softSound"), new SoftSound(view->engine()));
     VideoPlayer *videoPlayer = new VideoPlayer(backend, view->engine());

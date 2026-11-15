@@ -1618,3 +1618,14 @@ only through `&mut`, so a test build's store installs its commit hook when it op
 (`store::CommitWatch`) and the tests count or refuse commits through it. A store and a WAL written
 by 0.3.1 (SQLCipher 4.6.1) are a fixture now that every later SQLCipher has to open. The licence
 notices take SQLCipher's licence from `sqlcipher-src`.
+
+## Voice messages on Bluetooth headphones (issue 22, 2026-11-15)
+
+Reported on a Jolla Phone 2026 (SFOS 5.2.0.22, 0.3.1): with A2DP headphones voice messages came
+from the loudspeaker, the stream in the policy's group `call`, after the phone had once been at the
+ear. The call class's resource set lived on after letting go, and its audio resource files every
+stream of the process under the call (ADR 0034's update). The set now goes with the class, leaving
+the ear lets go before the loudspeaker's stream starts, and with headphones or Bluetooth as the
+output (`bridge/mediaroute.h`, `tests/mediaroute`) the ear stays off. Full only. Not seen on a
+phone yet: device checklist A.5; the explanation is read from the report and the policy's
+behaviour, not shown.

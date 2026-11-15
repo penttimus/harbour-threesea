@@ -69,6 +69,13 @@ void CallClass::drop(const void *who)
     }
 }
 
+void CallClass::letGoNow()
+{
+    if (m_holders.isEmpty()) {
+        release();
+    }
+}
+
 void CallClass::release()
 {
     if (m_state == Idle) {
@@ -105,8 +112,14 @@ void CallClass::policyAcquire()
 
 void CallClass::policyRelease()
 {
+    // Gone, not just released: its audio resource files every stream of the process under the
+    // call for as long as the set exists, held or not, and a call's group isn't routed to
+    // Bluetooth headphones (issue 22). The next hold asks with a new one.
     if (m_set) {
         m_set->release();
+        m_set->disconnect(this);
+        m_set->deleteLater();
+        m_set = nullptr;
     }
 }
 
