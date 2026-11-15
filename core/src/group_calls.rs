@@ -61,6 +61,9 @@ pub fn sealed_call_state(
                 (
                     participant.id,
                     call_state::Participant {
+                        // Moderator approval (6.6.0's protocol) isn't used by Android 6.6.0 either.
+                        participation_state:
+                            call_state::participant::ParticipationState::Participating as i32,
                         participant: Some(call_state::participant::Participant::Threema(
                             call_state::participant::Normal {
                                 identity: participant.identity.to_owned(),

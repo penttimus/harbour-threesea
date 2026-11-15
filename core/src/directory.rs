@@ -403,7 +403,8 @@ fn report_group_request(
     json!({
         "reporter_identity": reporter,
         "group_creator_identity": creator,
-        "group_creator_nickname": nickname.filter(|name| !name.is_empty()),
+        // A blank one is none (Android 6.6.0).
+        "group_creator_nickname": nickname.filter(|name| !name.trim().is_empty()),
         "group_name": Value::Null,
         "group_id": group_id.to_string(),
         "group_member_count": member_count,
@@ -775,6 +776,11 @@ mod tests {
                    "group_creator_nickname": null, "group_name": null,
                    "group_id": "18446744073709551615", "group_member_count": 4})
         );
+        // A blank creator's nickname is none (Android 6.6.0).
+        for nickname in ["", "  "] {
+            let request = report_group_request("ABCD1234", "EFGH5678", Some(nickname), 1, 2);
+            assert_eq!(request["group_creator_nickname"], Value::Null);
+        }
     }
 
     #[test]

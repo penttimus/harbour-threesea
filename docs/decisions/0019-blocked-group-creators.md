@@ -31,3 +31,13 @@ direct contact), so a stranger on the block list doesn't become one by trying.
 Under "Block unknown senders", a stranger's group-setup makes them a direct contact, even one that
 doesn't name the user and so brings no group. From then on the setting no longer stops them. Android
 does the same.
+
+## Update 2026-11-15: Android 6.6.0 does it too, and for block unknown
+
+Android 6.6.0 has _Dedicated Group Setup Blocking Exemption Steps_
+(`DedicatedGroupSetupBlockingExemptionSteps.kt`): for a group that doesn't exist, a group-setup
+from a creator blocked explicitly **or implicitly** (block unknown: not a direct contact and in no
+group with the user) is discarded. We follow it for block unknown as well, so the last paragraph
+above no longer holds: under "Block unknown senders" a stranger can't add the user to a new group,
+and doesn't become a direct contact by trying. What stays ours: Android lets a blocked creator
+revive a group the user left (the group exists), we don't.

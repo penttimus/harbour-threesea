@@ -22,3 +22,7 @@ patch files is hard to edit, review and rebase.
 **Consequences.** One repository, ordinary history and review, no patch tooling. Our changes
 keep libthreema's style, lints and tests (`cargo test -p libthreema` in `third_party/libthreema`)
 so the code stays mergeable with upstream releases.
+
+**Update 2026-11-15.** `vendor/libthreema` was missing (the cleaned public history dropped it) and
+is back at the 6.5.3 import `c108a64`, with the pristine 6.6.0 on top. 6.6.0 is not merged: only
+its protocol files came over (ADR 0036).
