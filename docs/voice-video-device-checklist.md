@@ -38,6 +38,11 @@ Settings → Chats: "Play voice messages at the ear" is on by default.
      playback `pactl list sink-inputs` shows Threesea's stream on the Bluetooth sink, not in the
      policy group `call` (`policy.group = "player"`, or whatever group the system's player gets).
    - Headphones connected while a message plays at the ear: it goes on in them without a pause.
+   - Without headphones a message at the ear, then headphones again and a message played face up
+     (failed with ad18fd3: silent, the stream in `othermedia`): heard in the headphones, the
+     stream in `player`.
+   - A call and a message at the ear: `policy.group = "call"` for the `phone` streams if the
+     policy matches the role tag; `othermedia` also works (as with ad18fd3) as long as it's heard.
 
 ## B. The sound between two voice messages
 

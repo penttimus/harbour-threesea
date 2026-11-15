@@ -93,10 +93,14 @@ void CallClass::policyAcquire()
 {
     if (!m_set) {
         m_set = new ResourcePolicy::ResourceSet(QStringLiteral("call"), this, true, false);
-        // Our streams are the call's: the policy corks what it takes for a player's.
+        // Our call's and the earpiece's streams (role `phone`) are the call's, and only those: Qt's
+        // media player has a set of its own ("player") for the process's `media.name`, and a set of
+        // ours on that tag took the player's streams too, into the call while it lasted (on the
+        // phone's sink, never Bluetooth) and into the corked `othermedia` once it was gone
+        // (issue 22).
         ResourcePolicy::AudioResource *audio = new ResourcePolicy::AudioResource(QStringLiteral("call"));
         audio->setProcessID(static_cast<quint32>(QCoreApplication::applicationPid()));
-        audio->setStreamTag(QStringLiteral("media.name"), QStringLiteral("*"));
+        audio->setStreamTag(QStringLiteral("media.role"), QStringLiteral("phone"));
         m_set->addResourceObject(audio);
         m_set->addResource(ResourcePolicy::AudioRecorderType);
         connect(m_set, &ResourcePolicy::ResourceSet::resourcesGranted, this, &CallClass::onGranted);
@@ -112,9 +116,8 @@ void CallClass::policyAcquire()
 
 void CallClass::policyRelease()
 {
-    // Gone, not just released: its audio resource files every stream of the process under the
-    // call for as long as the set exists, held or not, and a call's group isn't routed to
-    // Bluetooth headphones (issue 22). The next hold asks with a new one.
+    // Gone, not just released, so that its rule on our streams goes with it; the next hold asks
+    // with a new one.
     if (m_set) {
         m_set->release();
         m_set->disconnect(this);

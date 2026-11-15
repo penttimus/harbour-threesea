@@ -89,21 +89,25 @@ Not chosen:
   it. No volume bar shows. Behind another app the keys stay the system's.
 - Lite is untouched: no calls, no voice at the ear, no library.
 
-## Update 2026-11-15: the class only while it is held, and never with headphones (issue 22)
+## Update 2026-11-15: only our own streams, and never with headphones (issue 22)
 
-With Bluetooth headphones a voice message played on the loudspeaker, its stream in the policy's
-group `call` on the phone's own sink while the route manager said `bluetootha2dp`, after the
-phone had once been at the ear. The set's audio resource (our process, every `media.name`) files
-the process's streams under the call for as long as the set exists, and it existed from the first
-hold to the end of the process; a stream that started in the moment before letting go (600 ms) was
-the call's too. Now:
-- the set is deleted when the class is let go, and asked for anew with the next hold;
-- leaving the ear lets go at once, before the loudspeaker's stream starts (`letGoNow`);
+With Bluetooth headphones a voice message played on the loudspeaker, its stream (role `x-maemo`,
+Qt's media player) in the policy's group `call` on the phone's own sink, after the phone had once
+been at the ear. Qt's media player has a resource set of its own on Sailfish (QtMultimedia's
+`resourcepolicy` plugin, class `player`, tag `media.name`), and ours had the same tag, `media.name`
+`*`, for the same process: from the first hold on, the player's streams were the call's. Deleting
+our set when letting go only made it worse, as a tester showed on a phone (Jolla Phone 2026,
+SFOS 5.2): the player's rule went with ours, its stream fell into `othermedia`, which the policy
+corks, and was silent. Now:
+- the set's audio resource names our streams by their role, `media.role` `phone` (the calls' and
+  the earpiece's pipelines), and leaves the player's alone. The tester saw our `phone` streams in
+  `othermedia` at the ear and the earpiece working all the same: the route follows the grant, not
+  the streams' group, so if the policy didn't match this tag we would be where that test was;
+- the set is deleted when the class is let go, and leaving the ear lets go at once (`letGoNow`);
 - with headphones, a headset or Bluetooth as the route manager's output (`bridge/mediaroute.h`)
   the proximity sensor stays off: the message stays in them, as on Android. An output name we
   don't know counts as headphones.
 
-Not changed, though narrower: the tag still matches every stream of the process while the class
-is held (a call, a message at the ear), as Jolla's call manager's does; a tag on our streams' role
-`phone` alone would be tighter, but no phone has shown that the policy matches a tag other than
-`media.name`. Still to see on a phone (device checklist A.5).
+The first version of this fix (tag unchanged, set deleted) was tried on the phone: the headphones
+part worked, a message after one at the ear was silent. The role tag is to be tried there next
+(device checklist A.5).
