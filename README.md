@@ -56,9 +56,12 @@ releases and keeps them up to date, picking the right package for your phone
    (Sailfish OS 5.0+, allow untrusted software in Settings).
 2. In Harpoon, add an app: **scan the QR code**, or paste
    `https://github.com/penttimus/harbour-threesea`.
-3. When Harpoon asks which build you want, pick **full** (see [below](#full-or-lite)).
+3. In the same dialog, set **Package filter (regular expression)** to `harbour-threesea-full`
+   (or `harbour-threesea-lite`, see [below](#full-or-lite)). Each release holds both as separate
+   packages, and Harpoon needs the filter to know which one is yours.
 
-That's it: new versions come to you through Harpoon.
+That's it: new versions come to you through Harpoon. Added it without the filter? Set it in the
+app's settings in Harpoon, under **Packages**.
 
 ### By hand
 
