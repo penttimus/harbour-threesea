@@ -4013,7 +4013,7 @@ mod tests {
     /// The page of a table, unreadable from now on.
     fn damage_table(path: &std::path::Path, key: &[u8; 32], table: &str) {
         let store = Store::open(path, key).unwrap();
-        let root: usize = store
+        let root: i64 = store
             .conn
             .query_row(
                 "SELECT rootpage FROM sqlite_master WHERE name = ?1",
@@ -4021,6 +4021,7 @@ mod tests {
                 |row| row.get(0),
             )
             .unwrap();
+        let root = usize::try_from(root).unwrap();
         drop(store);
         let mut raw = std::fs::read(path).unwrap();
         raw[(root - 1) * 4096 + 100..(root - 1) * 4096 + 200].fill(0xA5);

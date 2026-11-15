@@ -61,7 +61,7 @@ futures-util = { version = "0.3", default-features = false, features = ["sink", 
 prost = "=0.14.4"
 
 # Encrypted store (SQLCipher, statically bundled; links the system libcrypto, Harbour-allowed).
-rusqlite = { version = "0.37", features = ["bundled-sqlcipher"] }
+rusqlite = { version = "0.42", features = ["bundled-sqlcipher"] }
 
 # Threema Safe: same RustCrypto crates/versions libthreema uses (it has no Safe implementation).
 scrypt = { version = "0.11", default-features = false }
@@ -94,7 +94,7 @@ tracing-subscriber = { version = "0.3", default-features = false, features = ["f
 
 [dev-dependencies]
 # The same rusqlite: tests count commits with its commit hook.
-rusqlite = { version = "0.37", features = ["bundled-sqlcipher", "hooks"] }
+rusqlite = { version = "0.42", features = ["bundled-sqlcipher", "hooks"] }
 tempfile = "3"
 # The same tokio, its clock under the tests' control.
 tokio = { version = "1.52", default-features = false, features = ["test-util"] }

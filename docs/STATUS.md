@@ -1624,3 +1624,12 @@ participant IDs and early media keys), under their new names; a group call state
 say they take part (moderator approval is new and unused); and the TLS pin of
 `test.threema.com`, new upstream. The wire stays as it was. Open from 6.6.0: Android's new
 "report spam group chats and block the creator".
+## The SQLite advisory fixed (2026-11-15)
+
+`rusqlite` 0.42 / `libsqlite3-sys` 0.40 came out on 2026-11-11 with SQLCipher 4.20.0 on SQLite
+3.54.1, so RUSTSEC-2026-0459 is fixed and no longer passed over (ADR 0035's update, issue 9). The
+API changes it brought: no `ToSql`/`FromSql` for `usize` (three places now convert), and hooks
+only through `&mut`, so a test build's store installs its commit hook when it opens
+(`store::CommitWatch`) and the tests count or refuse commits through it. A store and a WAL written
+by 0.3.1 (SQLCipher 4.6.1) are a fixture now that every later SQLCipher has to open. The licence
+notices take SQLCipher's licence from `sqlcipher-src`.

@@ -3,6 +3,14 @@
 All notable changes. Versions follow `MAJOR.MINOR.PATCH`; each release is built from the
 `release` branch and tagged `v<version>` (see [docs/release.md](docs/release.md)).
 
+## [Unreleased]
+
+Fixed:
+
+- The bundled SQLite no longer has the fault of RUSTSEC-2026-0459: the store now uses SQLCipher
+  4.20 on SQLite 3.54.1, through `rusqlite` 0.42. Existing data opens as before, by
+  [penttimus](https://github.com/penttimus) ([#9](https://github.com/penttimus/harbour-threesea/issues/9)).
+
 ## [0.3.1] - 2026-11-11
 
 Calls on a phone: the earpiece, the volume keys and video calls with the phone's camera, after the
