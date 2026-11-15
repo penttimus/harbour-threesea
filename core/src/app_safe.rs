@@ -943,6 +943,7 @@ impl Shared {
         self.run_restore_setup().await;
         self.resume_picture_downloads();
         self.request_restored_pictures(PICTURE_REQUEST_BATCH);
+        self.send_group_reports().await;
         events
     }
 
@@ -1248,6 +1249,7 @@ impl Shared {
         self.run_restore_setup().await;
         self.resume_picture_downloads();
         self.request_restored_pictures(PICTURE_REQUEST_BATCH);
+        self.send_group_reports().await;
         match self
             .store
             .expire_unresolved_outbox(crate::messages::now_ms() - UNRESOLVED_OUTBOX_MAX_AGE_MS)

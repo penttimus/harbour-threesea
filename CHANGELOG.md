@@ -12,6 +12,13 @@ Changed:
   [Harpoon](https://github.com/JuhaniLehtimaeki/Harpoon), which keeps Threesea up to date, by
   [penttimus](https://github.com/penttimus).
 
+- Reporting a group as spam no longer waits for Threema's server, as in Threema for Android 6.6.0:
+  blocking its creator, leaving and deleting happen at once, also without a connection, and the
+  report is sent in the background and tried again until it is through. A call with the creator
+  and the group's call end with it, by [penttimus](https://github.com/penttimus).
+- With "Block unknown senders" on, someone you don't know can no longer add you to a new group,
+  as in Threema for Android 6.6.0. That is how spam groups mostly arrive, by
+  [penttimus](https://github.com/penttimus).
 Fixed:
 
 - The bundled SQLite no longer has the fault of RUSTSEC-2026-0459: the store now uses SQLCipher

@@ -3,7 +3,8 @@
 Status: research notes, 2026-10-23. Only public sources were read. Each claim gives its source.
 Abbreviations used for sources:
 
-- **[PROTO]** `third_party/libthreema/threema-protocols/src/group-call.proto` (the vendored copy matches upstream 6.5.3)
+- **[PROTO]** `third_party/libthreema/threema-protocols/src/group-call.proto` (the vendored copy is upstream 6.6.0's: participant UIDs and moderator approval came in, and
+  Android 6.6.0 uses neither, ADR 0036)
 - **[STRUCT]** `third_party/libthreema/threema-protocols/src/group-call.struct.yml`
 - **[CSP-E2E]** `third_party/libthreema/threema-protocols/src/csp-e2e.proto`; **[COMMON]** `.../common.proto`;
   **[DIR-API]** `.../directory.openapi.yml`
