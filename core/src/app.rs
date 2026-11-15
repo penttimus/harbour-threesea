@@ -1483,6 +1483,8 @@ pub struct Shared {
     /// In the core loop, from the UI: what waits or takes long goes beside the loop. Others
     /// asking the same (Threema Web) need the answer in place.
     pub(crate) in_background: std::cell::Cell<bool>,
+    /// A round of groups' spam reports is being sent (`app_spam`).
+    pub(crate) group_reports_sending: std::cell::Cell<bool>,
 }
 
 impl core::ops::Deref for App {
@@ -1625,6 +1627,7 @@ impl App {
             data_dir: start.data_dir.clone(),
             imported_contacts_unchecked: std::cell::Cell::new(false),
             in_background: std::cell::Cell::new(false),
+            group_reports_sending: std::cell::Cell::new(false),
         };
         let app = Self {
             shared: std::rc::Rc::new(shared),

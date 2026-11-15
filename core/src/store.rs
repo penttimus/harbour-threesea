@@ -386,6 +386,9 @@ pub mod keys {
     /// Our picture changed and the other devices of the group don't have it yet (the groups'
     /// are in `group_picture_syncs`): `app_multidevice::reflect_own_picture`.
     pub const OWN_PICTURE_SYNC_OWED: &str = "own_picture_sync_owed";
+    /// Groups reported as spam whose report the directory hasn't taken yet, with what it sends
+    /// (JSON): `app_spam::send_group_reports`.
+    pub const SPAM_GROUP_REPORTS: &str = "spam_group_reports";
     /// Set by store migration 35: see `sync::reflect_group_contacts_once`.
     pub const GROUP_CONTACTS_TO_REFLECT: &str = "group_contacts_to_reflect";
 }

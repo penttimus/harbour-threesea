@@ -3,6 +3,18 @@
 All notable changes. Versions follow `MAJOR.MINOR.PATCH`; each release is built from the
 `release` branch and tagged `v<version>` (see [docs/release.md](docs/release.md)).
 
+## [Unreleased]
+
+Changed:
+
+- Reporting a group as spam no longer waits for Threema's server, as in Threema for Android 6.6.0:
+  blocking its creator, leaving and deleting happen at once, also without a connection, and the
+  report is sent in the background and tried again until it is through. A call with the creator
+  and the group's call end with it, by [penttimus](https://github.com/penttimus).
+- With "Block unknown senders" on, someone you don't know can no longer add you to a new group,
+  as in Threema for Android 6.6.0. That is how spam groups mostly arrive, by
+  [penttimus](https://github.com/penttimus).
+
 ## [0.3.1] - 2026-11-11
 
 Calls on a phone: the earpiece, the volume keys and video calls with the phone's camera, after the

@@ -57,8 +57,17 @@ Things learned while porting. Sources are upstream paths at the pinned tag.
 - Offered when: not dismissed or reported before; the contact (a group's creator) is unverified,
   unnamed, not blocked and not predefined, a 1:1 contact also not "group or deleted"; for a group
   also not left and not our own; no outgoing message yet; the first incoming one at most 7 days after
-  the contact was created. Android's window is 1 day; we follow iOS's written steps.
-- Blocking and deleting only after the report went through (Android; iOS doesn't wait).
+  the contact was created (iOS's written steps; Android 6.6.0's _Group Spam Potential Detection
+  Steps_ have the same 7 days for a group, without the name, block and predefined exclusions).
+- A contact's report: blocking and deleting only after it went through (Android; iOS doesn't
+  wait). A group's (Android 6.6.0, `ReportGroupFlow`, `ReportGroupToDirectoryServerTask`): the
+  report waits in the store with what it sends (`spam_group_reports`) and goes in the background,
+  right away, after connecting and hourly, until the directory answered it (a refusal too) or
+  after 8 tries; the chat is marked reported, and blocking, leaving and deleting happen at once.
+  Block and delete also end a call with the creator and the group's call. A blank nickname goes
+  as `null`.
+- With "Block unknown senders", a stranger's group-setup for a group the user doesn't have is
+  discarded (Android 6.6.0, ADR 0019's update): spam groups mostly come that way.
 
 ## Libre / Threema Shop licensing
 - Libre builds use `LicenseType.SERIAL` (`app/…/BuildFlavor.kt`). Key format `XXXXX-XXXXX`
