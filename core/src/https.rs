@@ -23,7 +23,7 @@ use rustls::{
 };
 use sha2::{Digest as _, Sha256};
 
-/// SHA-256 SPKI pins per domain (subdomains included), copied from upstream 6.5.3-1216
+/// SHA-256 SPKI pins per domain (subdomains included), copied from upstream 6.6.0-1237
 /// `app/src/main/res/xml/network_security_config.xml`. The most specific domain wins.
 const PINS: &[(&str, &[&str])] = &[
     (
@@ -53,6 +53,11 @@ const PINS: &[(&str, &[&str])] = &[
             "2Vpy8qUQCqc2+Lg6BgRO8G6e6vh7NmvVHTljfwP/Pfk=",
             "KKBJHJn1PQSdNTmoAfhxqWTO61r8O8bPi/JeGtP/6gg=",
         ],
+    ),
+    // Android's app rating (6.6.0), which we don't use: pinned as upstream does all the same.
+    (
+        "test.threema.com",
+        &["ynaQ50/SML3hijdXhd0scOahg+4LWleO+/jEnxaYpWg="],
     ),
     (
         "threema.com",
@@ -782,6 +787,8 @@ mod tests {
         assert_eq!(pins_for_host("sfu.threema.ch").unwrap().len(), 4);
         assert_eq!(pins_for_host("a.sfu.threema.ch").unwrap().len(), 4);
         assert_eq!(pins_for_host("safe-12.threema.ch").unwrap().len(), 6);
+        assert_eq!(pins_for_host("test.threema.com").unwrap().len(), 1);
+        assert_eq!(pins_for_host("www.threema.com").unwrap().len(), 6);
         assert!(pins_for_host("evilthreema.ch").is_none());
     }
 
