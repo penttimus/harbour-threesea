@@ -4,6 +4,8 @@ use std::{io, sync::Arc};
 use tracing::{Level, debug};
 use tracing_subscriber::{filter::LevelFilter, fmt::MakeWriter};
 
+use crate::bindings::uniffi::InfallibleError;
+
 /// Log levels used by libthreema.
 #[derive(Clone, Copy, Debug, uniffi::Enum)]
 pub enum LogLevel {
@@ -21,13 +23,13 @@ pub enum LogLevel {
 }
 
 impl From<LogLevel> for LevelFilter {
-    fn from(level: LogLevel) -> LevelFilter {
+    fn from(level: LogLevel) -> Self {
         match level {
-            LogLevel::Trace => LevelFilter::TRACE,
-            LogLevel::Debug => LevelFilter::DEBUG,
-            LogLevel::Info => LevelFilter::INFO,
-            LogLevel::Warn => LevelFilter::WARN,
-            LogLevel::Error => LevelFilter::ERROR,
+            LogLevel::Trace => Self::TRACE,
+            LogLevel::Debug => Self::DEBUG,
+            LogLevel::Info => Self::INFO,
+            LogLevel::Warn => Self::WARN,
+            LogLevel::Error => Self::ERROR,
         }
     }
 }
@@ -35,11 +37,11 @@ impl From<LogLevel> for LevelFilter {
 impl From<Level> for LogLevel {
     fn from(level: Level) -> Self {
         match level {
-            Level::TRACE => LogLevel::Trace,
-            Level::DEBUG => LogLevel::Debug,
-            Level::INFO => LogLevel::Info,
-            Level::WARN => LogLevel::Warn,
-            Level::ERROR => LogLevel::Error,
+            Level::TRACE => Self::Trace,
+            Level::DEBUG => Self::Debug,
+            Level::INFO => Self::Info,
+            Level::WARN => Self::Warn,
+            Level::ERROR => Self::Error,
         }
     }
 }
@@ -52,7 +54,7 @@ pub trait LogDispatcher: Send + Sync {
     ///
     /// This function is considered infallible and should not return an error. If it does however,
     /// libthreema will discard the error.
-    fn log(&self, level: LogLevel, record: String) -> Result<(), super::InfallibleError>;
+    fn log(&self, level: LogLevel, record: String) -> Result<(), InfallibleError>;
 }
 
 struct DispatchWriter {
@@ -114,7 +116,7 @@ impl<'writer> MakeWriter<'writer> for MakeDispatchWriter {
 /// Initialise logging with the provided log dispatcher and minimum log level.
 ///
 /// IMPORTANT: This may only be called **once**!
-pub(super) fn init_logging(min_log_level: LogLevel, log_dispatcher: Arc<dyn LogDispatcher>) {
+pub(crate) fn init_logging(min_log_level: LogLevel, log_dispatcher: Arc<dyn LogDispatcher>) {
     // Configure tracing
     let level_filter: LevelFilter = min_log_level.into();
     let subscriber = tracing_subscriber::fmt()

@@ -4,21 +4,19 @@ use std::{collections::HashMap, sync::LazyLock};
 
 #[cfg(any(test, feature = "cli"))]
 use anyhow;
-use data_encoding::BASE64;
 use duplicate::duplicate_item;
 use educe::Educe;
+use libthreema_dependencies::{crypto::ed25519, data_encoding::BASE64};
 use regex::{Captures, Regex};
 use serde::Deserialize;
-use strum::EnumString;
 use tracing::warn;
 
 use super::{
-    BlobId, ChatServerGroup,
+    ChatServerGroup,
     keys::{DeviceGroupPathKey, PublicKey},
 };
 use crate::{
-    common::ThreemaId,
-    crypto::ed25519,
+    common::{BlobId, ThreemaId},
     model::contact::PredefinedContact,
     utils::{
         debug::debug_str_redacted,
@@ -151,7 +149,10 @@ static URL_REGEX: LazyLock<Regex> = LazyLock::new(|| {
 static TEMPLATE_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"\{(.*?)\}").expect("Template regex compilation failed"));
 
-fn map_placeholders<F: Fn(&'_ str) -> Option<String>>(string: &str, map_fn: F) -> String {
+fn map_placeholders<F>(string: &str, map_fn: F) -> String
+where
+    F: Fn(&'_ str) -> Option<String>,
+{
     TEMPLATE_REGEX
         .replace_all(string, |captures: &Captures<'_>| {
             let key = captures
@@ -200,7 +201,10 @@ impl Url {
     }
 
     #[inline]
-    fn map_placeholders<F: Fn(&'_ str) -> Option<String>>(&self, map_fn: F) -> String {
+    fn map_placeholders<F>(&self, map_fn: F) -> String
+    where
+        F: Fn(&'_ str) -> Option<String>,
+    {
         map_placeholders(&self.0, map_fn)
     }
 }
@@ -216,7 +220,7 @@ impl BaseUrl {
         if !url.0.ends_with('/') {
             return Err(UrlError::InvalidBaseUrl("Missing trailing slash"));
         }
-        Ok(BaseUrl(url))
+        Ok(Self(url))
     }
 
     #[inline]
@@ -230,7 +234,10 @@ impl BaseUrl {
     }
 
     #[inline]
-    fn map_placeholders<F: Fn(&'_ str) -> Option<String>>(&self, map_fn: F) -> String {
+    fn map_placeholders<F>(&self, map_fn: F) -> String
+    where
+        F: Fn(&'_ str) -> Option<String>,
+    {
         self.0.map_placeholders(map_fn)
     }
 }
@@ -294,7 +301,10 @@ impl<'de> Deserialize<'de> for url_type {
                 write!(formatter, "a base URL string")
             }
 
-            fn visit_string<E: serde::de::Error>(self, url: String) -> Result<Self::Value, E> {
+            fn visit_string<E>(self, url: String) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
                 Self::Value::try_from(if url.ends_with('/') {
                     url
                 } else {
@@ -303,7 +313,10 @@ impl<'de> Deserialize<'de> for url_type {
                 .map_err(serde::de::Error::custom)
             }
 
-            fn visit_str<E: serde::de::Error>(self, url: &str) -> Result<Self::Value, E> {
+            fn visit_str<E>(self, url: &str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
                 Self::visit_string(self, url.to_owned())
             }
         }
@@ -421,7 +434,7 @@ mod device_group_id_template_url {
 }
 
 mod blob_id_template_url {
-    use data_encoding::HEXLOWER_PERMISSIVE;
+    use libthreema_dependencies::data_encoding::HEXLOWER_PERMISSIVE;
 
     use crate::common::{BlobId, config::Url};
 
@@ -443,7 +456,7 @@ mod blob_id_template_url {
 }
 
 mod device_group_id_and_blob_id_template_url {
-    use data_encoding::HEXLOWER_PERMISSIVE;
+    use libthreema_dependencies::data_encoding::HEXLOWER_PERMISSIVE;
 
     use crate::common::{
         BlobId,
@@ -500,9 +513,9 @@ impl ChatServerAddress {
     ///
     /// If the internal placeholder could not be replaced.
     #[must_use]
-    pub fn addresses(&self, server_group: ChatServerGroup) -> Vec<(String, u16)> {
+    pub fn addresses(&self, server_group: &ChatServerGroup) -> Vec<(String, u16)> {
         let hostname = map_placeholders(&self.hostname, |key| match key {
-            Self::PREFIX_8 => Some(format!("{:x}", server_group.0)),
+            Self::PREFIX_8 => Some(server_group.0.clone()),
             _ => None,
         });
         self.ports.iter().map(|port| (hostname.clone(), *port)).collect()
@@ -597,8 +610,8 @@ impl WorkServerBaseUrl {
 pub struct GatewayAvatarBaseServerUrl(HttpsBaseUrl);
 impl GatewayAvatarBaseServerUrl {
     #[expect(dead_code, reason = "Will use later")]
-    pub(crate) fn path(&self, threema_id: ThreemaId) -> String {
-        self.0.0.path(format_args!("{threema_id}"))
+    pub(crate) fn path(&self, identity: ThreemaId) -> String {
+        self.0.0.path(format_args!("{identity}"))
     }
 }
 
@@ -762,7 +775,7 @@ impl TryFrom<String> for url_type {
 }
 
 /// Version of an OnPrem configuration.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumString)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, strum::EnumString)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[cfg_attr(
     feature = "wasm",
@@ -1514,7 +1527,7 @@ impl From<ConfigEnvironment> for Config {
         match environment {
             ConfigEnvironment::Sandbox => Self::sandbox(),
             ConfigEnvironment::Production => Self::production(),
-            ConfigEnvironment::OnPrem(config) => Config::from(*config),
+            ConfigEnvironment::OnPrem(config) => Self::from(*config),
         }
     }
 }

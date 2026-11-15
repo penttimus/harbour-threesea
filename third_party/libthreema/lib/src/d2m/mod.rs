@@ -2,8 +2,8 @@
 use core::{cmp::min, mem};
 
 use const_format::formatcp;
-use data_encoding::HEXLOWER_PERMISSIVE;
 use educe;
+use libthreema_dependencies::data_encoding::HEXLOWER_PERMISSIVE;
 use libthreema_macros::{DebugVariantNames, Name, VariantNames};
 use prost::Message as _;
 use tracing::{debug, error, trace, warn};
@@ -16,7 +16,7 @@ use crate::{
         PayloadEncoder as _,
         handshake::{ServerHello, ServerInfo},
     },
-    protobuf::d2m::{self as protobuf},
+    protobuf,
     utils::{
         bytes::{ByteReaderError, ByteWriterError},
         debug::Name as _,
@@ -25,9 +25,9 @@ use crate::{
 };
 
 /// The minimum supported protocol version (inclusive).
-const MINIMUM_PROTOCOL_VERSION: u32 = protobuf::ProtocolVersion::V0 as u32;
+const MINIMUM_PROTOCOL_VERSION: u32 = protobuf::d2m::ProtocolVersion::V0 as u32;
 /// The maximum supported protocol version (inclusive).
-const MAXIMUM_PROTOCOL_VERSION: u32 = protobuf::ProtocolVersion::V0 as u32;
+const MAXIMUM_PROTOCOL_VERSION: u32 = protobuf::d2m::ProtocolVersion::V0 as u32;
 
 pub mod payload;
 
@@ -97,13 +97,13 @@ pub enum D2mProtocolDecodingErrorSource {
 #[derive(Clone, Debug, thiserror::Error)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Error), uniffi(flat_error))]
 pub enum D2mProtocolError {
-    /// Invalid parameter provided by the caller.
-    #[error("Invalid parameter: {0}")]
-    InvalidParameter(&'static str),
+    /// Some provided parameter could not be converted into the required internal representation.
+    #[error("Conversion error: {0}")]
+    ConversionError(&'static str),
 
-    /// Invalid state for the requested operation.
-    #[error("Invalid state: {0}")]
-    InvalidState(&'static str),
+    /// A contract violation occurred.
+    #[error("Contract violation: {0}")]
+    ContractViolation(&'static str),
 
     /// An internal error happened.
     #[error("Internal error: {0}")]
@@ -163,19 +163,21 @@ pub struct D2mContext {
 
     /// Policy to be applied in case the device id is not registered on the server and all device slots have
     /// been exhausted.
-    pub device_slots_exhausted_policy: protobuf::client_hello::DeviceSlotsExhaustedPolicy,
+    pub device_slots_exhausted_policy: protobuf::d2m::client_hello::DeviceSlotsExhaustedPolicy,
 
     /// Policy determining the device slot's lifetime.
-    pub device_slot_expiration_policy: protobuf::DeviceSlotExpirationPolicy,
+    pub device_slot_expiration_policy: protobuf::d2m::DeviceSlotExpirationPolicy,
 
     /// Expected device registration state on the mediator server.
-    pub expected_device_slot_state: protobuf::DeviceSlotState,
+    pub expected_device_slot_state: protobuf::d2m::DeviceSlotState,
 
     /// Client info to derive the `DeviceInfo` from.
     pub client_info: ClientInfo,
 
     /// The device's label (e.g. "PC at Work"), recommended to not exceed 64 grapheme clusters.
-    pub device_label: Option<String>,
+    ///
+    /// Empty string means that the device has no provided label.
+    pub device_label: String,
 }
 
 /// A D2M state update to indicate advancing.
@@ -315,7 +317,7 @@ impl State {
             };
 
             // Wrap it in a ClientHello
-            protobuf::ClientHello {
+            protobuf::d2m::ClientHello {
                 version: chosen_version,
                 response: challenge_response,
                 device_id: context.device_id.0,
@@ -402,7 +404,7 @@ impl State {
             outgoing_datagram: None,
             incoming_payload: Some(payload),
         };
-        Ok((State::PostHandshake(state), Some(instruction)))
+        Ok((Self::PostHandshake(state), Some(instruction)))
     }
 }
 
@@ -464,13 +466,13 @@ impl D2mProtocol {
             let device_group_id = context.device_group_key.path_key().public_key();
             trace!(
                 ?device_group_id,
-                server_group = &context.csp_server_group.0,
+                server_group = context.csp_server_group.as_str(),
                 "Create client-url-info message"
             );
             let client_url_info = HEXLOWER_PERMISSIVE.encode(
-                &protobuf::ClientUrlInfo {
+                &protobuf::d2m::ClientUrlInfo {
                     device_group_id: device_group_id.0.as_bytes().to_vec(),
-                    server_group: context.csp_server_group.0.clone().to_string(),
+                    server_group: context.csp_server_group.as_str().to_owned(),
                 }
                 .encode_to_vec(),
             );
@@ -500,7 +502,7 @@ impl D2mProtocol {
     pub fn poll(&mut self) -> Result<Option<D2mProtocolInstruction>, D2mProtocolError> {
         let poll_result = match mem::replace(
             &mut self.state,
-            State::Error(D2mProtocolError::InvalidState(formatcp!(
+            State::Error(D2mProtocolError::ContractViolation(formatcp!(
                 "{} in a transitional state",
                 D2mProtocol::NAME
             ))),
@@ -530,7 +532,7 @@ impl D2mProtocol {
     ///
     /// # Errors
     ///
-    /// Returns [`D2mProtocolError::InvalidState`] if the protocol is in the error state.
+    /// Returns [`D2mProtocolError::ContractViolation`] if the protocol is in the error state.
     #[tracing::instrument(skip_all, fields(
         datagrams_byte_length = datagrams.iter().map(Vec::len).sum::<usize>(),
     ))]
@@ -549,7 +551,7 @@ impl D2mProtocol {
             State::Error(error) => {
                 let message = "Cannot add datagram in error state";
                 error!(?error, message);
-                return Err(D2mProtocolError::InvalidState(message));
+                return Err(D2mProtocolError::ContractViolation(message));
             },
         }
         Ok(())
@@ -559,7 +561,7 @@ impl D2mProtocol {
     ///
     /// # Errors
     ///
-    /// Returns [`D2mProtocolError::InvalidState`] if the protocol is not in the post-handshake state.
+    /// Returns [`D2mProtocolError::ContractViolation`] if the protocol is not in the post-handshake state.
     #[tracing::instrument(skip_all, fields(?self))]
     pub fn create_payload(
         &mut self,
@@ -577,12 +579,12 @@ impl D2mProtocol {
             (State::Error(error), _) => {
                 let message = "Cannot create an outgoing payload in the error state";
                 error!(?error, message);
-                return Err(D2mProtocolError::InvalidState(message));
+                return Err(D2mProtocolError::ContractViolation(message));
             },
             (_, _) => {
                 let message = "Creating an outgoing (non-proxy) payload requires the post-handshake state";
                 error!(message);
-                return Err(D2mProtocolError::InvalidState(message));
+                return Err(D2mProtocolError::ContractViolation(message));
             },
         }
 

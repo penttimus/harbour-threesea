@@ -3,20 +3,22 @@ use core::{array::TryFromSliceError, fmt};
 
 #[cfg(any(test, feature = "cli"))]
 use anyhow;
-use data_encoding::HEXLOWER_PERMISSIVE;
 use educe::Educe;
-use libthreema_macros::{ConstantTimeEq, Name, concat_fixed_bytes};
-use rand::{self, Rng as _};
-use zeroize::ZeroizeOnDrop;
-
-use crate::{
-    common::ThreemaId,
+use libthreema_dependencies::{
     crypto::{
-        blake2b,
+        argon2, blake2b, chacha20,
         cipher::KeyInit as _,
         digest::{FixedOutput as _, Mac as _},
         salsa20, x25519,
     },
+    data_encoding::HEXLOWER_PERMISSIVE,
+    rand::{self, Rng as _},
+};
+use libthreema_macros::{ConstantTimeEq, Name, concat_fixed_bytes};
+use zeroize::ZeroizeOnDrop;
+
+use crate::{
+    common::ThreemaId,
     utils::debug::{Name as _, debug_static_secret},
 };
 
@@ -62,7 +64,7 @@ pub(crate) struct WorkDirectoryAuthenticationKey(pub(crate) blake2b::Blake2bMac2
 /// permanent secret key associated to the Threema ID.
 ///
 /// IMPORTANT: This is **THE** key which requires ultimate care!
-#[derive(Educe, ZeroizeOnDrop)]
+#[derive(Name, Educe, ZeroizeOnDrop)]
 #[educe(Debug)]
 pub struct ClientKey(#[educe(Debug(method(debug_static_secret)))] x25519::StaticSecret);
 impl ClientKey {
@@ -101,9 +103,13 @@ impl ClientKey {
         // Calculate the secret as the concatenation of two shared secrets
         let secret: [u8; 2 * x25519::SharedSecretHSalsa20::LENGTH] = concat_fixed_bytes!(
             // Compute first half as X25519HSalsa20(CK.secret, SK.public)
-            x25519::SharedSecretHSalsa20::from(self.0.diffie_hellman(&permanent_server_key.0)?).to_bytes(),
+            self.0
+                .diffie_hellman_hsalsa20(&permanent_server_key.0)?
+                .to_bytes(),
             // Compute second half as X25519HSalsa20(CK.secret, temporary_server_key.public)
-            x25519::SharedSecretHSalsa20::from(self.0.diffie_hellman(&temporary_server_key.0)?).to_bytes(),
+            self.0
+                .diffie_hellman_hsalsa20(&temporary_server_key.0)?
+                .to_bytes(),
         );
 
         // Apply Blake2b to obtain the CSP authentication secret (aka _vouch key_)
@@ -125,7 +131,7 @@ impl ClientKey {
         &self,
         challenge_public_key: &PublicKey,
     ) -> Option<DirectoryAuthenticationKey> {
-        let secret = x25519::SharedSecretHSalsa20::from(self.0.diffie_hellman(&challenge_public_key.0)?);
+        let secret = self.0.diffie_hellman_hsalsa20(&challenge_public_key.0)?;
         let key =
             blake2b::Blake2bMac256::new_with_salt_and_personal(Some(secret.as_bytes()), b"dir", b"3ma-csp")
                 .expect("Blake2bMac256 failed")
@@ -143,7 +149,7 @@ impl ClientKey {
         &self,
         challenge_public_key: &PublicKey,
     ) -> Option<WorkDirectoryAuthenticationKey> {
-        let secret = x25519::SharedSecretHSalsa20::from(self.0.diffie_hellman(&challenge_public_key.0)?);
+        let secret = self.0.diffie_hellman_hsalsa20(&challenge_public_key.0)?;
         let key =
             blake2b::Blake2bMac256::new_with_salt_and_personal(Some(secret.as_bytes()), b"wdir", b"3ma-csp")
                 .expect("Blake2bMac256 failed")
@@ -160,14 +166,19 @@ impl ClientKey {
     /// `None` is returned in case the shared secret is derived from a non-contributory key.
     #[must_use]
     pub(crate) fn derive_csp_e2e_key(&self, client_public_key: &PublicKey) -> Option<CspE2eKey> {
-        Some(CspE2eKey(x25519::SharedSecretHSalsa20::from(
-            self.0.diffie_hellman(&client_public_key.0)?,
-        )))
+        Some(CspE2eKey(self.0.diffie_hellman_hsalsa20(&client_public_key.0)?))
     }
 }
 impl From<[u8; Self::LENGTH]> for ClientKey {
     fn from(bytes: [u8; Self::LENGTH]) -> Self {
         Self(x25519::StaticSecret::from(bytes))
+    }
+}
+impl TryFrom<&[u8]> for ClientKey {
+    type Error = TryFromSliceError;
+
+    fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
+        Ok(Self::from(TryInto::<[u8; Self::LENGTH]>::try_into(bytes)?))
     }
 }
 #[cfg(any(test, feature = "cli"))]
@@ -177,7 +188,7 @@ impl From<&RawClientKey> for ClientKey {
     }
 }
 
-/// Also the Client key but [`Clone`].
+/// Also the client key but [`Clone`].
 ///
 /// For example needed for the CLI which requires this struct to be [`Clone`] but we don't want
 /// [`ClientKey`] to be [`Clone`].
@@ -283,7 +294,8 @@ impl DeviceGroupPathKey {
     ) -> Option<DeviceGroupPathAuthenticationCipher> {
         Some(DeviceGroupPathAuthenticationCipher(
             salsa20::XSalsa20Poly1305::new(
-                x25519::SharedSecretHSalsa20::from(self.0.diffie_hellman(&ephemeral_server_key.0)?)
+                self.0
+                    .diffie_hellman_hsalsa20(&ephemeral_server_key.0)?
                     .as_bytes()
                     .into(),
             ),
@@ -347,7 +359,7 @@ impl DeviceGroupKey {
             .finalize_fixed()
     }
 }
-impl From<[u8; DeviceGroupKey::LENGTH]> for DeviceGroupKey {
+impl From<[u8; Self::LENGTH]> for DeviceGroupKey {
     fn from(bytes: [u8; Self::LENGTH]) -> Self {
         Self(x25519::StaticSecret::from(bytes))
     }
@@ -433,9 +445,11 @@ impl RemoteSecretHash {
         )
     }
 }
-impl From<[u8; Self::LENGTH]> for RemoteSecretHash {
-    fn from(bytes: [u8; Self::LENGTH]) -> Self {
-        Self(bytes)
+impl TryFrom<&[u8]> for RemoteSecretHash {
+    type Error = TryFromSliceError;
+
+    fn try_from(remote_secret_hash: &[u8]) -> Result<Self, Self::Error> {
+        Ok(Self(<[u8; Self::LENGTH]>::try_from(remote_secret_hash)?))
     }
 }
 impl fmt::Display for RemoteSecretHash {
@@ -459,9 +473,13 @@ impl RemoteSecretHashForIdentity {
     /// Byte length of the remote secret hash tied to an identity.
     pub const LENGTH: usize = 32;
 }
-impl From<[u8; Self::LENGTH]> for RemoteSecretHashForIdentity {
-    fn from(bytes: [u8; Self::LENGTH]) -> Self {
-        Self(bytes)
+impl TryFrom<&[u8]> for RemoteSecretHashForIdentity {
+    type Error = TryFromSliceError;
+
+    fn try_from(remote_secret_hash_for_identity: &[u8]) -> Result<Self, Self::Error> {
+        Ok(Self(<[u8; Self::LENGTH]>::try_from(
+            remote_secret_hash_for_identity,
+        )?))
     }
 }
 impl fmt::Display for RemoteSecretHashForIdentity {
@@ -502,7 +520,7 @@ impl RemoteSecret {
     pub fn random() -> Self {
         let mut remote_secret = [0_u8; Self::LENGTH];
         rand::thread_rng().fill(&mut remote_secret);
-        Self::from(remote_secret)
+        Self(remote_secret)
     }
 
     /// Derive the associated Remote Secret Hash (RSH).
@@ -529,9 +547,11 @@ impl RemoteSecret {
         )
     }
 }
-impl From<[u8; Self::LENGTH]> for RemoteSecret {
-    fn from(bytes: [u8; Self::LENGTH]) -> Self {
-        Self(bytes)
+impl TryFrom<&[u8]> for RemoteSecret {
+    type Error = TryFromSliceError;
+
+    fn try_from(remote_secret: &[u8]) -> Result<Self, Self::Error> {
+        Ok(Self(<[u8; Self::LENGTH]>::try_from(remote_secret)?))
     }
 }
 
@@ -570,20 +590,89 @@ impl RemoteSecretAuthenticationToken {
         Ok(Self(bytes))
     }
 }
-impl From<[u8; Self::LENGTH]> for RemoteSecretAuthenticationToken {
-    fn from(bytes: [u8; Self::LENGTH]) -> Self {
-        Self(bytes)
+impl TryFrom<&[u8]> for RemoteSecretAuthenticationToken {
+    type Error = TryFromSliceError;
+
+    fn try_from(authentication_token: &[u8]) -> Result<Self, Self::Error> {
+        Ok(Self(<[u8; Self::LENGTH]>::try_from(authentication_token)?))
+    }
+}
+
+/// A salt used to derive the [`DataBackupRootKey`] from the data backup password.
+#[derive(Name, ZeroizeOnDrop)]
+pub(crate) struct DataBackupSalt(pub(crate) [u8; Self::LENGTH]);
+impl DataBackupSalt {
+    /// Byte length of a data backup salt.
+    pub(crate) const LENGTH: usize = 32;
+
+    pub(crate) fn random() -> Self {
+        let mut salt = [0_u8; Self::LENGTH];
+        rand::thread_rng().fill(&mut salt);
+        Self(salt)
+    }
+}
+
+/// Key to encrypt the layout of the data backup.
+#[derive(Name, ZeroizeOnDrop)]
+pub(crate) struct DataBackupLayoutKey(pub(crate) chacha20::ChaCha20Poly1305);
+
+/// Key to encrypt pages of the data backup.
+#[derive(ZeroizeOnDrop)]
+pub(crate) struct DataBackupPageKey(pub(crate) chacha20::ChaCha20Poly1305);
+
+/// The data backup root key derived from the data backup password.
+///
+/// This key is used to derive the [`DataBackupLayoutKey`] and the [`DataBackupPageKey`].
+#[derive(ZeroizeOnDrop)]
+pub(crate) struct DataBackupRootKey([u8; Self::LENGTH]);
+impl DataBackupRootKey {
+    /// Byte length of the data backup root key.
+    pub(crate) const LENGTH: usize = 32;
+
+    #[expect(clippy::needless_pass_by_value, reason = "Prevent reuse")]
+    pub(crate) fn from_password(password: String, salt: &DataBackupSalt) -> Self {
+        let mut root_key = [0; Self::LENGTH];
+        argon2::Argon2::new(
+            argon2::Argon2id,
+            argon2::Version::V0x13,
+            argon2::Params::new(
+                128 * 1024, // 128 MiB memory
+                8,          // iterations
+                1,          // No parallelization
+                Some(Self::LENGTH),
+            )
+            .expect("Parameters are within required bounds"),
+        )
+        .hash_password_into(password.as_bytes(), &salt.0, &mut root_key)
+        .expect("Argon2id does not fail with controlled inputs");
+
+        Self(root_key)
+    }
+
+    fn derive_key(&self, salt: &[u8]) -> chacha20::ChaCha20Poly1305 {
+        let derived_key: [u8; chacha20::KEY_LENGTH] =
+            blake2b::Blake2bMac256::new_with_salt_and_personal(Some(&self.0), salt, b"3ma-bup")
+                .expect("Blake2bMac256 failed")
+                .finalize_fixed()
+                .into();
+        chacha20::ChaCha20Poly1305::new(&derived_key.into())
+    }
+
+    pub(crate) fn layout_key(&self) -> DataBackupLayoutKey {
+        DataBackupLayoutKey(self.derive_key(b"layout"))
+    }
+
+    pub(crate) fn page_key(&self) -> DataBackupPageKey {
+        DataBackupPageKey(self.derive_key(b"page"))
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use libthreema_dependencies::crypto::x25519;
     use rstest::rstest;
 
-    use crate::{
-        common::keys::{ClientKey, DeviceGroupPathKey, PublicKey},
-        crypto::x25519,
-    };
+    use crate::common::keys::{ClientKey, DeviceGroupPathKey, PublicKey};
 
     #[rstest]
     #[case(PublicKey::from([0; PublicKey::LENGTH]), PublicKey::from([0; PublicKey::LENGTH]))]

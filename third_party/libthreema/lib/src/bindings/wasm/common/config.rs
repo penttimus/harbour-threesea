@@ -149,9 +149,9 @@ impl TryFrom<OnPremConfig> for config::OnPremConfig {
                 PublicKey::try_from(public_key.as_slice())
                     .map_err(|_| Error::new("Public key in 'chat_server_public_keys' must be 32 bytes"))
             })
-            .collect::<Result<Vec<PublicKey>, Error>>()?;
+            .collect::<Result<_, _>>()?;
 
-        Ok(config::OnPremConfig {
+        Ok(Self {
             version: config.version,
 
             refresh_interval: Duration::from_secs(config.refresh_interval_s),
@@ -205,11 +205,11 @@ impl TryFrom<ConfigEnvironment> for config::ConfigEnvironment {
 
     fn try_from(environment: ConfigEnvironment) -> Result<Self, Self::Error> {
         match environment {
-            ConfigEnvironment::Sandbox => Ok(config::ConfigEnvironment::Sandbox),
-            ConfigEnvironment::Production => Ok(config::ConfigEnvironment::Production),
-            ConfigEnvironment::OnPrem(config) => Ok(config::ConfigEnvironment::OnPrem(Box::new(
-                config::OnPremConfig::try_from(*config)?,
-            ))),
+            ConfigEnvironment::Sandbox => Ok(Self::Sandbox),
+            ConfigEnvironment::Production => Ok(Self::Production),
+            ConfigEnvironment::OnPrem(config) => {
+                Ok(Self::OnPrem(Box::new(config::OnPremConfig::try_from(*config)?)))
+            },
         }
     }
 }

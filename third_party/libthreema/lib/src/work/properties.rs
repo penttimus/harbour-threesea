@@ -1,13 +1,15 @@
 //! Task structures to request work properties.
 use core::mem;
+use std::sync::PoisonError;
 
 use const_format::formatcp;
 use educe::Educe;
 use libthreema_macros::{DebugVariantNames, Name, VariantNames};
 use prost::Message as _;
-use serde::Serialize;
-use tracing::{debug, info};
+use tracing::{debug, info, warn};
 
+#[cfg(feature = "uniffi")]
+use crate::bindings::uniffi::ConversionError;
 use crate::{
     common::{
         ClientInfo, ThreemaId,
@@ -35,7 +37,7 @@ use crate::{
 #[cfg_attr(feature = "uniffi", derive(uniffi::Error), uniffi(flat_error))]
 #[cfg_attr(
     feature = "wasm",
-    derive(tsify::Tsify, Serialize),
+    derive(tsify::Tsify, serde::Serialize),
     serde(
         tag = "type",
         content = "details",
@@ -45,13 +47,13 @@ use crate::{
     tsify(into_wasm_abi)
 )]
 pub enum WorkPropertiesUpdateError {
-    /// Invalid parameter provided.
-    #[error("Invalid parameter: {0}")]
-    InvalidParameter(String),
+    /// Some provided parameter could not be converted into the required internal representation.
+    #[error("Conversion error: {0}")]
+    ConversionError(String),
 
-    /// Invalid state for the requested operation.
-    #[error("Invalid state: {0}")]
-    InvalidState(&'static str),
+    /// A contract violation occurred.
+    #[error("Contract violation: {0}")]
+    ContractViolation(&'static str),
 
     /// An unrecoverable network error occurred while communicating with a server.
     #[error("Network error: {0}")]
@@ -72,6 +74,11 @@ pub enum WorkPropertiesUpdateError {
     /// A rate limit of a server has been exceeded.
     #[error("Rate limit exceeded")]
     RateLimitExceeded,
+
+    /// Unable to obtain a lock.
+    #[cfg(feature = "uniffi")]
+    #[error("Obtaining a lock failed")]
+    LockPoisoned,
 }
 impl From<HttpsEndpointError> for WorkPropertiesUpdateError {
     fn from(error: HttpsEndpointError) -> Self {
@@ -89,6 +96,18 @@ impl From<HttpsEndpointError> for WorkPropertiesUpdateError {
             | HttpsEndpointError::DecodingFailed(_)
             | HttpsEndpointError::CustomPossiblyLocalizedError(_) => Self::ServerError(error.to_string()),
         }
+    }
+}
+#[cfg(feature = "uniffi")]
+impl From<ConversionError> for WorkPropertiesUpdateError {
+    fn from(error: ConversionError) -> Self {
+        Self::ConversionError(error.to_string())
+    }
+}
+#[cfg(feature = "uniffi")]
+impl<T> From<PoisonError<T>> for WorkPropertiesUpdateError {
+    fn from(_: PoisonError<T>) -> Self {
+        Self::LockPoisoned
     }
 }
 
@@ -111,54 +130,60 @@ pub struct WorkPropertiesUpdateContext {
 }
 
 /// The work availability status.
-#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+///
+/// The optional custom status description by the user should be ≤ 256 bytes and will be truncated (without
+/// respecting grapheme cluster boundaries) during encoding otherwise. An empty string indicates that no
+/// description was provided.
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[cfg_attr(
     feature = "wasm",
     derive(tsify::Tsify, serde::Deserialize),
     serde(rename_all = "camelCase")
 )]
-pub struct WorkAvailabilityStatus {
-    /// Availability status of the user.
-    pub category: protobuf::d2d_sync::WorkAvailabilityStatusCategory,
+pub enum WorkAvailabilityStatus {
+    /// No status provided.
+    None,
 
-    /// Optional custom status description as chosen by the contact. Must be ≤
-    /// 256 bytes.
-    ///
-    /// Note: The description will be silently dropped if the category is _none_.
-    pub description: Option<String>,
+    /// _Unavailable_ status with an optional description.
+    Unavailable(String),
+
+    /// _Busy_ status with an optional description.
+    Busy(String),
 }
 impl WorkAvailabilityStatus {
     /// Maximum byte length of the availability status description.
     const DESCRIPTION_LENGTH_MAX: usize = 256;
 }
-impl TryFrom<WorkAvailabilityStatus> for protobuf::d2d_sync::WorkAvailabilityStatus {
-    type Error = WorkPropertiesUpdateError;
+impl From<WorkAvailabilityStatus> for protobuf::d2d_sync::WorkAvailabilityStatus {
+    fn from(availability_status: WorkAvailabilityStatus) -> Self {
+        let (category, mut description) = match availability_status {
+            WorkAvailabilityStatus::None => (
+                protobuf::d2d_sync::WorkAvailabilityStatusCategory::None,
+                String::new(),
+            ),
+            WorkAvailabilityStatus::Unavailable(description) => (
+                protobuf::d2d_sync::WorkAvailabilityStatusCategory::Unavailable,
+                description,
+            ),
+            WorkAvailabilityStatus::Busy(description) => (
+                protobuf::d2d_sync::WorkAvailabilityStatusCategory::Busy,
+                description,
+            ),
+        };
 
-    fn try_from(mut availability_status: WorkAvailabilityStatus) -> Result<Self, Self::Error> {
-        // Silently drop the description if category is _none_.
-        if matches!(
-            &availability_status.category,
-            protobuf::d2d_sync::WorkAvailabilityStatusCategory::None
-        ) {
-            availability_status.description = None;
-        }
-
-        // Only accept descriptions within the declared length limit.
-        if let Some(description) = &availability_status.description {
-            let byte_length = description.clone().into_bytes().len();
-            if byte_length > WorkAvailabilityStatus::DESCRIPTION_LENGTH_MAX {
-                return Err(WorkPropertiesUpdateError::InvalidParameter(format!(
-                    "Availability status description length exceeded. Used {byte_length} of {}",
-                    WorkAvailabilityStatus::DESCRIPTION_LENGTH_MAX,
-                )));
-            }
+        // Truncate description to the maximum length.
+        if description.len() > WorkAvailabilityStatus::DESCRIPTION_LENGTH_MAX {
+            description
+                .truncate(description.floor_char_boundary(WorkAvailabilityStatus::DESCRIPTION_LENGTH_MAX));
+            warn!(new_description = ?description, "Truncated work availability status description");
         }
 
         // Map to protobuf.
-        Ok(protobuf::d2d_sync::WorkAvailabilityStatus {
-            category: availability_status.category.into(),
-            description: availability_status.description.unwrap_or_default(),
-        })
+        Self {
+            category: category.into(),
+            description,
+        }
     }
 }
 
@@ -177,16 +202,11 @@ pub struct WorkProperties {
     /// Availability status of the user.
     pub availability_status: Option<WorkAvailabilityStatus>,
 }
-impl TryFrom<WorkProperties> for protobuf::directory::WorkProperties {
-    type Error = WorkPropertiesUpdateError;
-
-    fn try_from(properties: WorkProperties) -> Result<Self, Self::Error> {
-        Ok(protobuf::directory::WorkProperties {
-            availability_status: match properties.availability_status {
-                None => None,
-                Some(availability_status) => Some(availability_status.try_into()?),
-            },
-        })
+impl From<WorkProperties> for protobuf::directory::WorkProperties {
+    fn from(properties: WorkProperties) -> Self {
+        Self {
+            availability_status: properties.availability_status.map(WorkAvailabilityStatus::into),
+        }
     }
 }
 
@@ -229,13 +249,14 @@ enum State {
     Done,
 }
 impl State {
+    #[expect(clippy::unnecessary_wraps, reason = "Follow pattern")]
     fn poll_init(
         context: &WorkPropertiesUpdateContext,
         state: InitState,
     ) -> Result<(Self, WorkPropertiesUpdateLoop), WorkPropertiesUpdateError> {
         debug!("Requesting challenge to update the work properties");
         let encoded_work_properties =
-            protobuf::directory::WorkProperties::try_from(state.work_properties)?.encode_to_vec();
+            protobuf::directory::WorkProperties::from(state.work_properties).encode_to_vec();
         let request = work_directory::update_work_properties_authentication_request(
             &context.client_info,
             &context.work_server_url,
@@ -258,7 +279,7 @@ impl State {
     ) -> Result<(Self, WorkPropertiesUpdateLoop), WorkPropertiesUpdateError> {
         // Ensure the caller provided the response.
         let Some(response) = state.response else {
-            return Err(WorkPropertiesUpdateError::InvalidState(formatcp!(
+            return Err(WorkPropertiesUpdateError::ContractViolation(formatcp!(
                 "{} result was not provided for '{}' state",
                 WorkPropertiesUpdateResponse::NAME,
                 State::CHALLENGE,
@@ -288,7 +309,7 @@ impl State {
     ) -> Result<(Self, WorkPropertiesUpdateLoop), WorkPropertiesUpdateError> {
         // Ensure the caller provided the response.
         let Some(response) = state.response else {
-            return Err(WorkPropertiesUpdateError::InvalidState(formatcp!(
+            return Err(WorkPropertiesUpdateError::ContractViolation(formatcp!(
                 "{} result was not provided for '{}' state",
                 WorkPropertiesUpdateResponse::NAME,
                 State::UPDATE,
@@ -308,6 +329,7 @@ impl State {
 pub struct WorkPropertiesUpdateTask {
     #[educe(Debug(ignore))]
     context: WorkPropertiesUpdateContext,
+
     state: State,
 }
 impl WorkPropertiesUpdateTask {
@@ -331,7 +353,7 @@ impl WorkPropertiesUpdateTask {
     pub fn poll(&mut self) -> Result<WorkPropertiesUpdateLoop, WorkPropertiesUpdateError> {
         let result = match mem::replace(
             &mut self.state,
-            State::Error(WorkPropertiesUpdateError::InvalidState(formatcp!(
+            State::Error(WorkPropertiesUpdateError::ContractViolation(formatcp!(
                 "{} in a transitional state",
                 WorkPropertiesUpdateTask::NAME
             ))),
@@ -340,7 +362,7 @@ impl WorkPropertiesUpdateTask {
             State::Init(state) => State::poll_init(&self.context, state),
             State::Challenge(state) => State::poll_challenge(&self.context, state),
             State::Update(state) => State::poll_update(state),
-            State::Done => Err(WorkPropertiesUpdateError::InvalidState(formatcp!(
+            State::Done => Err(WorkPropertiesUpdateError::ContractViolation(formatcp!(
                 "{} already done",
                 WorkPropertiesUpdateTask::NAME
             ))),
@@ -379,7 +401,7 @@ impl WorkPropertiesUpdateTask {
                 let _ = state.response.insert(response);
                 Ok(())
             },
-            _ => Err(WorkPropertiesUpdateError::InvalidState(formatcp!(
+            _ => Err(WorkPropertiesUpdateError::ContractViolation(formatcp!(
                 "Must be in '{}' or '{}' state",
                 State::CHALLENGE,
                 State::UPDATE,
@@ -430,24 +452,12 @@ mod tests {
     }
     impl WorkPropertiesInitBuilder {
         fn with_default_availability_status(self) -> Self {
-            self.with_availability_status(protobuf::d2d_sync::WorkAvailabilityStatusCategory::None, None)
-        }
-
-        fn with_availability_status(
-            mut self,
-            status: protobuf::d2d_sync::WorkAvailabilityStatusCategory,
-            description: Option<String>,
-        ) -> Self {
-            self.availability_status = Some(Some(WorkAvailabilityStatus {
-                category: status,
-                description,
-            }));
-            self
+            self.availability_status(Some(WorkAvailabilityStatus::None))
         }
     }
     impl From<WorkPropertiesInit> for WorkProperties {
         fn from(value: WorkPropertiesInit) -> Self {
-            WorkProperties {
+            Self {
                 availability_status: value.availability_status,
             }
         }
@@ -471,33 +481,6 @@ mod tests {
         Ok(())
     }
 
-    #[rstest]
-    fn init_with_invalid_properties(
-        #[values(
-            protobuf::d2d_sync::WorkAvailabilityStatusCategory::Busy,
-            protobuf::d2d_sync::WorkAvailabilityStatusCategory::Unavailable
-        )]
-        category: protobuf::d2d_sync::WorkAvailabilityStatusCategory,
-    ) -> anyhow::Result<()> {
-        let context = context();
-        let work_properties = WorkPropertiesInitBuilder::default()
-            .with_availability_status(category, Some("dreamer du".repeat(250)))
-            .build()?;
-        let state = InitState {
-            work_properties: work_properties.into(),
-        };
-
-        let result = State::poll_init(&context, state);
-        let message =
-            assert_matches!(result, Err(WorkPropertiesUpdateError::InvalidParameter(message)) => message);
-        assert_eq!(
-            message,
-            "Availability status description length exceeded. Used 2500 of 256".to_owned()
-        );
-
-        Ok(())
-    }
-
     #[test]
     fn challenge_without_response() {
         let context = context();
@@ -507,7 +490,7 @@ mod tests {
         };
 
         let result = State::poll_challenge(&context, state);
-        assert_matches!(result, Err(WorkPropertiesUpdateError::InvalidState(_)));
+        assert_matches!(result, Err(WorkPropertiesUpdateError::ContractViolation(_)));
     }
 
     #[test]
@@ -560,7 +543,7 @@ mod tests {
         let state = UpdateState { response: None };
 
         let result = State::poll_update(state);
-        assert_matches!(result, Err(WorkPropertiesUpdateError::InvalidState(_)));
+        assert_matches!(result, Err(WorkPropertiesUpdateError::ContractViolation(_)));
     }
 
     #[rstest]
@@ -593,7 +576,7 @@ mod tests {
                 "row row row your boat".to_owned(),
             )),
         });
-        assert_matches!(result, Err(WorkPropertiesUpdateError::InvalidState(_)));
+        assert_matches!(result, Err(WorkPropertiesUpdateError::ContractViolation(_)));
 
         Ok(())
     }
@@ -615,7 +598,7 @@ mod tests {
             state: State::Done,
         };
         let result = task.poll();
-        assert_matches!(result, Err(WorkPropertiesUpdateError::InvalidState(_)));
+        assert_matches!(result, Err(WorkPropertiesUpdateError::ContractViolation(_)));
     }
 
     #[test]
@@ -662,36 +645,15 @@ mod tests {
     }
 
     #[test]
-    fn strip_description_when_category_is_none() -> anyhow::Result<()> {
+    fn truncate_description_length() {
         let work_properties = WorkProperties {
-            availability_status: Some(WorkAvailabilityStatus {
-                category: protobuf::d2d_sync::WorkAvailabilityStatusCategory::None,
-                description: Some("Macht oder ergibt Sinn".to_owned()),
-            }),
+            availability_status: Some(WorkAvailabilityStatus::Busy("Ick mach mal Urlaub".repeat(50))),
         };
-        let encoded: protobuf::directory::WorkProperties = work_properties.try_into()?;
-        let availability_status =
-            assert_matches!(encoded.availability_status, Some(availability_status) => availability_status);
-        assert_eq!(availability_status.category, 0_i32);
-        assert_eq!(availability_status.description, String::new());
-        Ok(())
-    }
-
-    #[test]
-    fn description_length_exceeded() {
-        let work_properties = WorkProperties {
-            availability_status: Some(WorkAvailabilityStatus {
-                category: protobuf::d2d_sync::WorkAvailabilityStatusCategory::Busy,
-                description: Some("Ick mack mal Urlaub".repeat(50)),
-            }),
-        };
-        let encoded: Result<protobuf::directory::WorkProperties, WorkPropertiesUpdateError> =
-            work_properties.try_into();
-        let message =
-            assert_matches!(encoded, Err(WorkPropertiesUpdateError::InvalidParameter(message)) => message);
-        assert_eq!(
-            message,
-            "Availability status description length exceeded. Used 950 of 256".to_owned()
+        let encoded = protobuf::directory::WorkProperties::from(work_properties);
+        assert!(
+            encoded
+                .availability_status
+                .is_some_and(|status| status.description.len() <= 256),
         );
     }
 }

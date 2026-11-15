@@ -109,14 +109,14 @@ unsafe impl Send for LogDispatcher {}
 unsafe impl Sync for LogDispatcher {}
 
 impl From<LogLevel> for LevelFilter {
-    fn from(level: LogLevel) -> LevelFilter {
+    fn from(level: LogLevel) -> Self {
         match level.as_string().as_deref() {
-            Some("trace") => LevelFilter::TRACE,
-            Some("debug") => LevelFilter::DEBUG,
-            Some("info") => LevelFilter::INFO,
-            Some("warn") => LevelFilter::WARN,
-            Some("error") => LevelFilter::ERROR,
-            Some(_) | None => LevelFilter::OFF,
+            Some("trace") => Self::TRACE,
+            Some("debug") => Self::DEBUG,
+            Some("info") => Self::INFO,
+            Some("warn") => Self::WARN,
+            Some("error") => Self::ERROR,
+            Some(_) | None => Self::OFF,
         }
     }
 }
@@ -181,7 +181,7 @@ impl<'writer> MakeWriter<'writer> for MakeDispatchWriter {
 }
 
 /// Initialise the panic dispatcher (set it as the panic hook).
-pub(super) fn init_panic_dispatcher(panic_dispatcher: PanicDispatcher) {
+pub(crate) fn init_panic_dispatcher(panic_dispatcher: PanicDispatcher) {
     // Set panic hook
     panic::set_hook(Box::new(move |info| {
         #[wasm_bindgen]
@@ -212,7 +212,7 @@ pub(super) fn init_panic_dispatcher(panic_dispatcher: PanicDispatcher) {
 /// Initialise logging with the provided log dispatcher and minimum log level.
 ///
 /// IMPORTANT: This may only be called **once**!
-pub(super) fn init_logging(log_dispatcher: &LogDispatcher, min_log_level: LogLevel) {
+pub(crate) fn init_logging(log_dispatcher: &LogDispatcher, min_log_level: LogLevel) {
     // Configure tracing
     let level_filter: LevelFilter = min_log_level.into();
     let subscriber = tracing_subscriber::fmt()

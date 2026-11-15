@@ -1,7 +1,12 @@
 [workspace]
 resolver = "2"
-members = ["lib", "macros", "tools/uniffi-bindgen"]
-default-members = ["lib", "macros"]
+members = ["dependencies", "lib", "macros", "tools/uniffi-bindgen"]
+default-members = ["dependencies", "lib", "macros"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "AGPL-3.0-only"
 
 # Commented lints are in a newer Clippy version or tied to unstable and we want
 # to try them ASAP.
@@ -43,6 +48,7 @@ host_endian_bytes = { level = "warn", priority = 1 }
 impl_trait_in_params = { level = "warn", priority = 1 }
 indexing_slicing = { level = "warn", priority = 1 }
 infinite_loop = { level = "warn", priority = 1 }
+inline_trait_bounds = { level = "warn", priority = 1 }
 integer_division = { level = "warn", priority = 1 }
 integer_division_remainder_used = { level = "warn", priority = 1 }
 lossy_float_literal = { level = "warn", priority = 1 }
@@ -98,6 +104,9 @@ verbose_file_reads = { level = "warn", priority = 1 }
 cargo = "warn"
 cargo_common_metadata = { level = "allow", priority = 1 }
 
+# Nursery
+use_self = { level = "warn", priority = 1 }
+
 [workspace.lints.rust]
 deprecated_safe = "warn"
 explicit_outlives_requirements = "warn"
@@ -135,6 +144,14 @@ unescaped_backticks = "warn"
 
 [patch.crates-io]
 blake2 = { path = "patches/blake2" }
+
+# Build argon2 and blake2 with optimization turned on for dev profiles
+# to speedup slow_tests.
+[profile.dev.package.argon2]
+opt-level = 3
+
+[profile.dev.package.blake2]
+opt-level = 3
 
 [profile.release]
 lto = true

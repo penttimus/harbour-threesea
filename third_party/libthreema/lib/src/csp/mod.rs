@@ -2,10 +2,13 @@
 use core::{fmt, mem};
 
 use const_format::formatcp;
-use data_encoding::HEXLOWER_PERMISSIVE;
 use educe::Educe;
+use libthreema_dependencies::{
+    crypto::x25519,
+    data_encoding::HEXLOWER_PERMISSIVE,
+    rand::{self, Rng as _},
+};
 use libthreema_macros::{ConstantTimeEq, DebugVariantNames, Name, VariantNames};
-use rand::Rng as _;
 use tracing::{debug, error, trace, warn};
 
 use crate::{
@@ -13,7 +16,6 @@ use crate::{
         ClientInfo, CspDeviceId, DeviceCookie, ThreemaId,
         keys::{ClientKey, PublicKey},
     },
-    crypto::x25519,
     csp::{
         cipher::{LoginAckCipher, LoginBoxes, LoginCipher, PayloadCipher, decrypt_server_challenge_response},
         payload::{
@@ -96,13 +98,14 @@ impl<T: Into<String>> From<T> for CspProtocolInternalErrorCause {
 )]
 #[cfg_attr(test, derive(PartialEq))]
 pub enum CspProtocolError {
-    /// Invalid parameter provided by the caller.
-    #[error("Invalid parameter: {0}")]
-    InvalidParameter(&'static str),
+    /// Some provided parameter could not be converted into the required internal representation.
+    #[cfg(feature = "uniffi")]
+    #[error("Conversion error: {0}")]
+    ConversionError(&'static str),
 
-    /// Invalid state for the requested operation.
-    #[error("Invalid state: {0}")]
-    InvalidState(&'static str),
+    /// A contract violation occurred.
+    #[error("Contract violation: {0}")]
+    ContractViolation(&'static str),
 
     /// An internal error happened.
     #[cfg_attr(feature = "wasm", serde(serialize_with = "string::to_string::serialize"))]
@@ -153,8 +156,8 @@ pub struct CspProtocolContextInit {
     /// fallback secondary keys. Using a secondary key will trigger a warning.
     pub permanent_server_keys: Vec<PublicKey>,
 
-    /// The client's Threema ID.
-    pub identity: ThreemaId,
+    /// The user's Threema ID.
+    pub user_identity: ThreemaId,
 
     /// The client's permanent private key.
     pub client_key: ClientKey,
@@ -177,8 +180,8 @@ pub struct CspProtocolContext {
     /// fallback secondary keys. Using a secondary key will trigger a warning.
     permanent_server_keys: Vec<PublicKey>,
 
-    /// The client's Threema ID.
-    identity: ThreemaId,
+    /// The user's Threema ID.
+    user_identity: ThreemaId,
 
     /// The client's permanent private key.
     client_key: ClientKey,
@@ -197,13 +200,13 @@ impl TryFrom<CspProtocolContextInit> for CspProtocolContext {
 
     fn try_from(init: CspProtocolContextInit) -> Result<Self, Self::Error> {
         if init.permanent_server_keys.is_empty() {
-            return Err(CspProtocolError::InvalidParameter(
+            return Err(CspProtocolError::ContractViolation(
                 "permanent_server_keys must contain at least one public key.",
             ));
         }
         Ok(Self {
             permanent_server_keys: init.permanent_server_keys,
-            identity: init.identity,
+            user_identity: init.user_identity,
             client_key: init.client_key,
             client_info: init.client_info,
             device_cookie: init.device_cookie,
@@ -363,7 +366,7 @@ impl State {
         trace!(decoder = ?state.decoder, "Poll");
         let Some(server_hello) = state
             .decoder
-            .next_and_then(|server_hello| ServerHello::from(server_hello))
+            .next_frame_and_then(|server_hello| ServerHello::from(server_hello))
         else {
             return Ok((Self::AwaitingServerHello(state), None));
         };
@@ -429,7 +432,7 @@ impl State {
 
             // Encode the `login-data`
             let login_data = LoginData {
-                identity: context.identity,
+                identity: context.user_identity,
                 extensions_byte_length,
                 repeated_server_cookie: server_hello.server_cookie,
                 vouch: login_cipher
@@ -471,7 +474,7 @@ impl State {
         };
 
         // Set and return the next state and instruction
-        let state = State::AwaitingLoginAck(AwaitingLoginAckState {
+        let state = Self::AwaitingLoginAck(AwaitingLoginAckState {
             decoder: LoginAckDecoder::new_with_data(state.decoder.dissolve()),
             cipher: LoginAckCipher::new(session_cipher),
         });
@@ -500,7 +503,10 @@ impl State {
     ) -> Result<(Self, Option<CspProtocolInstruction>), CspProtocolError> {
         // Poll the `login-ack`
         trace!(decoder = ?state.decoder, "Poll");
-        let Some(login_ack) = state.decoder.next_and_then(|login_ack| LoginAck::from(login_ack)) else {
+        let Some(login_ack) = state
+            .decoder
+            .next_frame_and_then(|login_ack| LoginAck::from(login_ack))
+        else {
             return Ok((Self::AwaitingLoginAck(state), None));
         };
 
@@ -511,8 +517,8 @@ impl State {
         trace!(?login_ack_data);
 
         // Set and return the next state and instruction
-        let state = State::PostHandshake(PostHandshakeState {
-            decoder: PayloadDecoder::new(state.decoder.dissolve()),
+        let state = Self::PostHandshake(PostHandshakeState {
+            decoder: PayloadDecoder::new_with_data(state.decoder.dissolve()),
             cipher: PayloadCipher::new(state.cipher.dissolve()),
         });
         let instruction = CspProtocolInstruction {
@@ -554,7 +560,7 @@ impl State {
             outgoing_frame: None,
             incoming_payload: Some(payload),
         };
-        Ok((State::PostHandshake(state), Some(instruction)))
+        Ok((Self::PostHandshake(state), Some(instruction)))
     }
 }
 
@@ -651,7 +657,7 @@ impl CspProtocol {
     pub fn poll(&mut self) -> Result<Option<CspProtocolInstruction>, CspProtocolError> {
         let poll_result = match mem::replace(
             &mut self.state,
-            State::Error(CspProtocolError::InvalidState(formatcp!(
+            State::Error(CspProtocolError::ContractViolation(formatcp!(
                 "{} in a transitional state",
                 CspProtocol::NAME
             ))),
@@ -678,7 +684,7 @@ impl CspProtocol {
     ///
     /// # Errors
     ///
-    /// Returns [`CspProtocolError::InvalidState`] if the protocol is in the error state.
+    /// Returns [`CspProtocolError::ContractViolation`] if the protocol is in the error state.
     #[tracing::instrument(skip_all, fields(
         ?self,
         chunks_byte_length = chunks.iter().map(|chunk| chunk.len()).sum::<usize>(),
@@ -687,10 +693,10 @@ impl CspProtocol {
         trace!("Adding chunks");
         match &mut self.state {
             State::AwaitingServerHello(state) => {
-                state.decoder.add_chunks(chunks);
+                let _ = state.decoder.add_chunks(chunks);
             },
             State::AwaitingLoginAck(state) => {
-                state.decoder.add_chunks(chunks);
+                let _ = state.decoder.add_chunks(chunks);
             },
             State::PostHandshake(state) => {
                 let _ = state.decoder.add_chunks(chunks);
@@ -698,7 +704,7 @@ impl CspProtocol {
             State::Error(error) => {
                 let message = "Cannot add chunks in error state";
                 error!(?error, message);
-                return Err(CspProtocolError::InvalidState(message));
+                return Err(CspProtocolError::ContractViolation(message));
             },
         }
         Ok(())
@@ -712,7 +718,7 @@ impl CspProtocol {
     ///
     /// # Errors
     ///
-    /// Returns [`CspProtocolError::InvalidState`] if the protocol is in the error state.
+    /// Returns [`CspProtocolError::ContractViolation`] if the protocol is in the error state.
     #[tracing::instrument(skip_all, fields(?self))]
     pub fn next_required_length(&self) -> Result<usize, CspProtocolError> {
         let required_length = match &self.state {
@@ -722,7 +728,7 @@ impl CspProtocol {
             State::Error(error) => {
                 let message = "Cannot query next required length in error state";
                 error!(?error, message);
-                return Err(CspProtocolError::InvalidState(message));
+                return Err(CspProtocolError::ContractViolation(message));
             },
         };
         trace!(required_length);
@@ -733,7 +739,7 @@ impl CspProtocol {
     ///
     /// # Errors
     ///
-    /// Returns [`CspProtocolError::InvalidState`] if the protocol is not in the post-handshake state.
+    /// Returns [`CspProtocolError::ContractViolation`] if the protocol is not in the post-handshake state.
     #[tracing::instrument(skip_all, fields(?self))]
     pub fn create_payload(
         &mut self,
@@ -745,12 +751,12 @@ impl CspProtocol {
             State::Error(error) => {
                 let message = "Cannot create an outgoing payload in the error state";
                 error!(?error, message);
-                return Err(CspProtocolError::InvalidState(message));
+                return Err(CspProtocolError::ContractViolation(message));
             },
             _ => {
                 let message = "Creating an outgoing payload requires the post-handshake state";
                 error!(message);
-                return Err(CspProtocolError::InvalidState(message));
+                return Err(CspProtocolError::ContractViolation(message));
             },
         };
 
@@ -790,7 +796,7 @@ mod tests {
     impl Default for ContextBuilder {
         fn default() -> Self {
             Self(CspProtocolContextInit {
-                identity: ThreemaId::try_from("12345678").unwrap(),
+                user_identity: ThreemaId::try_from("12345678").unwrap(),
                 permanent_server_keys: vec![],
                 client_key: ClientKey::from([1; ClientKey::LENGTH]),
                 client_info: ClientInfo::Libthreema,

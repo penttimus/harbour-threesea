@@ -1,3 +1,9 @@
+use libthreema_dependencies::crypto::{
+    aead::AeadInPlace as _,
+    cipher::KeyInit as _,
+    digest::{self, Mac as _},
+    salsa20, x25519,
+};
 use libthreema_macros::concat_fixed_bytes;
 use tracing::{debug, info};
 
@@ -5,13 +11,6 @@ use crate::{
     common::{
         Nonce,
         keys::{ClientKey, PublicKey},
-    },
-    crypto::{
-        aead::AeadInPlace as _,
-        cipher::KeyInit as _,
-        digest::{MAC_256_LENGTH, Mac as _},
-        salsa20::XSalsa20Poly1305,
-        x25519,
     },
     csp::{
         ClientCookie, ClientSequenceNumber, Cookie, CspProtocolContext, CspProtocolError,
@@ -50,17 +49,15 @@ pub(super) fn decrypt_server_challenge_response(
 
     // Try to decrypt the server challenge response with all available permanent server keys.
     for permanent_server_key in &context.permanent_server_keys {
-        let cipher = XSalsa20Poly1305::new(
-            x25519::SharedSecretHSalsa20::from(
-                temporary_client_key
-                    .0
-                    .diffie_hellman(&permanent_server_key.0)
-                    .ok_or(CspProtocolError::InvalidParameter(
-                        "Non-contributory permanent public server key",
-                    ))?,
-            )
-            .as_bytes()
-            .into(),
+        let cipher = salsa20::XSalsa20Poly1305::new(
+            temporary_client_key
+                .0
+                .diffie_hellman_hsalsa20(&permanent_server_key.0)
+                .ok_or(CspProtocolError::ContractViolation(
+                    "Non-contributory permanent public server key",
+                ))?
+                .as_bytes()
+                .into(),
         );
         match cipher.decrypt_in_place((&nonce).into(), &[], &mut server_challenge_response_box) {
             Ok(()) => {
@@ -92,7 +89,7 @@ impl VouchCipher {
         client_key: &ClientKey,
         permanent_server_key: &PublicKey,
         server_cookie: &ServerCookie,
-    ) -> Option<[u8; MAC_256_LENGTH]> {
+    ) -> Option<[u8; digest::MAC_256_LENGTH]> {
         // Obtain the CSP authentication secret (aka _vouch key_)
         let vouch_key =
             client_key.derive_csp_authentication_key(permanent_server_key, &self.temporary_server_key.0)?;
@@ -115,7 +112,7 @@ pub(super) struct SessionCipher {
     client_sequence_number: ClientSequenceNumber,
     server_cookie: ServerCookie,
     server_sequence_number: ServerSequenceNumber,
-    cipher: XSalsa20Poly1305,
+    cipher: salsa20::XSalsa20Poly1305,
 }
 impl SessionCipher {
     /// Encrypt outgoing data in-place.
@@ -165,15 +162,15 @@ impl LoginCipher {
         temporary_server_key: TemporaryServerKey,
     ) -> Option<Self> {
         let temporary_client_key_public = x25519::PublicKey::from(&temporary_client_key.0);
-        let session_key = x25519::SharedSecretHSalsa20::from(
-            temporary_client_key.0.diffie_hellman(&temporary_server_key.0.0)?,
-        );
+        let session_key = temporary_client_key
+            .0
+            .diffie_hellman_hsalsa20(&temporary_server_key.0.0)?;
         let session_cipher = SessionCipher {
             client_cookie,
             client_sequence_number,
             server_cookie,
             server_sequence_number,
-            cipher: XSalsa20Poly1305::new(session_key.as_bytes().into()),
+            cipher: salsa20::XSalsa20Poly1305::new(session_key.as_bytes().into()),
         };
         let vouch_cipher = VouchCipher {
             temporary_server_key,
@@ -196,7 +193,7 @@ impl LoginCipher {
         &self,
         client_key: &ClientKey,
         permanent_server_key: &PublicKey,
-    ) -> Option<[u8; MAC_256_LENGTH]> {
+    ) -> Option<[u8; digest::MAC_256_LENGTH]> {
         self.vouch_cipher.vouch_session(
             client_key,
             permanent_server_key,
@@ -225,7 +222,7 @@ pub(super) struct LoginAckCipher {
 }
 impl LoginAckCipher {
     /// Create the cipher needed to decrypt `login-ack` contents.
-    pub(super) fn new(session_cipher: SessionCipher) -> LoginAckCipher {
+    pub(super) fn new(session_cipher: SessionCipher) -> Self {
         Self { session_cipher }
     }
 
@@ -265,11 +262,11 @@ impl PayloadCipher {
 mod tests {
     use assert_matches::assert_matches;
     use derive_builder::Builder;
+    use libthreema_dependencies::crypto::{aead::Aead as _, cipher::KeyInit as _, salsa20, x25519};
     use rstest::rstest;
 
     use crate::{
         common::keys::PublicKey,
-        crypto::{aead::Aead as _, cipher::KeyInit as _, salsa20, x25519},
         csp::{
             Cookie, CspProtocolError, SequenceNumberU64, ServerChallengeResponse, ServerCookie,
             ServerSequenceNumber, TemporaryClientKey, cipher::create_nonce,
@@ -307,13 +304,11 @@ mod tests {
 
         fn create_server_challenge_response(&self) -> Vec<u8> {
             let cipher = salsa20::XSalsa20Poly1305::new(
-                x25519::SharedSecretHSalsa20::from(
-                    self.temporary_server_key
-                        .diffie_hellman(&x25519::PublicKey::from(&self.temporary_client_key.0))
-                        .unwrap(),
-                )
-                .as_bytes()
-                .into(),
+                self.temporary_server_key
+                    .diffie_hellman_hsalsa20(&x25519::PublicKey::from(&self.temporary_client_key.0))
+                    .unwrap()
+                    .as_bytes()
+                    .into(),
             );
             let nonce = create_nonce(
                 self.server_cookie.0,
@@ -377,7 +372,7 @@ mod tests {
         );
         assert_eq!(
             result,
-            Err(CspProtocolError::InvalidParameter(
+            Err(CspProtocolError::ContractViolation(
                 "Non-contributory permanent public server key"
             ))
         );

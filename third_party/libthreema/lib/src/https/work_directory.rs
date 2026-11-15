@@ -1,4 +1,5 @@
 //! Work directory endpoint.
+use libthreema_dependencies::crypto::digest::{self, Mac as _};
 use serde::{Deserialize, Serialize};
 
 use super::endpoint::{HttpsEndpointError, TIMEOUT, https_headers_with_authentication};
@@ -8,11 +9,13 @@ use crate::{
         config::{WorkContext, WorkServerBaseUrl, WorkServerLegacyBaseUrl},
         keys::{ClientKey, PublicKey, RemoteSecret, RemoteSecretAuthenticationToken},
     },
-    crypto::{blake2b, digest::Mac as _},
     https::{HttpsHeadersBuilder, HttpsMethod, HttpsRequest, HttpsResponse, HttpsResult},
     model::contact::{Contact, ContactUpdateError},
     protobuf::d2d_sync::contact as protobuf_contact,
-    utils::serde::{base64, string},
+    utils::{
+        serde::{base64, string},
+        update::ApplySome as _,
+    },
 };
 
 #[derive(Serialize)]
@@ -53,10 +56,13 @@ enum UnauthorizedDetails {
     Unknown,
 }
 
-fn handle_status<TStatusFn: FnOnce(u16) -> Option<HttpsEndpointError>>(
+fn handle_status<TStatusFn>(
     result: HttpsResult,
     unexpected_status_map_fn: TStatusFn,
-) -> Result<HttpsResponse, HttpsEndpointError> {
+) -> Result<HttpsResponse, HttpsEndpointError>
+where
+    TStatusFn: FnOnce(u16) -> Option<HttpsEndpointError>,
+{
     let response = result?;
     match response.status {
         200 | 204 => Ok(response),
@@ -91,7 +97,7 @@ pub(crate) struct AuthenticationChallengeResponse {
     challenge: Vec<u8>,
 
     #[serde(rename = "response", with = "base64::fixed_length")]
-    response: [u8; blake2b::MAC_256_LENGTH],
+    response: [u8; digest::MAC_256_LENGTH],
 }
 
 /// Process the result and solve the authentication challenge.
@@ -124,7 +130,7 @@ struct WorkContactsRequest<'body> {
     identities: &'body [ThreemaId],
 }
 
-/// Request additonal properties associated to a set of contacts of the same Work
+/// Request additional properties associated to a set of contacts of the same Work
 /// subscription.
 pub(crate) fn request_contacts(
     client_info: &ClientInfo,
@@ -154,13 +160,13 @@ pub(crate) struct WorkContact {
     pub(crate) identity: ThreemaId,
 
     #[serde(rename = "pk", with = "base64::fixed_length")]
-    pub(crate) public_key: [u8; PublicKey::LENGTH],
+    public_key: [u8; PublicKey::LENGTH],
 
     #[serde(rename = "first", deserialize_with = "string::empty_to_optional::deserialize")]
-    pub(crate) first_name: Option<String>,
+    first_name: Option<String>,
 
     #[serde(rename = "last", deserialize_with = "string::empty_to_optional::deserialize")]
-    pub(crate) last_name: Option<String>,
+    last_name: Option<String>,
 }
 impl WorkContact {
     pub(crate) fn update(self, contact: &mut Contact) -> Result<(), ContactUpdateError> {
@@ -192,12 +198,8 @@ impl WorkContact {
         }
 
         // Update first and last name if provided
-        if let Some(first_name) = first_name {
-            contact.first_name = Some(first_name);
-        }
-        if let Some(last_name) = last_name {
-            contact.last_name = Some(last_name);
-        }
+        contact.first_name.apply_some(first_name);
+        contact.last_name.apply_some(last_name);
 
         // Done
         Ok(())
@@ -512,7 +514,7 @@ pub(crate) fn handle_remote_secret_result(
 #[cfg(test)]
 mod tests {
     use assert_matches::assert_matches;
-    use data_encoding::HEXLOWER;
+    use libthreema_dependencies::data_encoding::HEXLOWER_PERMISSIVE;
     use prost::Message as _;
     use rstest::rstest;
     use serde_json::json;
@@ -542,10 +544,7 @@ mod tests {
 
     fn work_properties() -> WorkProperties {
         WorkProperties {
-            availability_status: Some(WorkAvailabilityStatus {
-                category: protobuf::d2d_sync::WorkAvailabilityStatusCategory::Busy,
-                description: None,
-            }),
+            availability_status: Some(WorkAvailabilityStatus::Busy(String::default())),
         }
     }
 
@@ -636,10 +635,10 @@ mod tests {
     #[case(0, || HttpsEndpointError::CustomPossiblyLocalizedError("why not".to_owned()))]
     #[case(403, || HttpsEndpointError::Forbidden)]
     #[case(404, || HttpsEndpointError::NotFound)]
-    fn common_status_unexpected_mapped<TErrorFn: Fn() -> HttpsEndpointError>(
-        #[case] status: u16,
-        #[case] error_fn: TErrorFn,
-    ) {
+    fn common_status_unexpected_mapped<TErrorFn>(#[case] status: u16, #[case] error_fn: TErrorFn)
+    where
+        TErrorFn: Fn() -> HttpsEndpointError,
+    {
         assert_eq!(
             handle_status(Ok(HttpsResponse { status, body: vec![] }), |unexpected_status| {
                 if unexpected_status == status {
@@ -701,7 +700,7 @@ mod tests {
         assert_eq!(response.challenge, b"meow".to_vec());
         assert_eq!(
             response.response.to_vec(),
-            HEXLOWER
+            HEXLOWER_PERMISSIVE
                 .decode(b"a9faac27a48cd83f6eed4f16c0bb6c11ca19b0ffd1fbc37c13746e068500282a")
                 .unwrap()
         );
@@ -715,7 +714,7 @@ mod tests {
             &work_server_url(),
             &work_context(),
             ThreemaId::predefined(*b"TITATEST"),
-            protobuf::directory::WorkProperties::try_from(work_properties())?.encode_to_vec(),
+            protobuf::directory::WorkProperties::from(work_properties()).encode_to_vec(),
         );
 
         assert_eq!(
@@ -743,7 +742,7 @@ mod tests {
                 challenge: b"kekse".to_vec(),
                 response: [0_u8; 32],
             },
-            protobuf::directory::WorkProperties::try_from(work_properties())?.encode_to_vec(),
+            protobuf::directory::WorkProperties::from(work_properties()).encode_to_vec(),
         );
 
         assert_eq!(

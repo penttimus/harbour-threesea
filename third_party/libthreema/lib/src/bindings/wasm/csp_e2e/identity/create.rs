@@ -10,7 +10,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     bindings::wasm::{
-        config::ConfigEnvironment,
+        common::config::ConfigEnvironment,
         https::{HttpsRequest, HttpsResult},
     },
     common::{
@@ -63,14 +63,14 @@ pub struct CreateIdentityResult {
     pub client_key: ByteBuf,
 
     #[expect(missing_docs, reason = "Binding version")]
-    pub server_group: u8,
+    pub server_group: String,
 }
 impl From<identity::create::CreateIdentityResult> for CreateIdentityResult {
     fn from(result: identity::create::CreateIdentityResult) -> Self {
         Self {
             user_identity: result.identity.to_string(),
             client_key: ByteBuf::from(result.client_key.as_bytes()),
-            server_group: result.server_group.0,
+            server_group: result.server_group.into(),
         }
     }
 }
@@ -97,7 +97,7 @@ impl From<identity::create::CreateIdentityLoop> for CreateIdentityLoop {
             identity::create::CreateIdentityLoop::Instruction(
                 identity::create::CreateIdentityInstruction { request },
             ) => Self::Instruction(request.into()),
-            identity::create::CreateIdentityLoop::Done(result) => CreateIdentityLoop::Done(result.into()),
+            identity::create::CreateIdentityLoop::Done(result) => Self::Done(result.into()),
         }
     }
 }

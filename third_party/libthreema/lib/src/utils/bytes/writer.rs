@@ -1,6 +1,4 @@
 //! Byte writer.
-use core::ptr;
-
 use duplicate::duplicate_item;
 
 /// An error occurred while writing bytes.
@@ -52,10 +50,9 @@ pub(crate) trait ByteWriter {
     /// # Error
     ///
     /// Returns any [`ByteWriterError`] returned by the operation.
-    fn run<T, F: FnOnce(&mut Self::RunWriter<'_>) -> Result<T, ByteWriterError>>(
-        &mut self,
-        op: F,
-    ) -> Result<T, ByteWriterError>;
+    fn run<T, F>(&mut self, op: F) -> Result<T, ByteWriterError>
+    where
+        F: FnOnce(&mut Self::RunWriter<'_>) -> Result<T, ByteWriterError>;
 
     /// Run an arbitrary operation on the writer at a relative offset to the current offset in a
     /// child reader instance. The parent reader will maintain the current offset.
@@ -69,11 +66,9 @@ pub(crate) trait ByteWriter {
     /// underlying buffer boundary.
     ///
     /// Returns any [`ByteWriterError`] returned by the operation.
-    fn run_at<T, F: FnOnce(Self::RunAtWriter<'_>) -> Result<T, ByteWriterError>>(
-        &mut self,
-        relative_offset: isize,
-        op: F,
-    ) -> Result<T, ByteWriterError>;
+    fn run_at<T, F>(&mut self, relative_offset: isize, op: F) -> Result<T, ByteWriterError>
+    where
+        F: FnOnce(Self::RunAtWriter<'_>) -> Result<T, ByteWriterError>;
 
     /// Write a sequence of bytes.
     ///
@@ -203,19 +198,18 @@ impl ByteWriter for ByteWriterContainer<buffer_type> {
     }
 
     #[inline]
-    fn run<T, F: FnOnce(&mut Self::RunWriter<'_>) -> Result<T, ByteWriterError>>(
-        &mut self,
-        op: F,
-    ) -> Result<T, ByteWriterError> {
+    fn run<T, F>(&mut self, op: F) -> Result<T, ByteWriterError>
+    where
+        F: FnOnce(&mut Self::RunWriter<'_>) -> Result<T, ByteWriterError>,
+    {
         op(self)
     }
 
     #[inline]
-    fn run_at<T, F: FnOnce(Self::RunAtWriter<'_>) -> Result<T, ByteWriterError>>(
-        &mut self,
-        relative_offset: isize,
-        op: F,
-    ) -> Result<T, ByteWriterError> {
+    fn run_at<T, F>(&mut self, relative_offset: isize, op: F) -> Result<T, ByteWriterError>
+    where
+        F: FnOnce(Self::RunAtWriter<'_>) -> Result<T, ByteWriterError>,
+    {
         let invalid_offset = || ByteWriterError::InvalidRelativeOffset {
             relative_offset,
             offset: self.offset,
@@ -330,7 +324,7 @@ impl ByteWriterContainer<Vec<u8>> {
 )]
 impl ByteWriter for ByteWriterContainer<buffer_type> {
     type RunAtWriter<'run_at> = ByteWriterContainer<run_at_writer_type>;
-    type RunWriter<'run> = ByteWriterContainer<run_writer_type>;
+    type RunWriter<'run> = Self;
 
     #[inline]
     fn offset(&self) -> usize {
@@ -338,19 +332,18 @@ impl ByteWriter for ByteWriterContainer<buffer_type> {
     }
 
     #[inline]
-    fn run<T, F: FnOnce(&mut Self::RunWriter<'_>) -> Result<T, ByteWriterError>>(
-        &mut self,
-        op: F,
-    ) -> Result<T, ByteWriterError> {
+    fn run<T, F>(&mut self, op: F) -> Result<T, ByteWriterError>
+    where
+        F: FnOnce(&mut Self::RunWriter<'_>) -> Result<T, ByteWriterError>,
+    {
         op(self)
     }
 
     #[inline]
-    fn run_at<T, F: FnOnce(Self::RunAtWriter<'_>) -> Result<T, ByteWriterError>>(
-        &mut self,
-        relative_offset: isize,
-        op: F,
-    ) -> Result<T, ByteWriterError> {
+    fn run_at<T, F>(&mut self, relative_offset: isize, op: F) -> Result<T, ByteWriterError>
+    where
+        F: FnOnce(Self::RunAtWriter<'_>) -> Result<T, ByteWriterError>,
+    {
         let invalid_offset = || ByteWriterError::InvalidRelativeOffset {
             relative_offset,
             offset: self.offset,
@@ -371,6 +364,8 @@ impl ByteWriter for ByteWriterContainer<buffer_type> {
 
         // Run
         op(Self::RunAtWriter {
+            #[expect(clippy::allow_attributes, reason = "duplicate shenanigans")]
+            #[allow(clippy::mut_mut, reason = "Direct coercion of double mut")]
             buffer: &mut self.buffer,
             offset: updated_offset,
         })
@@ -446,51 +441,6 @@ pub(crate) type OwnedVecByteWriter = ByteWriterContainer<Vec<u8>>;
 #[expect(dead_code, reason = "Will use later")]
 pub(crate) type BorrowedVecByteWriter<'buffer> = ByteWriterContainer<&'buffer mut Vec<u8>>;
 
-// TODO(LIB-31): Should be unnecessary
-pub(crate) trait InsertSlice {
-    fn insert_at(&mut self, offset: usize, bytes: &[u8]);
-}
-impl InsertSlice for Vec<u8> {
-    /// Inserts a [`u8`] slice at a specific offset.
-    ///
-    /// This is an *O*(*n*) operation and usually less efficient than concatenating items to a
-    /// [`Vec<u8>`].
-    ///
-    /// Note: This is stolen from [`String::insert_str`].
-    ///
-    /// # Panics
-    ///
-    /// Panics if `offset` is larger than the `Vec<u8>`'s length.
-    #[inline]
-    fn insert_at(&mut self, offset: usize, bytes: &[u8]) {
-        let current_length = self.len();
-        let additional_length = bytes.len();
-
-        // Make room for the additional bytes
-        self.reserve(additional_length);
-
-        #[expect(
-            clippy::arithmetic_side_effects,
-            clippy::multiple_unsafe_ops_per_block,
-            reason = "TODO(LIB-16)"
-        )]
-        // # Safety: The underlying vector MUST contain bytes.
-        unsafe {
-            // Move the existing bytes at the specific offset by the amount of bytes to add
-            ptr::copy(
-                self.as_ptr().add(offset),
-                self.as_mut_ptr().add(offset + additional_length),
-                current_length - offset,
-            );
-
-            // Copy the bytes to the correct offset
-            ptr::copy_nonoverlapping(bytes.as_ptr(), self.as_mut_ptr().add(offset), additional_length);
-
-            self.set_len(current_length + additional_length);
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -501,11 +451,11 @@ mod tests {
     /// space.
     ///
     /// The tests fail if the passed writer is not zero-filled initially.
-    fn test_byte_writer<TWriter: ByteWriter, TUnwrapFn: Fn(&TWriter) -> &[u8]>(
-        mut writer: TWriter,
-        extendable: bool,
-        inner: TUnwrapFn,
-    ) {
+    fn test_byte_writer<TWriter, TUnwrapFn>(mut writer: TWriter, extendable: bool, inner: TUnwrapFn)
+    where
+        TWriter: ByteWriter,
+        TUnwrapFn: Fn(&TWriter) -> &[u8],
+    {
         {
             // Sanity check: The passed writer is zero-filled
             let buffer = inner(&writer);
