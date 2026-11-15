@@ -5,6 +5,13 @@ All notable changes. Versions follow `MAJOR.MINOR.PATCH`; each release is built 
 
 ## [Unreleased]
 
+Changed:
+
+- About: the license texts are in the pull-down menu, and the disclaimer is shorter. The README
+  is shorter too, and recommends installing through
+  [Harpoon](https://github.com/JuhaniLehtimaeki/Harpoon), which keeps Threesea up to date, by
+  [penttimus](https://github.com/penttimus).
+
 Fixed:
 
 - The bundled SQLite no longer has the fault of RUSTSEC-2026-0459: the store now uses SQLCipher

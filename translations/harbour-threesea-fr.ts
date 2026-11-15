@@ -73,8 +73,9 @@
             <translation>Licence</translation>
         </message>
         <message id="threesea-la-license-text">
-            <source>An unofficial Threema client for Sailfish OS, licensed under the GNU AGPL v3. Uses libthreema by Threema AG. Requires a Threema Libre license from the Threema Shop. Not affiliated with or supported by Threema AG.</source>
-            <translation>Un client Threema non officiel pour Sailfish OS, sous licence GNU AGPL v3. Utilise libthreema de Threema AG. Nécessite une licence Threema Libre achetée dans la boutique Threema. Sans lien avec Threema AG, ni soutenu par elle.</translation>
+            <source>Free software under the GNU AGPL v3.</source>
+            <oldsource>An unofficial Threema client for Sailfish OS, licensed under the GNU AGPL v3. Uses libthreema by Threema AG. Requires a Threema Libre license from the Threema Shop. Not affiliated with or supported by Threema AG.</oldsource>
+            <translation type="unfinished">Un client Threema non officiel pour Sailfish OS, sous licence GNU AGPL v3. Utilise libthreema de Threema AG. Nécessite une licence Threema Libre achetée dans la boutique Threema. Sans lien avec Threema AG, ni soutenu par elle.</translation>
         </message>
         <message id="threesea-he-add">
             <source>Add</source>
@@ -2420,16 +2421,19 @@
             <translation>Avertissement</translation>
         </message>
         <message id="threesea-la-disclaimer-ai">
-            <source>Threesea was developed with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. It is a research and experimentation project.</source>
-            <translation>Threesea a été développé avec Claude Code (Anthropic) et audité avec OpenAI Codex, sous la direction d’un mainteneur humain qui l’a aussi testé. C’est un projet de recherche et d’expérimentation.</translation>
+            <source>Made with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. A research and experimentation project.</source>
+            <oldsource>Threesea was developed with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. It is a research and experimentation project.</oldsource>
+            <translation type="unfinished">Threesea a été développé avec Claude Code (Anthropic) et audité avec OpenAI Codex, sous la direction d’un mainteneur humain qui l’a aussi testé. C’est un projet de recherche et d’expérimentation.</translation>
         </message>
         <message id="threesea-la-disclaimer-warranty">
-            <source>AI makes mistakes. The code, including its security-relevant parts, can contain errors nobody noticed. The developers give no warranty of any kind; you use the app at your own risk.</source>
-            <translation>L’IA se trompe. Le code, y compris ses parties liées à la sécurité, peut contenir des erreurs que personne n’a remarquées. Les développeurs ne donnent aucune garantie, de quelque nature que ce soit ; vous utilisez l’application à vos propres risques.</translation>
+            <source>AI makes mistakes, also in security-relevant code. There is no warranty: you use Threesea at your own risk.</source>
+            <oldsource>AI makes mistakes. The code, including its security-relevant parts, can contain errors nobody noticed. The developers give no warranty of any kind; you use the app at your own risk.</oldsource>
+            <translation type="unfinished">L’IA se trompe. Le code, y compris ses parties liées à la sécurité, peut contenir des erreurs que personne n’a remarquées. Les développeurs ne donnent aucune garantie, de quelque nature que ce soit ; vous utilisez l’application à vos propres risques.</translation>
         </message>
         <message id="threesea-la-disclaimer-threema">
-            <source>Threesea is based on Threema Libre's open-source code and tries to play fair with Threema's APIs and licensing. Threema told us it doesn't actively block third-party apps that cause no stability issues or high server load, are clearly marked as unofficial without using its branding, and don't circumvent the licensing. Threesea aims to meet that. This is not a permission, and Threesea is not affiliated with, endorsed or supported by Threema AG. As with any Threema app, keep a backup of your ID.</source>
-            <translation>Threesea s’appuie sur le code open source de Threema Libre et s’efforce de jouer franc jeu avec les API et les licences de Threema. Threema nous a indiqué ne pas bloquer activement les applications tierces tant qu’elles ne causent ni problèmes de stabilité ni charge élevée sur les serveurs, qu’elles sont clairement présentées comme non officielles sans utiliser sa marque et qu’elles ne contournent pas les licences. Threesea s’efforce de respecter cela. Ce n’est pas une autorisation, et Threesea n’est ni affilié à Threema AG, ni approuvé ni soutenu par elle. Comme avec toute application Threema, conservez une sauvegarde de votre ID.</translation>
+            <source>Unofficial: not affiliated with, endorsed or supported by Threema AG. Threema doesn't actively block third-party apps that play fair, as Threesea aims to, but that isn't a permission. Keep a backup of your ID.</source>
+            <oldsource>Threesea is based on Threema Libre's open-source code and tries to play fair with Threema's APIs and licensing. Threema told us it doesn't actively block third-party apps that cause no stability issues or high server load, are clearly marked as unofficial without using its branding, and don't circumvent the licensing. Threesea aims to meet that. This is not a permission, and Threesea is not affiliated with, endorsed or supported by Threema AG. As with any Threema app, keep a backup of your ID.</oldsource>
+            <translation type="unfinished">Threesea s’appuie sur le code open source de Threema Libre et s’efforce de jouer franc jeu avec les API et les licences de Threema. Threema nous a indiqué ne pas bloquer activement les applications tierces tant qu’elles ne causent ni problèmes de stabilité ni charge élevée sur les serveurs, qu’elles sont clairement présentées comme non officielles sans utiliser sa marque et qu’elles ne contournent pas les licences. Threesea s’efforce de respecter cela. Ce n’est pas une autorisation, et Threesea n’est ni affilié à Threema AG, ni approuvé ni soutenu par elle. Comme avec toute application Threema, conservez une sauvegarde de votre ID.</translation>
         </message>
         <message id="threesea-se-credits">
             <source>Credits</source>
@@ -3933,14 +3937,6 @@
             <source>Source code and bug reports: %1</source>
             <translation>Code source et signalement de bogues : %1</translation>
         </message>
-        <message id="threesea-bt-license-agpl">
-            <source>License text</source>
-            <translation>Texte de la licence</translation>
-        </message>
-        <message id="threesea-bt-license-notices">
-            <source>Third-party licenses</source>
-            <translation>Licences tierces</translation>
-        </message>
         <message id="threesea-la-add-scanned-contact">
             <source>Adds this Threema ID to your contacts with the key from Threema's directory. To verify it, scan the QR code in the other person's app.</source>
             <translation>Ajoute cet ID Threema à vos contacts avec la clé de l’annuaire de Threema. Pour le vérifier, scannez le code QR dans l’application de l’autre personne.</translation>
@@ -5011,6 +5007,14 @@
         <message id="threesea-la-voice-volume-zero">
             <source>Turn the volume up to hear the message</source>
             <translation>Augmentez le volume pour entendre le message</translation>
+        </message>
+        <message id="threesea-me-license-notices">
+            <source>Third-party licenses</source>
+            <translation>Licences tierces</translation>
+        </message>
+        <message id="threesea-me-license-agpl">
+            <source>License text</source>
+            <translation>Texte de la licence</translation>
         </message>
     </context>
 </TS>

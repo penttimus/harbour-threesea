@@ -2902,10 +2902,10 @@ DE = {
     "threesea-la-license-source":
         ("Source code and bug reports: %1",
          "Quellcode und Fehlermeldungen: %1"),
-    "threesea-bt-license-agpl":
+    "threesea-me-license-agpl":
         ("License text",
          "Lizenztext"),
-    "threesea-bt-license-notices":
+    "threesea-me-license-notices":
         ("Third-party licenses",
          "Lizenzen von Drittanbietern"),
     "threesea-la-add-scanned-contact":

@@ -2899,10 +2899,10 @@ FI = {
     "threesea-la-license-source":
         ("Source code and bug reports: %1",
          "Lähdekoodi ja vikailmoitukset: %1"),
-    "threesea-bt-license-agpl":
+    "threesea-me-license-agpl":
         ("License text",
          "Lisenssiteksti"),
-    "threesea-bt-license-notices":
+    "threesea-me-license-notices":
         ("Third-party licenses",
          "Kolmansien osapuolten lisenssit"),
     "threesea-la-add-scanned-contact":
