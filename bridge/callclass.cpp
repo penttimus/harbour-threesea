@@ -93,20 +93,20 @@ void CallClass::policyAcquire()
 {
     if (!m_set) {
         m_set = new ResourcePolicy::ResourceSet(QStringLiteral("call"), this, true, false);
-        // Our call's and the earpiece's streams (role `phone`) are the call's, and only those: Qt's
-        // media player has a set of its own ("player") for the process's `media.name`, and a set of
-        // ours on that tag took the player's streams too, into the call while it lasted (on the
-        // phone's sink, never Bluetooth) and into the corked `othermedia` once it was gone
-        // (issue 22).
-        ResourcePolicy::AudioResource *audio = new ResourcePolicy::AudioResource(QStringLiteral("call"));
-        audio->setProcessID(static_cast<quint32>(QCoreApplication::applicationPid()));
-        audio->setStreamTag(QStringLiteral("media.role"), QStringLiteral("phone"));
-        m_set->addResourceObject(audio);
+        // Our streams are the call's: the policy corks what it takes for a player's. The rule is
+        // the process's one and only (see policyRelease), so it names every stream, as Qt's does.
+        m_audio = new ResourcePolicy::AudioResource(QStringLiteral("call"));
+        m_audio->setProcessID(static_cast<quint32>(QCoreApplication::applicationPid()));
+        m_audio->setStreamTag(QStringLiteral("media.name"), QStringLiteral("*"));
+        m_set->addResourceObject(m_audio);
         m_set->addResource(ResourcePolicy::AudioRecorderType);
         connect(m_set, &ResourcePolicy::ResourceSet::resourcesGranted, this, &CallClass::onGranted);
         connect(m_set, &ResourcePolicy::ResourceSet::resourcesDenied, this, &CallClass::onRefused);
         connect(m_set, &ResourcePolicy::ResourceSet::lostResources, this, &CallClass::onRefused);
         connect(m_set, &ResourcePolicy::ResourceSet::resourcesReleasedByManager, this, &CallClass::onRefused);
+    } else {
+        // Before the acquire, on the same connection: the manager has the rule before the request.
+        m_audio->setAudioGroup(QStringLiteral("call"));
     }
     if (!m_set->acquire()) {
         qWarning("threesea: the audio policy's call class could not be asked for");
@@ -116,13 +116,15 @@ void CallClass::policyAcquire()
 
 void CallClass::policyRelease()
 {
-    // Gone, not just released, so that its rule on our streams goes with it; the next hold asks
-    // with a new one.
+    // PulseAudio's policy (pulseaudio-policy-enforcement up to 14.2.51, fixed in 14.2.52) keeps one
+    // stream rule per process: ours took the place of Qt's media player's ("player", `media.name`
+    // `*`), and any set of ours that went took the process's rule along, so the player's streams
+    // fell into the corked `othermedia` (issue 22). The set stays, and its rule goes back to the
+    // player's group; a new group is sent as a new rule. With 14.2.52 both rules are one shared
+    // entry, whose group is the last one sent: the player's here too.
     if (m_set) {
         m_set->release();
-        m_set->disconnect(this);
-        m_set->deleteLater();
-        m_set = nullptr;
+        m_audio->setAudioGroup(QStringLiteral("player"));
     }
 }
 

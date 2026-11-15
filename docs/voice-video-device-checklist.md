@@ -41,8 +41,12 @@ Settings → Chats: "Play voice messages at the ear" is on by default.
    - Without headphones a message at the ear, then headphones again and a message played face up
      (failed with ad18fd3: silent, the stream in `othermedia`): heard in the headphones, the
      stream in `player`.
-   - A call and a message at the ear: `policy.group = "call"` for the `phone` streams if the
-     policy matches the role tag; `othermedia` also works (as with ad18fd3) as long as it's heard.
+   - Without headphones: a message at the ear, then one with the phone on the table, then at the
+     ear again (failed with bc009ed: nothing played after the first). Heard each time; the
+     `phone` stream in `call` at the ear, the loudspeaker's in `player`.
+   - A call: the `phone` stream in `call`, and a message on the loudspeaker afterwards in
+     `player`. Note the policy's version, `rpm -q pulseaudio-policy-enforcement` (14.2.52 keeps
+     several rules per process, older versions one).
 
 ## B. The sound between two voice messages
 

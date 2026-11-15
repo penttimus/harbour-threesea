@@ -1623,13 +1623,14 @@ notices take SQLCipher's licence from `sqlcipher-src`.
 
 Reported on a Jolla Phone 2026 (SFOS 5.2.0.22, 0.3.1): with A2DP headphones voice messages came
 from the loudspeaker, the stream in the policy's group `call`, after the phone had once been at the
-ear. The call class's resource set lived on after letting go, and its audio resource files every
-stream of the process under the call (ADR 0034's update). The set now goes with the class, leaving
-the ear lets go before the loudspeaker's stream starts, and with headphones or Bluetooth as the
-output (`bridge/mediaroute.h`, `tests/mediaroute`) the ear stays off. Full only.
+ear. The call class's resource set lived on after letting go, its rule filing every stream of the
+process under the call (ADR 0034's update). Letting go now gives the rule back to the player,
+leaving the ear lets go before the loudspeaker's stream starts, and with headphones or Bluetooth as
+the output (`bridge/mediaroute.h`, `tests/mediaroute`) the ear stays off. Full only.
 
-Tried on the phone (the reporter, ad18fd3): with headphones everything stayed in them, but a message
-played after one at the ear was silent, its stream in the corked `othermedia`. Qt's media player has
-a resource set of its own (`player`, tag `media.name`), the same tag as ours: ours took its streams
-into the call, and deleting ours took the player's rule along. The call class now tags our streams
-by their role (`phone`) instead; to be tried again (device checklist A.5).
+Tried on the phone (the reporter): with ad18fd3 a message played after one at the ear was silent,
+its stream in the corked `othermedia`; with bc009ed (our streams tagged by role instead) nothing
+played after the first message at the ear. PulseAudio's policy module up to 14.2.51 keeps one
+stream rule per process, shared with Qt's media player, and removing ours removed it (ADR 0034's
+update; Jolla fixed it in 14.2.52). The call class's set now stays and switches its rule's group
+between `call` and `player`; to be tried again (device checklist A.5).

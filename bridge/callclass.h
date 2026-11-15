@@ -8,6 +8,7 @@
 #include <QTimer>
 
 namespace ResourcePolicy {
+class AudioResource;
 class ResourceSet;
 }
 
@@ -70,6 +71,7 @@ private:
     bool m_granted = false;
     QString m_output;
     ResourcePolicy::ResourceSet *m_set = nullptr;
+    ResourcePolicy::AudioResource *m_audio = nullptr;
     QTimer m_letGo;
     QTimer m_wait;
 };

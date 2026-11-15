@@ -89,25 +89,31 @@ Not chosen:
   it. No volume bar shows. Behind another app the keys stay the system's.
 - Lite is untouched: no calls, no voice at the ear, no library.
 
-## Update 2026-11-15: only our own streams, and never with headphones (issue 22)
+## Update 2026-11-15: one stream rule per process, and never with headphones (issue 22)
 
 With Bluetooth headphones a voice message played on the loudspeaker, its stream (role `x-maemo`,
-Qt's media player) in the policy's group `call` on the phone's own sink, after the phone had once
-been at the ear. Qt's media player has a resource set of its own on Sailfish (QtMultimedia's
-`resourcepolicy` plugin, class `player`, tag `media.name`), and ours had the same tag, `media.name`
-`*`, for the same process: from the first hold on, the player's streams were the call's. Deleting
-our set when letting go only made it worse, as a tester showed on a phone (Jolla Phone 2026,
-SFOS 5.2): the player's rule went with ours, its stream fell into `othermedia`, which the policy
-corks, and was silent. Now:
-- the set's audio resource names our streams by their role, `media.role` `phone` (the calls' and
-  the earpiece's pipelines), and leaves the player's alone. The tester saw our `phone` streams in
-  `othermedia` at the ear and the earpiece working all the same: the route follows the grant, not
-  the streams' group, so if the policy didn't match this tag we would be where that test was;
-- the set is deleted when the class is let go, and leaving the ear lets go at once (`letGoNow`);
+Qt's audio output) in the policy's group `call` on the phone's own sink, after the phone had once
+been at the ear. The cause is in PulseAudio's policy module, pulseaudio-policy-enforcement up to
+14.2.51 (Jolla fixed it in 14.2.52, 2026-11-02, JB#65526; read in its `classify.c`): it keeps
+**one** stream rule per process (`app_id`, the process's start time). Qt's media player registers
+one of its own on Sailfish (QtMultimedia's `resourcepolicy` plugin: class `player`, `media.name`
+`*`, once, never again), and ours, the same match, only changed that rule's group to `call`, for
+good. Removing a rule removes the process's rule, whatever it was: deleting our set (the first try,
+ad18fd3) or a different tag (`media.role` `phone`, the second, bc009ed: our rule took the place or
+was dropped, and went with the process's rule) left every later stream without one, in the corked
+`othermedia`, silent. A tester showed both on a Jolla Phone 2026 (SFOS 5.2).
+
+Now:
+- the set lives as long as the process and keeps `media.name` `*`; letting go releases it and
+  sends its rule again with the group `player` (`setAudioGroup`: ohm removes the old rule and adds
+  the new one, so PulseAudio has the player's rule back and moves streams from `othermedia` into
+  it), holding sends it with `call` before asking. With 14.2.52, where Qt's and our identical
+  rules are one counted entry, the group is the last one sent: the same result;
+- leaving the ear lets go at once (`letGoNow`), before the loudspeaker's stream starts;
 - with headphones, a headset or Bluetooth as the route manager's output (`bridge/mediaroute.h`)
   the proximity sensor stays off: the message stays in them, as on Android. An output name we
   don't know counts as headphones.
 
-The first version of this fix (tag unchanged, set deleted) was tried on the phone: the headphones
-part worked, a message after one at the ear was silent. The role tag is to be tried there next
-(device checklist A.5).
+A stream gets its group when it starts and keeps it (only streams in `othermedia` are moved when a
+rule comes): one that starts in the moment between asking and the rule's arrival stays where it
+was. To be tried on the phone (device checklist A.5).
