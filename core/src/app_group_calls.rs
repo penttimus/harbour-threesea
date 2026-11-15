@@ -1102,6 +1102,10 @@ impl App {
     }
 
     /// `groupCallChannel {data}`: a message from the SFU's data channel (base64).
+    #[expect(
+        deprecated,
+        reason = "fields 6.6.0's protocol deprecates; Android 6.6.0 still uses only these"
+    )]
     pub(crate) fn group_call_channel(&mut self, data: &str) -> Result<Value, ApiError> {
         use sfu_to_participant::envelope::Content;
         let bytes = BASE64
@@ -1131,12 +1135,14 @@ impl App {
                 if call.hello {
                     tracing::warn!("second Hello from the SFU ignored");
                 } else {
+                    // The IDs in the field 6.6.0's protocol calls deprecated: Android 6.6.0 still
+                    // reads only those, and SFUs send them.
                     tracing::info!(
-                        participants = hello.participant_ids.len(),
+                        participants = hello.deprecated_participant_ids.len(),
                         "group call: Hello"
                     );
                     call.hello = true;
-                    call.participants = hello.participant_ids;
+                    call.participants = hello.deprecated_participant_ids;
                     changed = true;
                     // Before the handshakes: the others can't decrypt our audio until then, and
                     // the state they are told afterwards reads this.
@@ -1870,7 +1876,8 @@ mod app_tests {
             padding: Vec::new(),
             content: Some(sfu_to_participant::envelope::Content::Hello(
                 sfu_to_participant::Hello {
-                    participant_ids: (2..2 + others).collect(),
+                    deprecated_participant_ids: (2..2 + others).collect(),
+                    ..Default::default()
                 },
             )),
         };
