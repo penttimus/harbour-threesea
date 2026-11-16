@@ -50,7 +50,8 @@ does. Sources are listed at the end; re-check them before building a new page.
   controls centred/at the bottom. Never `Screen.safeAreaMargins` (doesn't exist on Qt 5.6) or
   model-specific pixel constants; the emulator has no cutout, so this needs a device check.
 - **Cover:** summary (unread count, latest senders), one or two `CoverAction`s (e.g. new
-  message). Plain `Label`s, `Theme.opacityHigh`. Model: `jolla-notes/cover/NotesCover.qml`.
+  message). Plain `Label`s, `Theme.opacityHigh`, over the app's icon at `Theme.opacityFaint`.
+  Model: `jolla-notes/cover/NotesCover.qml`.
 - **Strings:** `qsTrId("threesea-…")` with `//%` engineering English (Jolla style, id-based).
 - **Settings:** in-app settings page from the pulley (Harbour forbids `com.jolla.settings`
   plugins). A jolla-settings entry can be added later for the non-Harbour build.

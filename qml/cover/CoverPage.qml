@@ -32,6 +32,18 @@ CoverBackground {
         onTriggered: cover.seconds = Math.max(0, Math.floor((Date.now() - cover.callStart()) / 1000))
     }
 
+    // The app's icon, large and faint behind the text: among the other apps' covers, Threesea's
+    // is known at a glance, as theirs are by their logos.
+    Image {
+        anchors.centerIn: parent
+        width: parent.width
+        height: width
+        source: "/usr/share/icons/hicolor/172x172/apps/harbour-threesea.png"
+        fillMode: Image.PreserveAspectFit
+        smooth: true
+        opacity: Theme.opacityFaint
+    }
+
     Column {
         visible: cover.inCall
         anchors.centerIn: parent
