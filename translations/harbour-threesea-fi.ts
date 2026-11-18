@@ -5057,6 +5057,17 @@
         <message id="threesea-la-notification-reactions-groups-description">
             <source>Notify when someone reacts to one of your messages in a group.</source>
             <translation>Ilmoita, kun joku reagoi viestiisi ryhmässä.</translation>
+        <message id="threesea-la-credit-harpoon">
+            <source>Harpoon by Juhani Lehtimäki (GPL-3.0): how the waves on the cover are coloured.</source>
+            <translation>Harpoon, tekijä Juhani Lehtimäki (GPL-3.0): kannen aaltojen väritys.</translation>
+        </message>
+        <message id="threesea-la-cover-previews">
+            <source>Show messages on the cover</source>
+            <translation>Näytä viestit kannessa</translation>
+        </message>
+        <message id="threesea-la-cover-previews-description">
+            <source>Under each chat that has something new, the cover also shows its last message. Never for private chats.</source>
+            <translation>Kansi näyttää jokaisen keskustelun alla, jossa on uutta, myös sen viimeisen viestin. Ei koskaan yksityisistä keskusteluista.</translation>
         </message>
     </context>
 </TS>

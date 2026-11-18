@@ -50,7 +50,15 @@ does. Sources are listed at the end; re-check them before building a new page.
   controls centred/at the bottom. Never `Screen.safeAreaMargins` (doesn't exist on Qt 5.6) or
   model-specific pixel constants; the emulator has no cutout, so this needs a device check.
 - **Cover:** summary (unread count, latest senders), one or two `CoverAction`s (e.g. new
-  message). Plain `Label`s, `Theme.opacityHigh`. Model: `jolla-notes/cover/NotesCover.qml`.
+  message). Plain `Label`s. Model: `jolla-notes/cover/NotesCover.qml`; the count up left with its
+  label beside it and the list under it as on Jolla's Email cover. Its background is the launcher
+  icon's picture in one colour (`qml/components/CoverSea.qml`, user 2026-11-18): three waves in
+  `Theme.highlightBackgroundColor` at `Theme.opacityLow` (the colouring is Harpoon's), the
+  first under the count, the second carrying the list, the third the cover actions, the icon's
+  bubble afloat on the first at the right, sunk and leaning as on the icon. The two upper waves
+  rise a row for every chat listed (one short glide, only while the cover is seen); with nothing
+  unread the sea is at its lowest and the state ("No new messages", "Offline"…) stands where
+  the count does.
 - **Strings:** `qsTrId("threesea-…")` with `//%` engineering English (Jolla style, id-based).
 - **Settings:** in-app settings page from the pulley (Harbour forbids `com.jolla.settings`
   plugins). A jolla-settings entry can be added later for the non-Harbour build.
@@ -82,7 +90,7 @@ and the open Jolla apps (Notes, Gallery, Camera, Weather) for everything else.
 | Image/video viewer | `FullscreenContentPage { allowedOrientations: Orientation.All }` with a `SlideshowView` of the chat's photos, GIFs and videos (always these three, not the gallery's filter; going round like Gallery's), back by swiping down, flick/pinch zoom that holds the slideshow still, tap for the overlay of actions and the position — re-created without `Sailfish.Gallery` | jolla-gallery `src/pages/GalleryFullscreenPage.qml`, sailfish-components-gallery `ImageViewer.qml`, `GalleryOverlay.qml` |
 | Share out | `ShareAction { mimeType }` + `resources = [url]; trigger()`, kept once in `MessageOut.qml` for messages; the core makes a file's short-lived copy (ADR 0031); a link as `{type: "text/x-url", status: url}`, text as `{type: "text/plain", status}` (with `data` a share method may write it to a temporary file). Base.permission has the D-Bus access, no permission to declare | jolla-notes `pages/NotePage.qml`, `GalleryOverlay.qml` |
 | Contact / group details | `PageHeader`, avatar, `DetailItem`s, `SectionHeader`s, pulley actions; contact picking via `Sailfish.Contacts` / `org.nemomobile.contacts` | whisperfish `ContactCardPage.qml`, `NewMessage.qml` |
-| Cover | unread count + last sender (not the text; can be hidden), with the action to that chat next to new message while the name shows | jolla-notes `cover/NotesCover.qml` |
+| Cover | unread count + the chats that wait, each with its own count (their last message only with "Show messages on the cover"; all of it can be hidden), with the action to the newest of them next to new message | jolla-notes `cover/NotesCover.qml` |
 | Notifications | `Nemo.Notifications` with `appName`, `summary/body`, `previewSummary/previewBody`, `itemCount` grouping per chat, `remoteActions` with a `"default"` D-Bus action (+ `ExecDBus` in X-Sailjail) so tapping works when the app is closed; `replacesId` to update | commhistory-daemon `src/personalnotification.cpp`, whisperfish `qml/harbour-whisperfish-main.qml` |
 | Settings | `Page` with `SectionHeader`s, `TextSwitch`, `ComboBox`, `Slider` | jolla-notes `settings/notes.qml` (look, not the plugin mechanism) |
 | Voice messages | QtMultimedia `Audio`/`AudioRecorder`; playback controls via `Amber.Mpris` if useful. In the bubble: play/pause icon, Silica `Slider`, length, and the speed as a plain tappable label (1× / 1.5× / 2×, Threema's chip — text, not an own control) | docs: amber-mpris |

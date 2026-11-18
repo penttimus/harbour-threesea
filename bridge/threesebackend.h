@@ -55,6 +55,9 @@ class ThreeseBackend : public QObject
     // unread chat, for the cover. Empty while nothing is unread.
     Q_PROPERTY(QString unreadFrom READ unreadFrom NOTIFY unreadFromChanged)
     Q_PROPERTY(QString unreadChat READ unreadChat NOTIFY unreadChatChanged)
+    // The cover's rows: the chats that wait, newest first (identity, displayName, unread,
+    // lastMessage, a group's senderName); never a private or an archived chat.
+    Q_PROPERTY(QVariantList unreadChats READ unreadChats NOTIFY unreadChatsChanged)
     // Keep the process (and the connection) alive when the window is closed.
     Q_PROPERTY(bool keepRunning READ keepRunning WRITE setKeepRunning NOTIFY keepRunningChanged)
     // How much goes to the system log, Qt and core alike: "warn" (default), "info", "debug".
@@ -65,6 +68,9 @@ class ThreeseBackend : public QObject
                    NOTIFY notificationSettingsChanged)
     Q_PROPERTY(bool notificationPreview READ notificationPreview WRITE setNotificationPreview
                    NOTIFY notificationSettingsChanged)
+    // The cover lists who waits; with this also each chat's last message (Settings → Privacy,
+    // off by default). Device-local.
+    Q_PROPERTY(bool coverPreviews READ coverPreviews WRITE setCoverPreviews NOTIFY notificationSettingsChanged)
     // Android's sound and vibration for new messages, each for chats and groups: the tone and the
     // vibration of the current sound profile's instant messages. Device-local.
     Q_PROPERTY(bool soundChats READ soundChats WRITE setSoundChats NOTIFY notificationSettingsChanged)
@@ -152,6 +158,7 @@ public:
     int unreadCount() const { return m_unreadCount; }
     QString unreadFrom() const { return m_unreadFrom; }
     QString unreadChat() const { return m_unreadChat; }
+    QVariantList unreadChats() const { return m_unreadChats; }
     bool keepRunning() const;
     QString logLevel() const;
     // Qt's (and QML's console) messages at the stored level; main() calls it before anything logs.
@@ -159,6 +166,7 @@ public:
     bool notificationsEnabled() const;
     void setNotificationsEnabled(bool enabled);
     bool notificationPreview() const;
+    bool coverPreviews() const;
     bool addressBookSync() const { return QSettings().value(QStringLiteral("addressBookSync"), false).toBool(); }
     void setAddressBookSync(bool sync)
     {
@@ -172,6 +180,7 @@ public:
         emit addressBookSyncedAtChanged();
     }
     void setNotificationPreview(bool preview);
+    void setCoverPreviews(bool previews);
     int imageSize() const { return QSettings().value(QStringLiteral("imageSize"), 1600).toInt(); }
     void setImageSize(int side);
     // These four are read per bubble while a chat scrolls: from members, not the settings file.
@@ -432,6 +441,7 @@ signals:
     void unreadCountChanged();
     void unreadFromChanged();
     void unreadChatChanged();
+    void unreadChatsChanged();
     void keepRunningChanged();
     void logLevelChanged();
     void notificationSettingsChanged();
@@ -536,6 +546,7 @@ private:
     int m_unreadCount = 0;
     QString m_unreadFrom;
     QString m_unreadChat;
+    QVariantList m_unreadChats;
     // The database key while the core runs (to encrypt it when key encryption is switched on);
     // memory only, wiped on exit.
     QByteArray m_dbKey;

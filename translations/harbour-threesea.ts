@@ -5056,6 +5056,16 @@
         </message>
         <message id="threesea-la-notification-reactions-groups-description">
             <source>Notify when someone reacts to one of your messages in a group.</source>
+        <message id="threesea-la-credit-harpoon">
+            <source>Harpoon by Juhani Lehtimäki (GPL-3.0): how the waves on the cover are coloured.</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-cover-previews">
+            <source>Show messages on the cover</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-cover-previews-description">
+            <source>Under each chat that has something new, the cover also shows its last message. Never for private chats.</source>
             <translation type="unfinished" />
         </message>
     </context>

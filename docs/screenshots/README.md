@@ -12,8 +12,8 @@ the table whenever one is retaken; an older version in it means that picture may
 | `05-contact.png` | Contact page: card, notifications, privacy, public key | 0.2.0 |
 | `06-message-menu.png` | A message's long-press menu | 0.2.0 |
 | `07-emoji.png` | The emoji panel | 0.2.0 |
-| `08-cover.png` | The cover on the home screen: unread count and who wrote | 0.2.0 |
-| `09-launcher.png` | The launcher icon among system icons (top of the screen only) | 0.2.0 |
+| `08-cover.png` | The cover on the home screen: unread count and the chats that wait | after 0.3.1 |
+| `09-launcher.png` | The launcher icon among system icons (top of the screen only); the icon of before 2026-11-18 | 0.2.0 |
 | `10-settings.png` | Settings, scrolled past "My profile" | 0.2.0 |
 | `11-spam-banner.png` | The spam report's banner in a chat from an unknown contact | 0.2.0 |
 | `12-spam-report.png` | The report dialog, saying what is sent | 0.2.0 |

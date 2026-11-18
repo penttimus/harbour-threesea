@@ -1228,6 +1228,12 @@ FR = {
     "threesea-la-hide-cover-description":
         ("The cover only shows the number of new messages, not who wrote.",
          "La couverture n’affiche que le nombre de nouveaux messages, pas qui a écrit."),
+    "threesea-la-cover-previews":
+        ("Show messages on the cover",
+         "Afficher les messages sur la couverture"),
+    "threesea-la-cover-previews-description":
+        ("Under each chat that has something new, the cover also shows its last message. Never for private chats.",
+         "Sous chaque discussion qui a du nouveau, la couverture affiche aussi son dernier message. Jamais pour les discussions privées."),
     "threesea-se-appearance":
         ("Appearance",
          "Apparence"),
@@ -1818,6 +1824,9 @@ FR = {
     "threesea-la-credit-whisperfish":
         ("Whisperfish, the Signal client for Sailfish OS: a reference for building such an app.",
          "Whisperfish, le client Signal pour Sailfish OS : une référence pour construire une telle application."),
+    "threesea-la-credit-harpoon":
+        ("Harpoon by Juhani Lehtimäki (GPL-3.0): how the waves on the cover are coloured.",
+         "Harpoon de Juhani Lehtimäki (GPL-3.0) : la coloration des vagues sur la couverture."),
     "threesea-la-credit-libraries":
         ("SQLCipher, GStreamer, Qt and many Rust libraries (tokio, rustls, reqwest, rusqlite, RustCrypto and others).",
          "SQLCipher, GStreamer, Qt et de nombreuses bibliothèques Rust (tokio, rustls, reqwest, rusqlite, RustCrypto et d’autres)."),
