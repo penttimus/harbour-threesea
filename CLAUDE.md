@@ -307,9 +307,10 @@ Work phase by phase. Each phase ends with: it builds in the SDK, tests pass, `RE
 `docs/` updated, a short status note in `docs/STATUS.md`. Do not start the next phase while the
 current one has known-broken core functionality.
 
-Status 2026-11-11: Phases 0–4.5 done (phone tests collected for the end), Phase 5 in progress:
-0.3.0 is out with the fixes of the audit of 2026-11-04, and 0.3.1 is prepared (the earpiece, the
-volume keys and video calls after the first tries on a phone); details in `docs/STATUS.md`.
+Status 2026-11-18: Phases 0–4.5 done (phone tests collected for the end), Phase 5 in progress:
+0.3.1 is out (the earpiece, the volume keys and video calls after the first tries on a phone),
+and 0.4.0 is prepared for 2026-11-19 (a new icon, the cover as a sea listing who waits,
+notifications for reactions, spam groups as in Android 6.6.0/6.6.1); details in `docs/STATUS.md`.
 
 ### Phase 0 — Toolchain and skeleton (highest risk, do first)
 - Add upstream as submodule; pin `libthreema`.
@@ -571,8 +572,9 @@ Facts:
   open (BSD). Whisperfish (AGPL, Rust) is the closest reference app.
 - Phase 0 RPMs pass `mb2 check` (Harbour validator) on all three architectures; CI runs Jolla's
   validator on the Lite RPMs on every push (`scripts/validate-rpm.sh`).
-- Released: 0.1.0 (2026-10-27), 0.2.0 (2026-11-03) and 0.3.0 (2026-11-08), on GitHub. 0.3.1 is
-  prepared on `main` (2026-11-11) and goes out with its merge into `release`.
+- Released: 0.1.0 (2026-10-27), 0.2.0 (2026-11-03), 0.3.0 (2026-11-08) and 0.3.1 (2026-11-11), on
+  GitHub. 0.4.0 is prepared on `main` (2026-11-18) for 2026-11-19 and goes out with its merge into
+  `release`.
 - Our only hosts outside Threema's are GitHub for the opt-in update check and self-hosted
   Threema Web servers the user allows (§7.6); places come from Threema's `poi.threema.ch`
   (ADR 0030), the map from `map.threema.ch`, drawn by a bundled MapLibre held to that origin

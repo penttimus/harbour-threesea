@@ -1750,3 +1750,24 @@ on the versions libthreema uses (one crypto stack, CLAUDE.md §4); tokio-tungste
 version libthreema's examples use; rusqlite 0.43 waits, the store having just moved to 0.42 and
 SQLCipher 4.20. `cargo audit` was not run here (not installed on this machine): the weekly CI job
 and the push's own run say whether anything is open.
+
+## 0.4.0 prepared (2026-11-18, for 2026-11-19)
+
+Version 0.4.0 in the spec, the workspace and the project file, and its CHANGELOG section. Every
+text has its German, French and Finnish (the Finnish written here, not by a native speaker: the
+About page's disclaimer is the part worth a look by one). The store's schema is still the one of
+0.3.0, so there is no new fixture. Nobody is new among the contributors.
+
+In it since 0.3.1: the new launcher icon and the cover as a sea that lists who waits, with the
+last messages as a setting; notifications for reactions to our messages (Android 6.6.1); spam
+groups reported in the background and no new groups from unknown senders with "Block unknown
+senders" (Android 6.6.0); the shorter About page and README with Harpoon as the way to install;
+release files named with the flavour after the architecture; rusqlite 0.42 with SQLCipher 4.20,
+the lockfile's updates, opus-pure from crates.io and mapbox-gl-qml 3.2.2; voice messages on
+Bluetooth headphones; and the stall probe only while the app is in front.
+
+Found while checking `main` for it: the merge of `main` into the reactions' branch had left an
+entry open in all four `.ts` files (not well-formed XML; repaired in pull request 32).
+
+Not retaken: `docs/screenshots/09-launcher.png` still shows the icon of before (the README does
+not use it), and the other pictures are from 0.2.0.
