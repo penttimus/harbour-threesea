@@ -13,6 +13,11 @@
 // phone call.) A connected headset is routed by the policy itself: no button then. Only talks
 // to the bus during a call, so never in Lite.
 //
+// A Bluetooth headset is the exception: the policy leaves our call on its music profile (A2DP),
+// where a call's sound doesn't go, and takes the hands-free profile only for a call the
+// telephony knows of. So a call that finds the sound on A2DP makes the hands-free route the
+// preferred device for as long as it lasts (ADR 0034's update of 2026-11-18).
+//
 // A preference outlives the process: it is taken back when the call ends, when the app closes,
 // and by `recover` at the next start after a crash.
 //
@@ -46,6 +51,7 @@ protected:
     virtual void busListen(bool on);
     virtual void busQuery();
     virtual void busSend(bool on);
+    virtual void busSendHeadset(bool on);
 
     void answeredRoute(const QString &device);
     void answeredSend(bool ok, bool on);
@@ -59,6 +65,7 @@ private:
     void settle();
     void giveUp();
     void show();
+    void followHeadset();
 
     bool m_running = false;
     bool m_available = false;
@@ -68,6 +75,10 @@ private:
     // A request waits for the manager to confirm it.
     bool m_pending = false;
     bool m_wanted = false;
+    // We made the Bluetooth hands-free route the preferred device: ours to take back.
+    bool m_headset = false;
+    // Asked for while the sound was on A2DP; not again until it has been somewhere else.
+    bool m_headsetAsked = false;
     QString m_output;
     QTimer m_confirm;
 };

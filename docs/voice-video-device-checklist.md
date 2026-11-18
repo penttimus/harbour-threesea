@@ -662,6 +662,12 @@ Full, unless it says otherwise. With a second phone calling.
     - Seen 2026-11-15 (headphones with HFP, connected before the call): the call was on the phone,
       the card stayed on `a2dp_sink` and PulseAudio logged `can't set profiles/ports to source
       voicecall`. Expect the card to switch to `handsfree_head_unit` and the call to be in them.
+    - Since 2026-11-18 the call asks for the hands-free route itself (ADR 0034's update). With
+      Bluetooth headphones connected before the call, and connected during it: the call is in
+      them, `ActiveRoutes` says `bluetoothsco`, no loudspeaker button, and the other side hears
+      the headset's microphone (it did when tried by hand). After the call: music in the headphones
+      again, `ActiveRoutes` back to `bluetootha2dp`. Headphones without a microphone (no
+      hands-free profile): note where the call goes.
 12. Bluetooth headset goes out of range or off during a call.
     - Note where the sound goes. Android has a setting that ends the call then; we only add one if
       the sound ends up somewhere you wouldn't want.

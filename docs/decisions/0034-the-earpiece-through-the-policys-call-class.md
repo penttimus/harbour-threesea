@@ -119,3 +119,33 @@ rule comes): one that starts in the moment between asking and the rule's arrival
 was. Confirmed on the phone (7cccef0, pulseaudio-policy-enforcement 14.2.50, 2026-11-15): at the
 ear the `phone` stream in `call`, on the loudspeaker and in Bluetooth headphones `x-maemo` in
 `player`, also after the ear and after a call.
+
+## Update 2026-11-18: calls in a Bluetooth headset (issue 22's follow-up)
+
+With Bluetooth headphones connected a call was heard from the phone, also in 0.3.1: the card
+stayed on A2DP. In the policy (policy-settings-common, `audio_route.pl`, `hwconfig.pl`) the first
+valid device of a fixed list wins, `bta2dp` stands before `bthfpforcall`, and A2DP only becomes
+invalid for a call the telephony knows of: ohm's telephony plugin reads that from Telepathy's
+call channels, not from the class `call`. (The line PulseAudio logs at the call's start, `can't
+set profiles/ports to source voicecall`, is the input the policy picks for the class and does no
+harm: it goes on with the output.)
+
+Not chosen: the class `aliencall`, which has Bluetooth routes of its own, since it is App
+Support's (user decision); becoming a Telepathy connection manager, which would put our calls
+into Jolla's phone app and the system's call history (a non-goal); switching the card's profile
+ourselves in PulseAudio, against the policy.
+
+Chosen: the route manager's preference, as for the loudspeaker. "If any device is preferred don't
+route to other devices" (`audio_route_rules.pl`), and the hands-free routes go by the name
+`bluetoothsco`: with it preferred, `bthfpforcall` is the one valid output while the class `call`
+is ours, and the policy switches the card. `CallRoute` asks for it when a call finds the output on
+`bluetootha2dp` (at its start, or a headset connected during it), once per time the route gets
+there, not while the loudspeaker is the user's choice, and takes it back with the call, at the
+end of the process and after a crash, like the loudspeaker's. A headset without the hands-free
+profile stays on A2DP: the policy prefers nothing it cannot choose. `Prefer` clears every other
+preference, also when taking one back (`policy.dres`, `prefer_request`).
+
+Tried by hand on a phone before it was built (Jolla Phone 2026, 0.3.1, `dbus-send … Prefer
+string:bluetoothsco uint32:1 uint32:1` during a call): the call moved from the phone into the
+headphones, the other side heard the headset's microphone, and after taking it back the routes
+were `bluetootha2dp` and `microphone` again.

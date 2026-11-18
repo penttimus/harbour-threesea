@@ -1669,3 +1669,19 @@ phone. The headphones offer HFP (`handsfree_head_unit`), but the card stayed on 
 call stream on `sink.fast`, and PulseAudio logged `dbusif.c: can't set profiles/ports to source
 voicecall` at the call's start. Not known whether 0.3.1 did the same (device checklist, "Ringing,
 routes and the screen in calls", step 11).
+
+## Calls in Bluetooth headsets (2026-11-18)
+
+The call on the phone with Bluetooth headphones connected is as old as the calls (0.3.1 does it
+too). The policy keeps a call of the class `call` on A2DP unless the telephony knows of it; the
+route manager's preference for `bluetoothsco` gets it to the hands-free profile, tried by hand on
+a phone. `CallRoute` now asks for it when a call finds the sound on A2DP and takes it back with
+the call (ADR 0034's update of 2026-11-18, `tests/callroute`). Full only. By hand the other side
+heard the headset's microphone. Open: the built-in version on a phone, and headphones without the
+hands-free profile (device checklist).
+
+For the try the emulator was the second device: a new ID there, the VM's sound through
+VirtualBox's PulseAudio driver with input on, the media volume raised over PulseAudio's
+`com.Meego.MainVolume2` (it starts at step 0, and the emulator has no volume keys), and the window
+through X11 (`VBoxManage startvm … --type gui -E QT_QPA_PLATFORM=xcb`): on Wayland the separate
+window flickered and the normal one took no mouse.

@@ -27,6 +27,7 @@ class Route : public CallRoute
 {
 public:
     QList<bool> sent;
+    QList<bool> headset;
     int failed = 0;
     Route()
     {
@@ -50,6 +51,7 @@ protected:
     void busListen(bool) override {}
     void busQuery() override {}
     void busSend(bool on) override { sent.append(on); }
+    void busSendHeadset(bool on) override { headset.append(on); }
 };
 
 void testLightsOnlyWhenConfirmed()
@@ -139,6 +141,47 @@ void testHeadset()
     check(headset.sent.isEmpty(), "and stays as it is");
 }
 
+void testBluetoothHeadset()
+{
+    // The policy leaves our call on the music profile: the hands-free one is asked for, once.
+    Route r;
+    r.setCall(true);
+    r.answeredRoute(QStringLiteral("bluetootha2dp"));
+    check(r.headset == QList<bool>{ true }, "on A2DP: the hands-free route is asked for");
+    check(!r.available(), "a Bluetooth headset has no button");
+    r.route("bluetootha2dp");
+    check(r.headset.size() == 1, "a headset without hands-free: not asked again");
+    r.route("bluetoothsco");
+    check(r.headset.size() == 1 && !r.available(), "on hands-free: nothing more");
+    check(r.sent.isEmpty(), "the loudspeaker was never touched");
+    r.setCall(false);
+    check(r.headset == (QList<bool>{ true, false }), "taken back with the call");
+
+    // Connected during the call, gone, and back.
+    Route later;
+    later.started();
+    check(later.headset.isEmpty(), "no headset: nothing asked");
+    later.route("bluetootha2dp");
+    later.route("bluetoothsco");
+    later.route("earpiece");
+    check(later.available(), "headset gone: the earpiece's button is back");
+    later.route("bluetootha2dp");
+    check(later.headset == (QList<bool>{ true, true }), "asked again when it comes back");
+
+    // The loudspeaker is the user's choice: a headset arriving doesn't take the call away.
+    Route loud;
+    loud.started();
+    loud.setSpeaker(true);
+    loud.route("speaker");
+    loud.route("bluetootha2dp");
+    check(loud.headset.isEmpty(), "on the loudspeaker by choice: not asked");
+
+    Route none;
+    none.started();
+    none.setCall(false);
+    check(none.headset.isEmpty(), "no headset: nothing to take back");
+}
+
 void testEnd()
 {
     Route r;
@@ -172,6 +215,7 @@ int main(int argc, char **argv)
     testOtherSignalsDoNotCount();
     testNoEarpiece();
     testHeadset();
+    testBluetoothHeadset();
     testEnd();
     if (failures == 0) {
         std::printf("passed\n");

@@ -25,6 +25,10 @@ Changed:
   [penttimus](https://github.com/penttimus).
 Fixed:
 
+- Calls are heard in a Bluetooth headset, with its microphone: they stayed on the phone while
+  Bluetooth headphones were connected (Full), by [penttimus](https://github.com/penttimus),
+  reported by [jmpx448](https://github.com/jmpx448).
+
 - With Bluetooth headphones or a headset, voice messages play in them again: once the phone had
   been at the ear, they came from the loudspeaker until Threesea closed. Holding the phone to the
   ear changes nothing while headphones are connected, as in Threema for Android (Full), by

@@ -16,6 +16,9 @@ const char *const Path = "/org/nemomobile/Route/Manager";
 const char *const Interface = "org.nemomobile.Route.Manager";
 const char *const Speaker = "speaker";
 const char *const Earpiece = "earpiece";
+// Both Bluetooth profiles, as the route manager names them.
+const char *const BluetoothMusic = "bluetootha2dp";
+const char *const BluetoothCall = "bluetoothsco";
 // ohm's route plugin (ohm-ext/route.h). The change signal comes for inputs and for the routes
 // left as well; Prefer wants the output bit.
 const uint OutputType = 1u << 0;
@@ -24,6 +27,7 @@ const uint ActiveType = 1u << 27;
 const int ConfirmMs = 3000;
 // Set while the loudspeaker is preferred on our word (see recover).
 const char *const PreferredKey = "callSpeakerPreferred";
+const char *const HeadsetKey = "callHeadsetPreferred";
 
 QDBusMessage routeCall(const char *method)
 {
@@ -31,11 +35,16 @@ QDBusMessage routeCall(const char *method)
                                           QLatin1String(method));
 }
 
-QDBusMessage preferSpeaker(bool on)
+QDBusMessage prefer(const char *device, bool on)
 {
     QDBusMessage message = routeCall("Prefer");
-    message << QLatin1String(Speaker) << OutputType << uint(on ? 1 : 0);
+    message << QLatin1String(device) << OutputType << uint(on ? 1 : 0);
     return message;
+}
+
+QDBusMessage preferSpeaker(bool on)
+{
+    return prefer(Speaker, on);
 }
 
 } // namespace
@@ -55,6 +64,10 @@ CallRoute::~CallRoute()
         QDBusConnection::systemBus().call(preferSpeaker(false), QDBus::Block, 1000);
         QSettings().remove(QLatin1String(PreferredKey));
     }
+    if (m_headset) {
+        QDBusConnection::systemBus().call(prefer(BluetoothCall, false), QDBus::Block, 1000);
+        QSettings().remove(QLatin1String(HeadsetKey));
+    }
 }
 
 void CallRoute::recover()
@@ -62,6 +75,10 @@ void CallRoute::recover()
     if (QSettings().contains(QLatin1String(PreferredKey))) {
         qWarning("threesea: taking back the loudspeaker preference of a call that did not end");
         busSend(false);
+    }
+    if (QSettings().contains(QLatin1String(HeadsetKey))) {
+        qWarning("threesea: taking back the headset preference of a call that did not end");
+        busSendHeadset(false);
     }
 }
 
@@ -110,6 +127,41 @@ void CallRoute::busSend(bool on)
     });
 }
 
+void CallRoute::busSendHeadset(bool on)
+{
+    if (on) {
+        QSettings().setValue(QLatin1String(HeadsetKey), true);
+    }
+    auto *watcher =
+        new QDBusPendingCallWatcher(QDBusConnection::systemBus().asyncCall(prefer(BluetoothCall, on)), this);
+    connect(watcher, &QDBusPendingCallWatcher::finished, this, [on](QDBusPendingCallWatcher *call) {
+        const bool ok = !call->isError();
+        call->deleteLater();
+        if (!ok) {
+            qWarning("threesea: audio route manager refused the headset preference");
+        } else if (!on) {
+            QSettings().remove(QLatin1String(HeadsetKey));
+        }
+    });
+}
+
+// The sound is on the headset's music profile: ask for its hands-free one, once. A headset
+// without one stays as it is (the policy prefers nothing it cannot choose), so not asked again
+// while the route still says A2DP. Not while the loudspeaker is the user's choice.
+void CallRoute::followHeadset()
+{
+    if (m_output != QLatin1String(BluetoothMusic)) {
+        m_headsetAsked = false;
+        return;
+    }
+    if (m_headsetAsked || m_ours || m_pending) {
+        return;
+    }
+    m_headsetAsked = true;
+    m_headset = true;
+    busSendHeadset(true);
+}
+
 // The button is there while the sound is on the earpiece, or on the loudspeaker by our doing.
 void CallRoute::show()
 {
@@ -131,6 +183,11 @@ void CallRoute::setCall(bool running)
             if (m_ours || (m_pending && m_wanted)) {
                 busSend(false);
             }
+            if (m_headset) {
+                busSendHeadset(false);
+            }
+            m_headset = false;
+            m_headsetAsked = false;
             m_confirm.stop();
             m_pending = false;
             m_ours = false;
@@ -148,6 +205,7 @@ void CallRoute::answeredRoute(const QString &device)
     if (m_running) {
         m_output = device;
         settle();
+        followHeadset();
         show();
     }
 }
@@ -218,6 +276,7 @@ void CallRoute::onRouteChanged(const QString &device, uint type)
     if (m_running && (type & OutputType) && (type & ActiveType)) {
         m_output = device;
         settle();
+        followHeadset();
         show();
     }
 }
