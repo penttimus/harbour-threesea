@@ -45,3 +45,8 @@ support onto upstream's new design now.
 - Android's code at 6.6.0 is what `docs/android-mapping.md` refers to from now on; where it uses
   libthreema's new parts (the cross-platform data backup, behind a build flag that is off), we
   have nothing to follow yet.
+
+## Update 2026-11-18: 6.6.1
+threema-android 6.6.1-1240 has the same `domain/libthreema` and `domain/protocol` as 6.6.0, so
+nothing changes here: the reference submodule moved to it by hand (the script would do the merge
+this decision holds back), the vendored code, the protocol files and `vendor/libthreema` stay.

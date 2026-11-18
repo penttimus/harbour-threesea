@@ -27,7 +27,6 @@ zeroize = "1"
 
 [patch.crates-io]
 blake2 = { path = "../../third_party/libthreema/patches/blake2" }
-opus-pure = { path = "../../third_party/opus-pure" }
 
 [[bin]]
 name = "voice_decode"

@@ -1721,3 +1721,32 @@ Open, for the phone: the waves' strength on light and on pale ambiences (the dra
 one dark red ambience, composited by hand because the emulator blends translucency wrongly), the
 glide when the number of waiting chats changes, and whether the rising level stays or is pinned to
 its highest (one value in `CoverPage.qml`, `tide`).
+
+## Reference submodule at 6.6.1 (2026-11-18)
+
+`third_party/threema-android` is at `6.6.1-1240` (`895c101e`), by hand: `scripts/update-libthreema.sh`
+would merge `vendor/libthreema`, which ADR 0036 holds back. `domain/libthreema` and
+`domain/protocol` are the same in 6.6.0 and 6.6.1, so the vendored libthreema, its protocol files
+and `vendor/libthreema` stay as they are, and the TLS pins are unchanged (`scripts/check-pins.py`).
+Looked at for the full merge, as ADR 0036 asks with every tag: nothing has moved, upstream's
+message layer is where it was. What 6.6.1 changed in the app: notifications for reactions to one's
+own messages, now on for everyone (ported on its own branch, `feat/reaction-notifications`); the
+queue-dry and leader states as ordered tasks, which the connection loop here already is; and
+Android-only work (call notification fallback, a Samsung audio sink, the HMS licence check, error
+reports, WebRTC 149).
+
+## Dependencies brought up to date (2026-11-18)
+
+Before the next release, everything pinned was compared with its upstream. Updated: the lockfile's
+compatible versions (57 crates, among them rustls-webpki 0.103.17, rustls-pki-types 1.16,
+webpki-roots 1.0.12, zeroize 1.9.2), the exact pins with a newer release of the same line (bytes
+1.12.2, rustix 1.1.6, zip 9.7.0, rcgen 0.14.10 for the tests), opus-pure 0.2.3 from crates.io (it
+builds for i686 now, so the vendored copy with our patch is gone), mapbox-gl-qml 3.2.2 (a Qt 6
+change only) and the reference submodule (above). Already current: webrtc-audio-processing v2.1,
+rinigus' maplibre packaging 3.0.0+git2, protoc, the Rust toolchain for the libthreema we vendor.
+
+Left on purpose: hmac 0.12, sha2 0.10, scrypt 0.11, aes-gcm 0.10, rand 0.8 and prost 0.14.4 stay
+on the versions libthreema uses (one crypto stack, CLAUDE.md §4); tokio-tungstenite 0.29 is the
+version libthreema's examples use; rusqlite 0.43 waits, the store having just moved to 0.42 and
+SQLCipher 4.20. `cargo audit` was not run here (not installed on this machine): the weekly CI job
+and the push's own run say whether anything is open.

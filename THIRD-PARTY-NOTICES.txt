@@ -15,7 +15,7 @@ Rust crates linked into the app's core (crate, version, licence, source)
 adler2 2.0.1: 0BSD OR MIT OR Apache-2.0; https://github.com/oyvindln/adler2
 aead 0.5.2: MIT OR Apache-2.0; https://github.com/RustCrypto/traits
 aes 0.8.4: MIT OR Apache-2.0; https://github.com/RustCrypto/block-ciphers
-aes 0.9.3: MIT OR Apache-2.0; https://github.com/RustCrypto/block-ciphers
+aes 0.9.4: MIT OR Apache-2.0; https://github.com/RustCrypto/block-ciphers
 aes-gcm 0.10.3: Apache-2.0 OR MIT; https://github.com/RustCrypto/AEADs
 aho-corasick 1.1.5: Unlicense OR MIT; https://github.com/BurntSushi/aho-corasick
 anyhow 1.0.104: MIT OR Apache-2.0; https://github.com/dtolnay/anyhow
@@ -31,28 +31,28 @@ block-buffer 0.12.1: MIT OR Apache-2.0; https://github.com/RustCrypto/utils
 block-padding 0.3.3: MIT OR Apache-2.0; https://github.com/RustCrypto/utils
 bytemuck 1.25.2: Zlib OR Apache-2.0 OR MIT; https://github.com/Lokathor/bytemuck
 byteorder-lite 0.1.0: Unlicense OR MIT; https://github.com/image-rs/byteorder-lite
-bytes 1.12.1: MIT; https://github.com/tokio-rs/bytes
-cc 1.9.0: MIT OR Apache-2.0; https://github.com/rust-lang/cc-rs
+bytes 1.12.2: MIT; https://github.com/tokio-rs/bytes
+cc 1.11.2: MIT OR Apache-2.0; https://github.com/rust-lang/cc-rs
 cfg-if 1.0.5: MIT OR Apache-2.0; https://github.com/rust-lang/cfg-if
 chacha20 0.9.1: Apache-2.0 OR MIT; https://github.com/RustCrypto/stream-ciphers
 chacha20poly1305 0.10.1: Apache-2.0 OR MIT; https://github.com/RustCrypto/AEADs/tree/master/chacha20poly1305
 cipher 0.4.4: MIT OR Apache-2.0; https://github.com/RustCrypto/traits
 cipher 0.5.2: MIT OR Apache-2.0; https://github.com/RustCrypto/traits
 cmov 0.5.4: Apache-2.0 OR MIT; https://github.com/RustCrypto/utils
-const-oid 0.10.2: Apache-2.0 OR MIT; https://github.com/RustCrypto/formats
-const_format 0.2.36: Zlib; https://github.com/rodrimati1992/const_format_crates/
-const_format_proc_macros 0.2.34: Zlib; https://github.com/rodrimati1992/const_format_crates/
+const-oid 0.10.3: Apache-2.0 OR MIT; https://github.com/RustCrypto/formats
+const_format 0.2.37: Zlib; https://github.com/rodrimati1992/const_format_crates/
+const_format_proc_macros 0.2.37: Zlib; https://github.com/rodrimati1992/const_format_crates/
 constant_time_eq 0.6.1: CC0-1.0 OR MIT-0 OR Apache-2.0; https://codeberg.org/cesarb/constant_time_eq
 convert_case 0.11.0: MIT; https://github.com/rutrum/convert-case
 cpubits 0.1.1: MIT OR Apache-2.0; https://github.com/RustCrypto/utils
 cpufeatures 0.2.17: MIT OR Apache-2.0; https://github.com/RustCrypto/utils
 cpufeatures 0.3.1: MIT OR Apache-2.0; https://github.com/RustCrypto/utils
-crc32fast 1.5.3: MIT OR Apache-2.0; https://github.com/srijs/rust-crc32fast
+crc32fast 1.5.5: MIT OR Apache-2.0; https://github.com/srijs/rust-crc32fast
 crypto-common 0.1.7: MIT OR Apache-2.0; https://github.com/RustCrypto/traits
 crypto-common 0.2.2: MIT OR Apache-2.0; https://github.com/RustCrypto/traits
 crypto_secretbox 0.1.1: Apache-2.0 OR MIT; https://github.com/RustCrypto/nacl-compat/tree/master/crypto_secretbox
 ctr 0.9.2: MIT OR Apache-2.0; https://github.com/RustCrypto/block-modes
-ctutils 0.4.6: Apache-2.0 OR MIT; https://github.com/RustCrypto/utils
+ctutils 0.4.8: Apache-2.0 OR MIT; https://github.com/RustCrypto/utils
 curve25519-dalek 4.1.3: BSD-3-Clause; https://github.com/dalek-cryptography/curve25519-dalek/tree/main/curve25519-dalek
 data-encoding 2.11.1: MIT; https://github.com/ia0/data-encoding
 digest 0.10.7: MIT OR Apache-2.0; https://github.com/RustCrypto/traits
@@ -66,14 +66,14 @@ either 1.19.0: MIT OR Apache-2.0; https://github.com/rayon-rs/either
 enum-ordinalize 4.4.2: MIT; https://github.com/magiclen/enum-ordinalize
 enum-ordinalize-derive 4.4.2: MIT; https://github.com/magiclen/enum-ordinalize
 equivalent 1.0.3: Apache-2.0 OR MIT; https://github.com/indexmap-rs/equivalent
-errno 0.3.14: MIT OR Apache-2.0; https://github.com/lambda-fairy/rust-errno
+errno 0.3.15: MIT OR Apache-2.0; https://github.com/lambda-fairy/rust-errno
 fallible-iterator 0.3.0: MIT/Apache-2.0; https://github.com/sfackler/rust-fallible-iterator
 fallible-streaming-iterator 0.1.9: MIT/Apache-2.0; https://github.com/sfackler/fallible-streaming-iterator
 fastrand 2.5.0: Apache-2.0 OR MIT; https://github.com/smol-rs/fastrand
 fdeflate 0.3.7: MIT OR Apache-2.0; https://github.com/image-rs/fdeflate
 find-msvc-tools 0.1.15: MIT OR Apache-2.0; https://github.com/rust-lang/cc-rs
-fixedbitset 0.5.7: MIT OR Apache-2.0; https://github.com/petgraph/fixedbitset
-flate2 1.1.10: MIT OR Apache-2.0; https://github.com/rust-lang/flate2-rs
+fixedbitset 0.5.9: MIT OR Apache-2.0; https://github.com/petgraph/fixedbitset
+flate2 1.1.11: MIT OR Apache-2.0; https://github.com/rust-lang/flate2-rs
 fnv 1.0.7: Apache-2.0 / MIT; https://github.com/servo/rust-fnv
 foldhash 0.1.5: Zlib; https://github.com/orlp/foldhash
 foldhash 0.2.0: Zlib; https://github.com/orlp/foldhash
@@ -106,22 +106,23 @@ hybrid-array 0.4.15: MIT OR Apache-2.0; https://github.com/RustCrypto/hybrid-arr
 hyper 1.12.0: MIT; https://github.com/hyperium/hyper
 hyper-rustls 0.27.10: Apache-2.0 OR ISC OR MIT; https://github.com/rustls/hyper-rustls
 hyper-util 0.1.21: MIT; https://github.com/hyperium/hyper-util
-icu_collections 2.3.0: Unicode-3.0; https://github.com/unicode-org/icu4x
-icu_locale_core 2.3.0: Unicode-3.0; https://github.com/unicode-org/icu4x
-icu_normalizer 2.3.0: Unicode-3.0; https://github.com/unicode-org/icu4x
-icu_normalizer_data 2.3.0: Unicode-3.0; https://github.com/unicode-org/icu4x
-icu_properties 2.3.0: Unicode-3.0; https://github.com/unicode-org/icu4x
-icu_properties_data 2.3.0: Unicode-3.0; https://github.com/unicode-org/icu4x
-icu_provider 2.3.1: Unicode-3.0; https://github.com/unicode-org/icu4x
+icu_collections 2.4.0: Unicode-3.0; https://github.com/unicode-org/icu4x
+icu_locale_core 2.4.0: Unicode-3.0; https://github.com/unicode-org/icu4x
+icu_normalizer 2.4.0: Unicode-3.0; https://github.com/unicode-org/icu4x
+icu_normalizer_data 2.4.0: Unicode-3.0; https://github.com/unicode-org/icu4x
+icu_properties 2.4.0: Unicode-3.0; https://github.com/unicode-org/icu4x
+icu_properties_data 2.4.0: Unicode-3.0; https://github.com/unicode-org/icu4x
+icu_provider 2.4.0: Unicode-3.0; https://github.com/unicode-org/icu4x
 idna 1.1.0: MIT OR Apache-2.0; https://github.com/servo/rust-url/
 idna_adapter 1.2.2: Apache-2.0 OR MIT; https://github.com/hsivonen/idna_adapter
 image 0.25.10: MIT OR Apache-2.0; https://github.com/image-rs/image
 indexmap 2.14.2: Apache-2.0 OR MIT; https://github.com/indexmap-rs/indexmap
 inout 0.1.4: MIT OR Apache-2.0; https://github.com/RustCrypto/utils
-inout 0.2.5: MIT OR Apache-2.0; https://github.com/RustCrypto/utils
+inout 0.2.6: MIT OR Apache-2.0; https://github.com/RustCrypto/utils
 ipnet 2.12.2: MIT OR Apache-2.0; https://github.com/krisprice/ipnet
 itertools 0.14.0: MIT OR Apache-2.0; https://github.com/rust-itertools/itertools
-itoa 1.0.18: MIT OR Apache-2.0; https://github.com/dtolnay/itoa
+itertools 0.15.0: MIT OR Apache-2.0; https://github.com/rust-itertools/itertools
+itoa 1.0.19: MIT OR Apache-2.0; https://github.com/dtolnay/itoa
 konst 0.2.20: Zlib; https://github.com/rodrimati1992/konst/
 konst_macro_rules 0.2.19: Zlib; https://github.com/rodrimati1992/konst/
 lazy_static 1.5.1: MIT OR Apache-2.0; https://github.com/rust-lang-nursery/lazy-static.rs
@@ -129,20 +130,20 @@ libc 0.2.191: MIT OR Apache-2.0; https://github.com/rust-lang/libc
 libsqlite3-sys 0.40.0: MIT; https://github.com/rusqlite/rusqlite
 linux-raw-sys 0.12.1: Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT; https://github.com/sunfishcode/linux-raw-sys
 litemap 0.8.3: Unicode-3.0; https://github.com/unicode-org/icu4x
-log 0.4.34: MIT OR Apache-2.0; https://github.com/rust-lang/log
+log 0.4.35: MIT OR Apache-2.0; https://github.com/rust-lang/log
 lru 0.18.5: MIT; https://github.com/jeromefroe/lru-rs.git
 matchers 0.2.0: MIT; https://github.com/hawkw/matchers
 memchr 2.8.3: Unlicense OR MIT; https://github.com/BurntSushi/memchr
 miniz_oxide 0.8.9: MIT OR Zlib OR Apache-2.0; https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide
 miniz_oxide 0.9.1: MIT OR Zlib OR Apache-2.0; https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide
-mio 1.2.4: MIT; https://github.com/tokio-rs/mio
+mio 1.2.5: MIT; https://github.com/tokio-rs/mio
 moxcms 0.8.1: BSD-3-Clause OR Apache-2.0; https://github.com/awxkee/moxcms.git
 multimap 0.10.1: MIT OR Apache-2.0; https://github.com/havarnov/multimap
 num-traits 0.2.19: MIT OR Apache-2.0; https://github.com/rust-num/num-traits
 once_cell 1.21.4: MIT OR Apache-2.0; https://github.com/matklad/once_cell
 opaque-debug 0.3.1: MIT OR Apache-2.0; https://github.com/RustCrypto/utils
-openssl-probe 0.2.1: MIT OR Apache-2.0; https://github.com/rustls/openssl-probe
-opus-pure 0.2.2: BSD-3-Clause; third_party/opus-pure
+openssl-probe 0.2.2: MIT OR Apache-2.0; https://github.com/rustls/openssl-probe
+opus-pure 0.2.3: BSD-3-Clause; https://github.com/stephenberry/opus-pure
 password-hash 0.5.0: MIT OR Apache-2.0; https://github.com/RustCrypto/traits/tree/master/password-hash
 pbkdf2 0.12.2: MIT OR Apache-2.0; https://github.com/RustCrypto/password-hashes/tree/master/pbkdf2
 pbkdf2 0.13.0: MIT OR Apache-2.0; https://github.com/RustCrypto/password-hashes
@@ -159,9 +160,9 @@ prettyplease 0.2.37: MIT OR Apache-2.0; https://github.com/dtolnay/prettyplease
 proc-macro2 1.0.107: MIT OR Apache-2.0; https://github.com/dtolnay/proc-macro2
 proc-macro2-diagnostics 0.10.1: MIT/Apache-2.0; https://github.com/SergioBenitez/proc-macro2-diagnostics
 prost 0.14.4: Apache-2.0; https://github.com/tokio-rs/prost
-prost-build 0.14.3: Apache-2.0; https://github.com/tokio-rs/prost
-prost-derive 0.14.4: Apache-2.0; https://github.com/tokio-rs/prost
-prost-types 0.14.3: Apache-2.0; https://github.com/tokio-rs/prost
+prost-build 0.14.4: Apache-2.0; https://github.com/tokio-rs/prost
+prost-derive 0.14.6: Apache-2.0; https://github.com/tokio-rs/prost
+prost-types 0.14.4: Apache-2.0; https://github.com/tokio-rs/prost
 pxfm 0.1.30: BSD-3-Clause OR Apache-2.0; https://github.com/awxkee/pxfm
 qrcode 0.14.1: MIT OR Apache-2.0; https://github.com/kennytm/qrcode-rust
 quote 1.0.47: MIT OR Apache-2.0; https://github.com/dtolnay/quote
@@ -171,9 +172,9 @@ rand_chacha 0.3.1: MIT OR Apache-2.0; https://github.com/rust-random/rand
 rand_chacha 0.9.0: MIT OR Apache-2.0; https://github.com/rust-random/rand
 rand_core 0.6.4: MIT OR Apache-2.0; https://github.com/rust-random/rand
 rand_core 0.9.5: MIT OR Apache-2.0; https://github.com/rust-random/rand
-regex 1.13.1: MIT OR Apache-2.0; https://github.com/rust-lang/regex
-regex-automata 0.4.18: MIT OR Apache-2.0; https://github.com/rust-lang/regex
-regex-syntax 0.8.11: MIT OR Apache-2.0; https://github.com/rust-lang/regex
+regex 1.13.2: MIT OR Apache-2.0; https://github.com/rust-lang/regex
+regex-automata 0.4.19: MIT OR Apache-2.0; https://github.com/rust-lang/regex
+regex-syntax 0.8.12: MIT OR Apache-2.0; https://github.com/rust-lang/regex
 reqwest 0.13.5: MIT OR Apache-2.0; https://github.com/seanmonstar/reqwest
 ring 0.17.14: Apache-2.0 AND ISC; https://github.com/briansmith/ring
 rmp 0.8.15: MIT; https://github.com/3Hren/msgpack-rust
@@ -181,12 +182,12 @@ rmpv 1.3.1: MIT; https://github.com/3Hren/msgpack-rust
 rqrr 0.11.0: (MIT OR Apache-2.0) AND ISC; https://github.com/WanzenBug/rqrr
 rusqlite 0.42.0: MIT; https://github.com/rusqlite/rusqlite
 rustc_version 0.4.1: MIT OR Apache-2.0; https://github.com/djc/rustc-version-rs
-rustix 1.1.5: Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT; https://github.com/bytecodealliance/rustix
+rustix 1.1.6: Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT; https://github.com/bytecodealliance/rustix
 rustls 0.23.46: Apache-2.0 OR ISC OR MIT; https://github.com/rustls/rustls
 rustls-native-certs 0.8.5: Apache-2.0 OR ISC OR MIT; https://github.com/rustls/rustls-native-certs
-rustls-pki-types 1.15.1: MIT OR Apache-2.0; https://github.com/rustls/pki-types
+rustls-pki-types 1.16.0: MIT OR Apache-2.0; https://github.com/rustls/pki-types
 rustls-platform-verifier 0.7.1: MIT OR Apache-2.0; https://github.com/rustls/rustls-platform-verifier
-rustls-webpki 0.103.16: ISC; https://github.com/rustls/webpki
+rustls-webpki 0.103.17: ISC; https://github.com/rustls/webpki
 rustversion 1.0.23: MIT OR Apache-2.0; https://github.com/dtolnay/rustversion
 salsa20 0.10.2: MIT OR Apache-2.0; https://github.com/RustCrypto/stream-ciphers
 scrypt 0.11.0: MIT OR Apache-2.0; https://github.com/RustCrypto/password-hashes/tree/master/scrypt
@@ -204,7 +205,7 @@ shlex 2.0.1: MIT OR Apache-2.0; https://github.com/comex/rust-shlex
 signature 2.2.0: Apache-2.0 OR MIT; https://github.com/RustCrypto/traits/tree/master/signature
 simd-adler32 0.3.10: MIT; https://github.com/mcountryman/simd-adler32
 slab 0.4.12: MIT; https://github.com/tokio-rs/slab
-smallvec 1.16.3: MIT OR Apache-2.0; https://github.com/servo/rust-smallvec
+smallvec 1.16.6: MIT OR Apache-2.0; https://github.com/smallvec/smallvec
 socket2 0.6.5: MIT OR Apache-2.0; https://github.com/rust-lang/socket2
 sqlcipher-src 420.0.0+sqlcipher-4.20.0-sqlite-3.54.1-libtomcrypt-1.18.2: MIT AND BSD-3-Clause AND blessing AND WTFPL; https://github.com/LucaCappelletti94/sqlcipher-src
 stable_deref_trait 1.2.1: MIT OR Apache-2.0; https://github.com/storyyeller/stable_deref_trait
@@ -212,14 +213,14 @@ strum 0.28.0: MIT; https://github.com/Peternator7/strum
 strum_macros 0.28.0: MIT; https://github.com/Peternator7/strum
 subtle 2.6.1: BSD-3-Clause; https://github.com/dalek-cryptography/subtle
 syn 2.0.119: MIT OR Apache-2.0; https://github.com/dtolnay/syn
-syn 3.0.9: MIT OR Apache-2.0; https://github.com/dtolnay/syn
+syn 3.0.10: MIT OR Apache-2.0; https://github.com/dtolnay/syn
 sync_wrapper 1.0.2: Apache-2.0; https://github.com/Actyx/sync_wrapper
 synstructure 0.14.0: MIT; https://github.com/mystor/synstructure
 tempfile 3.27.0: MIT OR Apache-2.0; https://github.com/Stebalien/tempfile
 thiserror 2.0.21: MIT OR Apache-2.0; https://github.com/dtolnay/thiserror
 thiserror-impl 2.0.21: MIT OR Apache-2.0; https://github.com/dtolnay/thiserror
 thread_local 1.1.10: MIT OR Apache-2.0; https://github.com/Amanieu/thread_local-rs
-tinystr 0.8.4: Unicode-3.0; https://github.com/unicode-org/icu4x
+tinystr 0.8.5: Unicode-3.0; https://github.com/unicode-org/icu4x
 tokio 1.54.1: MIT; https://github.com/tokio-rs/tokio
 tokio-macros 2.7.2: MIT; https://github.com/tokio-rs/tokio
 tokio-rustls 0.26.6: MIT OR Apache-2.0; https://github.com/rustls/tokio-rustls
@@ -243,24 +244,25 @@ unicode-xid 0.2.6: MIT OR Apache-2.0; https://github.com/unicode-rs/unicode-xid
 universal-hash 0.5.1: MIT OR Apache-2.0; https://github.com/RustCrypto/traits
 untrusted 0.9.0: ISC; https://github.com/briansmith/untrusted
 url 2.5.8: MIT OR Apache-2.0; https://github.com/servo/rust-url
-utf8_iter 1.0.4: Apache-2.0 OR MIT; https://github.com/hsivonen/utf8_iter
+utf8_iter 1.1.0: Apache-2.0 OR MIT; https://github.com/hsivonen/utf8_iter
+utf_types 1.0.0: Apache-2.0 OR MIT; https://github.com/hsivonen/utf_types
 vcpkg 0.2.15: MIT/Apache-2.0; https://github.com/mcgoo/vcpkg-rs
 version_check 0.9.5: MIT/Apache-2.0; https://github.com/SergioBenitez/version_check
 want 0.3.2: MIT; https://github.com/seanmonstar/want
-webpki-roots 1.0.10: CDLA-Permissive-2.0; https://github.com/rustls/webpki-roots
+webpki-roots 1.0.12: CDLA-Permissive-2.0; https://github.com/rustls/webpki-roots
 writeable 0.6.4: Unicode-3.0; https://github.com/unicode-org/icu4x
 x25519-dalek 2.0.1: BSD-3-Clause; https://github.com/dalek-cryptography/curve25519-dalek/tree/main/x25519-dalek
-yoke 0.8.3: Unicode-3.0; https://github.com/unicode-org/icu4x
+yoke 0.8.4: Unicode-3.0; https://github.com/unicode-org/icu4x
 yoke-derive 0.8.4: Unicode-3.0; https://github.com/unicode-org/icu4x
 zerocopy 0.8.63: BSD-2-Clause OR Apache-2.0 OR MIT; https://github.com/google/zerocopy
 zerofrom 0.1.8: Unicode-3.0; https://github.com/unicode-org/icu4x
 zerofrom-derive 0.1.8: Unicode-3.0; https://github.com/unicode-org/icu4x
-zeroize 1.9.1: Apache-2.0 OR MIT; https://github.com/RustCrypto/utils
+zeroize 1.9.2: Apache-2.0 OR MIT; https://github.com/RustCrypto/utils
 zeroize_derive 1.5.0: Apache-2.0 OR MIT; https://github.com/RustCrypto/utils
 zerotrie 0.2.5: Unicode-3.0; https://github.com/unicode-org/icu4x
-zerovec 0.11.8: Unicode-3.0; https://github.com/unicode-org/icu4x
-zerovec-derive 0.11.6: Unicode-3.0; https://github.com/unicode-org/icu4x
-zip 9.1.2: MIT; https://github.com/zip-rs/zip2
+zerovec 0.11.9: Unicode-3.0; https://github.com/unicode-org/icu4x
+zerovec-derive 0.11.7: Unicode-3.0; https://github.com/unicode-org/icu4x
+zip 9.7.0: MIT; https://github.com/zip-rs/zip2
 zmij 1.0.23: MIT; https://github.com/dtolnay/zmij
 zune-core 0.5.3: MIT OR Apache-2.0 OR Zlib; https://github.com/etemesi254/zune-image
 zune-jpeg 0.5.15: MIT OR Apache-2.0 OR Zlib; https://github.com/etemesi254/zune-image/tree/dev/crates/zune-jpeg
@@ -555,7 +557,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 The map renderer, bundled under /usr/share/harbour-threesea/lib. Its exact source:
 https://github.com/rinigus/pkg-maplibre-gl-native at 3.0.0+git2 (b0f203d517135c60c30ca99c6e8c2e0a5af5b4d1)
 with its submodules (maplibre-native-qt, maplibre-native), and
-https://github.com/rinigus/mapbox-gl-qml at 3.2.1 (426eb3de463cdde60f9949e8beb4080b9a017c75),
+https://github.com/rinigus/mapbox-gl-qml at 3.2.2 (79e0cccea5720b6937c39ce33dc7159df63225fa),
 with harbour-threesea's patches to both in its source repository, scripts/maplibre/patches,
 built by scripts/maplibre/build.sh.
 
@@ -1756,7 +1758,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ----------------------------------------------------------------------
-mapbox-gl-qml 3.2.1 (the QML module MapboxMap), https://github.com/rinigus/mapbox-gl-qml,
+mapbox-gl-qml 3.2.2 (the QML module MapboxMap), https://github.com/rinigus/mapbox-gl-qml,
 by rinigus and contributors, GNU Lesser General Public License 3.0. Its source is at that address;
 the version and how it is built are in this application's source, scripts/maplibre. The LGPL 3.0
 adds to the GNU General Public License 3.0, which follows it.
@@ -2832,7 +2834,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==============================================================================
-Used by: adler2 2.0.1 (LICENSE-MIT), anyhow 1.0.104 (LICENSE-MIT), atomic-waker 1.1.2 (LICENSE-MIT), displaydoc 0.2.7 (LICENSE-MIT), fastrand 2.5.0 (LICENSE-MIT), itoa 1.0.18 (LICENSE-MIT), lazy_static 1.5.1 (LICENSE-MIT), linux-raw-sys 0.12.1 (LICENSE-MIT), once_cell 1.21.4 (LICENSE-MIT), pin-project-lite 0.2.17 (LICENSE-MIT), prettyplease 0.2.37 (LICENSE-MIT), proc-macro2 1.0.107 (LICENSE-MIT), quote 1.0.47 (LICENSE-MIT), rustix 1.1.5 (LICENSE-MIT), rustversion 1.0.23 (LICENSE-MIT), semver 1.0.28 (LICENSE-MIT), serde 1.0.229 (LICENSE-MIT), serde_core 1.0.229 (LICENSE-MIT), serde_derive 1.0.229 (LICENSE-MIT), serde_json 1.0.154 (LICENSE-MIT), serde_repr 0.1.21 (LICENSE-MIT), syn 2.0.119 (LICENSE-MIT), syn 3.0.9 (LICENSE-MIT), thiserror 2.0.21 (LICENSE-MIT), thiserror-impl 2.0.21 (LICENSE-MIT), typed-path 0.13.0 (LICENSE-MIT), unicode-ident 1.0.27 (LICENSE-MIT), zmij 1.0.23 (LICENSE-MIT)
+Used by: adler2 2.0.1 (LICENSE-MIT), anyhow 1.0.104 (LICENSE-MIT), atomic-waker 1.1.2 (LICENSE-MIT), displaydoc 0.2.7 (LICENSE-MIT), fastrand 2.5.0 (LICENSE-MIT), itoa 1.0.19 (LICENSE-MIT), lazy_static 1.5.1 (LICENSE-MIT), linux-raw-sys 0.12.1 (LICENSE-MIT), once_cell 1.21.4 (LICENSE-MIT), pin-project-lite 0.2.17 (LICENSE-MIT), prettyplease 0.2.37 (LICENSE-MIT), proc-macro2 1.0.107 (LICENSE-MIT), quote 1.0.47 (LICENSE-MIT), rustix 1.1.6 (LICENSE-MIT), rustversion 1.0.23 (LICENSE-MIT), semver 1.0.28 (LICENSE-MIT), serde 1.0.229 (LICENSE-MIT), serde_core 1.0.229 (LICENSE-MIT), serde_derive 1.0.229 (LICENSE-MIT), serde_json 1.0.154 (LICENSE-MIT), serde_repr 0.1.21 (LICENSE-MIT), syn 2.0.119 (LICENSE-MIT), syn 3.0.10 (LICENSE-MIT), thiserror 2.0.21 (LICENSE-MIT), thiserror-impl 2.0.21 (LICENSE-MIT), typed-path 0.13.0 (LICENSE-MIT), unicode-ident 1.0.27 (LICENSE-MIT), zmij 1.0.23 (LICENSE-MIT)
 ==============================================================================
 
 Permission is hereby granted, free of charge, to any
@@ -2860,7 +2862,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: aead 0.5.2 (LICENSE-APACHE), aes 0.8.4 (LICENSE-APACHE), aes 0.9.3 (LICENSE-APACHE), aes-gcm 0.10.3 (LICENSE-APACHE), argon2 0.5.3 (LICENSE-APACHE), base64ct 1.8.3 (LICENSE-APACHE), blake2 0.10.6 (LICENSE-APACHE), block-buffer 0.10.4 (LICENSE-APACHE), block-buffer 0.12.1 (LICENSE-APACHE), block-padding 0.3.3 (LICENSE-APACHE), chacha20 0.9.1 (LICENSE-APACHE), chacha20poly1305 0.10.1 (LICENSE-APACHE), cipher 0.4.4 (LICENSE-APACHE), cipher 0.5.2 (LICENSE-APACHE), const-oid 0.10.2 (LICENSE-APACHE), cpubits 0.1.1 (LICENSE-APACHE), cpufeatures 0.2.17 (LICENSE-APACHE), cpufeatures 0.3.1 (LICENSE-APACHE), crypto-common 0.1.7 (LICENSE-APACHE), crypto-common 0.2.2 (LICENSE-APACHE), crypto_secretbox 0.1.1 (LICENSE-APACHE), ctr 0.9.2 (LICENSE-APACHE), digest 0.10.7 (LICENSE-APACHE), digest 0.11.3 (LICENSE-APACHE), ghash 0.5.1 (LICENSE-APACHE), hmac 0.12.1 (LICENSE-APACHE), hmac 0.13.0 (LICENSE-APACHE), hybrid-array 0.4.15 (LICENSE-APACHE), inout 0.1.4 (LICENSE-APACHE), inout 0.2.5 (LICENSE-APACHE), opaque-debug 0.3.1 (LICENSE-APACHE), password-hash 0.5.0 (LICENSE-APACHE), pbkdf2 0.12.2 (LICENSE-APACHE), pbkdf2 0.13.0 (LICENSE-APACHE), poly1305 0.8.0 (LICENSE-APACHE), polyval 0.6.2 (LICENSE-APACHE), salsa20 0.10.2 (LICENSE-APACHE), scrypt 0.11.0 (LICENSE-APACHE), sha1 0.10.7 (LICENSE-APACHE), sha1 0.11.0 (LICENSE-APACHE), sha2 0.10.9 (LICENSE-APACHE), signature 2.2.0 (LICENSE-APACHE), universal-hash 0.5.1 (LICENSE-APACHE)
+Used by: aead 0.5.2 (LICENSE-APACHE), aes 0.8.4 (LICENSE-APACHE), aes 0.9.4 (LICENSE-APACHE), aes-gcm 0.10.3 (LICENSE-APACHE), argon2 0.5.3 (LICENSE-APACHE), base64ct 1.8.3 (LICENSE-APACHE), blake2 0.10.6 (LICENSE-APACHE), block-buffer 0.10.4 (LICENSE-APACHE), block-buffer 0.12.1 (LICENSE-APACHE), block-padding 0.3.3 (LICENSE-APACHE), chacha20 0.9.1 (LICENSE-APACHE), chacha20poly1305 0.10.1 (LICENSE-APACHE), cipher 0.4.4 (LICENSE-APACHE), cipher 0.5.2 (LICENSE-APACHE), const-oid 0.10.3 (LICENSE-APACHE), cpubits 0.1.1 (LICENSE-APACHE), cpufeatures 0.2.17 (LICENSE-APACHE), cpufeatures 0.3.1 (LICENSE-APACHE), crypto-common 0.1.7 (LICENSE-APACHE), crypto-common 0.2.2 (LICENSE-APACHE), crypto_secretbox 0.1.1 (LICENSE-APACHE), ctr 0.9.2 (LICENSE-APACHE), digest 0.10.7 (LICENSE-APACHE), digest 0.11.3 (LICENSE-APACHE), ghash 0.5.1 (LICENSE-APACHE), hmac 0.12.1 (LICENSE-APACHE), hmac 0.13.0 (LICENSE-APACHE), hybrid-array 0.4.15 (LICENSE-APACHE), inout 0.1.4 (LICENSE-APACHE), inout 0.2.6 (LICENSE-APACHE), opaque-debug 0.3.1 (LICENSE-APACHE), password-hash 0.5.0 (LICENSE-APACHE), pbkdf2 0.12.2 (LICENSE-APACHE), pbkdf2 0.13.0 (LICENSE-APACHE), poly1305 0.8.0 (LICENSE-APACHE), polyval 0.6.2 (LICENSE-APACHE), salsa20 0.10.2 (LICENSE-APACHE), scrypt 0.11.0 (LICENSE-APACHE), sha1 0.10.7 (LICENSE-APACHE), sha1 0.11.0 (LICENSE-APACHE), sha2 0.10.9 (LICENSE-APACHE), signature 2.2.0 (LICENSE-APACHE), universal-hash 0.5.1 (LICENSE-APACHE)
 ==============================================================================
 
 Apache License
@@ -3127,7 +3129,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: aes 0.9.3 (LICENSE-MIT)
+Used by: aes 0.9.4 (LICENSE-MIT)
 ==============================================================================
 
 Copyright (c) 2018-2024 The RustCrypto Project Developers
@@ -3251,7 +3253,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 
 ==============================================================================
-Used by: anyhow 1.0.104 (LICENSE-APACHE), constant_time_eq 0.6.1 (LICENSE-APACHE), itoa 1.0.18 (LICENSE-APACHE), libc 0.2.191 (LICENSE-APACHE), prettyplease 0.2.37 (LICENSE-APACHE), proc-macro2 1.0.107 (LICENSE-APACHE), proc-macro2-diagnostics 0.10.1 (LICENSE-APACHE), quote 1.0.47 (LICENSE-APACHE), rustversion 1.0.23 (LICENSE-APACHE), semver 1.0.28 (LICENSE-APACHE), serde 1.0.229 (LICENSE-APACHE), serde_core 1.0.229 (LICENSE-APACHE), serde_derive 1.0.229 (LICENSE-APACHE), serde_json 1.0.154 (LICENSE-APACHE), serde_repr 0.1.21 (LICENSE-APACHE), syn 2.0.119 (LICENSE-APACHE), syn 3.0.9 (LICENSE-APACHE), thiserror 2.0.21 (LICENSE-APACHE), thiserror-impl 2.0.21 (LICENSE-APACHE), typed-path 0.13.0 (LICENSE-APACHE), unicode-ident 1.0.27 (LICENSE-APACHE)
+Used by: anyhow 1.0.104 (LICENSE-APACHE), constant_time_eq 0.6.1 (LICENSE-APACHE), itoa 1.0.19 (LICENSE-APACHE), libc 0.2.191 (LICENSE-APACHE), prettyplease 0.2.37 (LICENSE-APACHE), proc-macro2 1.0.107 (LICENSE-APACHE), proc-macro2-diagnostics 0.10.1 (LICENSE-APACHE), quote 1.0.47 (LICENSE-APACHE), rustversion 1.0.23 (LICENSE-APACHE), semver 1.0.28 (LICENSE-APACHE), serde 1.0.229 (LICENSE-APACHE), serde_core 1.0.229 (LICENSE-APACHE), serde_derive 1.0.229 (LICENSE-APACHE), serde_json 1.0.154 (LICENSE-APACHE), serde_repr 0.1.21 (LICENSE-APACHE), syn 2.0.119 (LICENSE-APACHE), syn 3.0.10 (LICENSE-APACHE), thiserror 2.0.21 (LICENSE-APACHE), thiserror-impl 2.0.21 (LICENSE-APACHE), typed-path 0.13.0 (LICENSE-APACHE), unicode-ident 1.0.27 (LICENSE-APACHE)
 ==============================================================================
 
 Apache License
@@ -3462,7 +3464,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: atomic-waker 1.1.2 (LICENSE-APACHE), autocfg 1.5.1 (LICENSE-APACHE), base64 0.23.1 (LICENSE-APACHE), bitflags 2.13.2 (LICENSE-APACHE), cc 1.9.0 (LICENSE-APACHE), cfg-if 1.0.5 (LICENSE-APACHE), displaydoc 0.2.7 (LICENSE-APACHE), either 1.19.0 (LICENSE-APACHE), equivalent 1.0.3 (LICENSE-APACHE), errno 0.3.14 (LICENSE-APACHE), fastrand 2.5.0 (LICENSE-APACHE), find-msvc-tools 0.1.15 (LICENSE-APACHE), fixedbitset 0.5.7 (LICENSE-APACHE), flate2 1.1.10 (LICENSE-APACHE), fnv 1.0.7 (LICENSE-APACHE), form_urlencoded 1.2.2 (LICENSE-APACHE), hashbrown 0.15.5 (LICENSE-APACHE), hashbrown 0.17.1 (LICENSE-APACHE), heck 0.5.0 (LICENSE-APACHE), httparse 1.10.1 (LICENSE-APACHE), hyper-rustls 0.27.10 (LICENSE-APACHE), idna 1.1.0 (LICENSE-APACHE), idna_adapter 1.2.2 (LICENSE-APACHE), indexmap 2.14.2 (LICENSE-APACHE), itertools 0.14.0 (LICENSE-APACHE), lazy_static 1.5.1 (LICENSE-APACHE), linux-raw-sys 0.12.1 (LICENSE-APACHE), log 0.4.34 (LICENSE-APACHE), multimap 0.10.1 (LICENSE-APACHE), num-traits 0.2.19 (LICENSE-APACHE), once_cell 1.21.4 (LICENSE-APACHE), openssl-probe 0.2.1 (LICENSE-APACHE), percent-encoding 2.3.2 (LICENSE-APACHE), petgraph 0.8.3 (LICENSE-APACHE), pkg-config 0.3.34 (LICENSE-APACHE), png 0.18.1 (LICENSE-APACHE), prost 0.14.4 (LICENSE), prost-build 0.14.3 (LICENSE), prost-derive 0.14.4 (LICENSE), prost-types 0.14.3 (LICENSE), regex 1.13.1 (LICENSE-APACHE), regex-automata 0.4.18 (LICENSE-APACHE), regex-syntax 0.8.11 (LICENSE-APACHE), rustc_version 0.4.1 (LICENSE-APACHE), rustix 1.1.5 (LICENSE-APACHE), rustls 0.23.46 (LICENSE-APACHE), rustls-native-certs 0.8.5 (LICENSE-APACHE), smallvec 1.16.3 (LICENSE-APACHE), socket2 0.6.5 (LICENSE-APACHE), stable_deref_trait 1.2.1 (LICENSE-APACHE), tempfile 3.27.0 (LICENSE-APACHE), thread_local 1.1.10 (LICENSE-APACHE), tungstenite 0.29.0 (LICENSE-APACHE), unicode-segmentation 1.13.3 (LICENSE-APACHE), unicode-xid 0.2.6 (LICENSE-APACHE), url 2.5.8 (LICENSE-APACHE), vcpkg 0.2.15 (LICENSE-APACHE), version_check 0.9.5 (LICENSE-APACHE)
+Used by: atomic-waker 1.1.2 (LICENSE-APACHE), autocfg 1.5.1 (LICENSE-APACHE), base64 0.23.1 (LICENSE-APACHE), bitflags 2.13.2 (LICENSE-APACHE), cc 1.11.2 (LICENSE-APACHE), cfg-if 1.0.5 (LICENSE-APACHE), displaydoc 0.2.7 (LICENSE-APACHE), either 1.19.0 (LICENSE-APACHE), equivalent 1.0.3 (LICENSE-APACHE), errno 0.3.15 (LICENSE-APACHE), fastrand 2.5.0 (LICENSE-APACHE), find-msvc-tools 0.1.15 (LICENSE-APACHE), fixedbitset 0.5.9 (LICENSE-APACHE), flate2 1.1.11 (LICENSE-APACHE), fnv 1.0.7 (LICENSE-APACHE), form_urlencoded 1.2.2 (LICENSE-APACHE), hashbrown 0.15.5 (LICENSE-APACHE), hashbrown 0.17.1 (LICENSE-APACHE), heck 0.5.0 (LICENSE-APACHE), httparse 1.10.1 (LICENSE-APACHE), hyper-rustls 0.27.10 (LICENSE-APACHE), idna 1.1.0 (LICENSE-APACHE), idna_adapter 1.2.2 (LICENSE-APACHE), indexmap 2.14.2 (LICENSE-APACHE), itertools 0.14.0 (LICENSE-APACHE), itertools 0.15.0 (LICENSE-APACHE), lazy_static 1.5.1 (LICENSE-APACHE), linux-raw-sys 0.12.1 (LICENSE-APACHE), log 0.4.35 (LICENSE-APACHE), multimap 0.10.1 (LICENSE-APACHE), num-traits 0.2.19 (LICENSE-APACHE), once_cell 1.21.4 (LICENSE-APACHE), openssl-probe 0.2.2 (LICENSE-APACHE), percent-encoding 2.3.2 (LICENSE-APACHE), petgraph 0.8.3 (LICENSE-APACHE), pkg-config 0.3.34 (LICENSE-APACHE), png 0.18.1 (LICENSE-APACHE), prost 0.14.4 (LICENSE), prost-build 0.14.4 (LICENSE), prost-derive 0.14.6 (LICENSE), prost-types 0.14.4 (LICENSE), regex 1.13.2 (LICENSE-APACHE), regex-automata 0.4.19 (LICENSE-APACHE), regex-syntax 0.8.12 (LICENSE-APACHE), rustc_version 0.4.1 (LICENSE-APACHE), rustix 1.1.6 (LICENSE-APACHE), rustls 0.23.46 (LICENSE-APACHE), rustls-native-certs 0.8.5 (LICENSE-APACHE), smallvec 1.16.6 (LICENSE-APACHE), socket2 0.6.5 (LICENSE-APACHE), stable_deref_trait 1.2.1 (LICENSE-APACHE), tempfile 3.27.0 (LICENSE-APACHE), thread_local 1.1.10 (LICENSE-APACHE), tungstenite 0.29.0 (LICENSE-APACHE), unicode-segmentation 1.13.3 (LICENSE-APACHE), unicode-xid 0.2.6 (LICENSE-APACHE), url 2.5.8 (LICENSE-APACHE), vcpkg 0.2.15 (LICENSE-APACHE), version_check 0.9.5 (LICENSE-APACHE)
 ==============================================================================
 
 Apache License
@@ -3805,7 +3807,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: bitflags 2.13.2 (LICENSE-MIT), log 0.4.34 (LICENSE-MIT), num-traits 0.2.19 (LICENSE-MIT), regex 1.13.1 (LICENSE-MIT), regex-automata 0.4.18 (LICENSE-MIT), regex-syntax 0.8.11 (LICENSE-MIT)
+Used by: bitflags 2.13.2 (LICENSE-MIT), log 0.4.35 (LICENSE-MIT), num-traits 0.2.19 (LICENSE-MIT), regex 1.13.2 (LICENSE-MIT), regex-automata 0.4.19 (LICENSE-MIT), regex-syntax 0.8.12 (LICENSE-MIT)
 ==============================================================================
 
 Copyright (c) 2014 The Rust Project Developers
@@ -4022,7 +4024,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 3. This notice may not be removed or altered from any source distribution.
 
 ==============================================================================
-Used by: bytes 1.12.1 (LICENSE)
+Used by: bytes 1.12.2 (LICENSE)
 ==============================================================================
 
 Copyright (c) 2018 Carl Lerche
@@ -4052,7 +4054,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: cc 1.9.0 (LICENSE-MIT), cfg-if 1.0.5 (LICENSE-MIT), find-msvc-tools 0.1.15 (LICENSE-MIT), openssl-probe 0.2.1 (LICENSE-MIT), pkg-config 0.3.34 (LICENSE-MIT), socket2 0.6.5 (LICENSE-MIT)
+Used by: cc 1.11.2 (LICENSE-MIT), cfg-if 1.0.5 (LICENSE-MIT), find-msvc-tools 0.1.15 (LICENSE-MIT), openssl-probe 0.2.2 (LICENSE-MIT), pkg-config 0.3.34 (LICENSE-MIT), socket2 0.6.5 (LICENSE-MIT)
 ==============================================================================
 
 Copyright (c) 2014 Alex Crichton
@@ -4172,7 +4174,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: cmov 0.5.4 (LICENSE-APACHE), ctutils 0.4.6 (LICENSE-APACHE), qrcode 0.14.1 (LICENSE-APACHE.txt), rustls-platform-verifier 0.7.1 (LICENSE-APACHE), utf8_iter 1.0.4 (LICENSE-APACHE), zeroize 1.9.1 (LICENSE-APACHE), zeroize_derive 1.5.0 (LICENSE-APACHE), zune-core 0.5.3 (LICENSE-APACHE), zune-jpeg 0.5.15 (LICENSE-APACHE)
+Used by: cmov 0.5.4 (LICENSE-APACHE), ctutils 0.4.8 (LICENSE-APACHE), qrcode 0.14.1 (LICENSE-APACHE.txt), rustls-platform-verifier 0.7.1 (LICENSE-APACHE), utf8_iter 1.1.0 (LICENSE-APACHE), utf_types 1.0.0 (LICENSE-APACHE), zeroize 1.9.2 (LICENSE-APACHE), zeroize_derive 1.5.0 (LICENSE-APACHE), zune-core 0.5.3 (LICENSE-APACHE), zune-jpeg 0.5.15 (LICENSE-APACHE)
 ==============================================================================
 
 Apache License
@@ -4408,7 +4410,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: const-oid 0.10.2 (LICENSE-MIT), cpufeatures 0.3.1 (LICENSE-MIT)
+Used by: const-oid 0.10.3 (LICENSE-MIT), cpufeatures 0.3.1 (LICENSE-MIT)
 ==============================================================================
 
 Copyright (c) 2020-2026 The RustCrypto Project Developers
@@ -4438,7 +4440,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: const_format 0.2.36 (LICENSE-ZLIB.md), const_format_proc_macros 0.2.34 (LICENSE-ZLIB.md)
+Used by: const_format 0.2.37 (LICENSE-ZLIB.md), const_format_proc_macros 0.2.37 (LICENSE-ZLIB.md)
 ==============================================================================
 
 Copyright (c) 2020 Matias Rodriguez.
@@ -4691,7 +4693,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: crc32fast 1.5.3 (LICENSE-APACHE), fallible-iterator 0.3.0 (LICENSE-APACHE), fallible-streaming-iterator 0.1.9 (LICENSE-APACHE)
+Used by: crc32fast 1.5.5 (LICENSE-APACHE), fallible-iterator 0.3.0 (LICENSE-APACHE), fallible-streaming-iterator 0.1.9 (LICENSE-APACHE)
 ==============================================================================
 
 Apache License
@@ -4897,7 +4899,7 @@ Apache License
    limitations under the License.
 
 ==============================================================================
-Used by: crc32fast 1.5.3 (LICENSE-MIT)
+Used by: crc32fast 1.5.5 (LICENSE-MIT)
 ==============================================================================
 
 MIT License
@@ -5014,7 +5016,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: ctutils 0.4.6 (LICENSE-MIT)
+Used by: ctutils 0.4.8 (LICENSE-MIT)
 ==============================================================================
 
 Copyright (c) 2025-2026 The RustCrypto Project Developers
@@ -5733,7 +5735,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ==============================================================================
-Used by: either 1.19.0 (LICENSE-MIT), itertools 0.14.0 (LICENSE-MIT), petgraph 0.8.3 (LICENSE-MIT)
+Used by: either 1.19.0 (LICENSE-MIT), itertools 0.14.0 (LICENSE-MIT), itertools 0.15.0 (LICENSE-MIT), petgraph 0.8.3 (LICENSE-MIT)
 ==============================================================================
 
 Copyright (c) 2015
@@ -5793,7 +5795,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: errno 0.3.14 (LICENSE-MIT)
+Used by: errno 0.3.15 (LICENSE-MIT)
 ==============================================================================
 
 Copyright (c) 2014 Chris Wong
@@ -6082,7 +6084,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: fixedbitset 0.5.7 (LICENSE-MIT)
+Used by: fixedbitset 0.5.9 (LICENSE-MIT)
 ==============================================================================
 
 Copyright (c) 2015-2017
@@ -6112,7 +6114,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: flate2 1.1.10 (LICENSE-MIT)
+Used by: flate2 1.1.11 (LICENSE-MIT)
 ==============================================================================
 
 Copyright (c) 2014-2026 Alex Crichton
@@ -7771,7 +7773,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ==============================================================================
-Used by: Unicode CLDR (emoji annotations, the emoji search terms), icu_collections 2.3.0 (LICENSE), icu_locale_core 2.3.0 (LICENSE), icu_normalizer 2.3.0 (LICENSE), icu_normalizer_data 2.3.0 (LICENSE), icu_properties 2.3.0 (LICENSE), icu_properties_data 2.3.0 (LICENSE), icu_provider 2.3.1 (LICENSE), litemap 0.8.3 (LICENSE), potential_utf 0.1.6 (LICENSE), tinystr 0.8.4 (LICENSE), writeable 0.6.4 (LICENSE), yoke 0.8.3 (LICENSE), yoke-derive 0.8.4 (LICENSE), zerofrom 0.1.8 (LICENSE), zerofrom-derive 0.1.8 (LICENSE), zerotrie 0.2.5 (LICENSE), zerovec 0.11.8 (LICENSE), zerovec-derive 0.11.6 (LICENSE)
+Used by: Unicode CLDR (emoji annotations, the emoji search terms), icu_collections 2.4.0 (LICENSE), icu_locale_core 2.4.0 (LICENSE), icu_normalizer 2.4.0 (LICENSE), icu_normalizer_data 2.4.0 (LICENSE), icu_properties 2.4.0 (LICENSE), icu_properties_data 2.4.0 (LICENSE), icu_provider 2.4.0 (LICENSE), litemap 0.8.3 (LICENSE), potential_utf 0.1.6 (LICENSE), tinystr 0.8.5 (LICENSE), writeable 0.6.4 (LICENSE), yoke 0.8.4 (LICENSE), yoke-derive 0.8.4 (LICENSE), zerofrom 0.1.8 (LICENSE), zerofrom-derive 0.1.8 (LICENSE), zerotrie 0.2.5 (LICENSE), zerovec 0.11.9 (LICENSE), zerovec-derive 0.11.7 (LICENSE)
 ==============================================================================
 
 UNICODE LICENSE V3
@@ -7943,7 +7945,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: inout 0.2.5 (LICENSE-MIT)
+Used by: inout 0.2.6 (LICENSE-MIT)
 ==============================================================================
 
 Copyright (c) 2022-2025 The RustCrypto Project Developers
@@ -8302,7 +8304,7 @@ is licensed under:
 at your option.
 
 ==============================================================================
-Used by: linux-raw-sys 0.12.1 (LICENSE-Apache-2.0_WITH_LLVM-exception), rustix 1.1.5 (LICENSE-Apache-2.0_WITH_LLVM-exception)
+Used by: linux-raw-sys 0.12.1 (LICENSE-Apache-2.0_WITH_LLVM-exception), rustix 1.1.6 (LICENSE-Apache-2.0_WITH_LLVM-exception)
 ==============================================================================
 
 Apache License
@@ -8653,7 +8655,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 3. This notice may not be removed or altered from any source distribution.
 
 ==============================================================================
-Used by: mio 1.2.4 (LICENSE)
+Used by: mio 1.2.5 (LICENSE)
 ==============================================================================
 
 Copyright (c) 2014 Carl Lerche and other MIO contributors
@@ -8974,7 +8976,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: opus-pure 0.2.2 (ATTRIBUTION.md)
+Used by: opus-pure 0.2.3 (ATTRIBUTION.md)
 ==============================================================================
 
 # Attribution
@@ -9007,7 +9009,7 @@ public API narrowed, and a long list of defects fixed. The libopus comparisons b
 the larger ones are in [docs/interop-validation.md](docs/interop-validation.md).
 
 ==============================================================================
-Used by: opus-pure 0.2.2 (LICENSE)
+Used by: opus-pure 0.2.3 (LICENSE)
 ==============================================================================
 
 Copyright 2026 Stephen Berry
@@ -10764,7 +10766,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: rustix 1.1.5 (COPYRIGHT)
+Used by: rustix 1.1.6 (COPYRIGHT)
 ==============================================================================
 
 Short version for non-lawyers:
@@ -10812,7 +10814,7 @@ respectively.  You may use this software under the terms of any
 of these licenses, at your option.
 
 ==============================================================================
-Used by: rustls-pki-types 1.15.1 (LICENSE-APACHE)
+Used by: rustls-pki-types 1.16.0 (LICENSE-APACHE)
 ==============================================================================
 
 Apache License
@@ -11018,7 +11020,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==============================================================================
-Used by: rustls-pki-types 1.15.1 (LICENSE-MIT)
+Used by: rustls-pki-types 1.16.0 (LICENSE-MIT)
 ==============================================================================
 
 Copyright (c) 2023 Dirkjan Ochtman <dirkjan@ochtman.nl>
@@ -11074,7 +11076,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ==============================================================================
-Used by: rustls-webpki 0.103.16 (LICENSE)
+Used by: rustls-webpki 0.103.17 (LICENSE)
 ==============================================================================
 
 Except as otherwise noted, this project is licensed under the following
@@ -11347,7 +11349,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: smallvec 1.16.3 (LICENSE-MIT)
+Used by: smallvec 1.16.6 (LICENSE-MIT)
 ==============================================================================
 
 Copyright (c) 2018 The Servo Project Developers
@@ -12360,7 +12362,7 @@ Used by: untrusted 0.9.0 (LICENSE.txt)
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ==============================================================================
-Used by: utf8_iter 1.0.4 (COPYRIGHT)
+Used by: utf8_iter 1.1.0 (COPYRIGHT)
 ==============================================================================
 
 Copyright Mozilla Foundation
@@ -12407,7 +12409,7 @@ licensed under the Apache License, Version 2.0 <LICENSE-APACHE> or
 <LICENSE-MIT> or <http://opensource.org/licenses/MIT>, at your option.
 
 ==============================================================================
-Used by: utf8_iter 1.0.4 (LICENSE-MIT)
+Used by: utf8_iter 1.1.0 (LICENSE-MIT), utf_types 1.0.0 (LICENSE-MIT)
 ==============================================================================
 
 Copyright Mozilla Foundation
@@ -12435,6 +12437,31 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
+
+==============================================================================
+Used by: utf_types 1.0.0 (COPYRIGHT)
+==============================================================================
+
+Copyright Mozilla Foundation
+
+Licensed under the Apache License (Version 2.0), or the MIT license,
+(the "Licenses") at your option. You may not use this file except in
+compliance with one of the Licenses. You may obtain copies of the
+Licenses at:
+
+   https://www.apache.org/licenses/LICENSE-2.0
+   https://opensource.org/licenses/MIT
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the Licenses is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the Licenses for the specific language governing permissions and
+limitations under the Licenses.
+
+--
+
+Test code is dedicated to the Public Domain when so designated (see
+the individual files for PD/CC0-dedicated sections).
 
 ==============================================================================
 Used by: vcpkg 0.2.15 (LICENSE-MIT)
@@ -12515,7 +12542,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ==============================================================================
-Used by: webpki-roots 1.0.10 (LICENSE)
+Used by: webpki-roots 1.0.12 (LICENSE)
 ==============================================================================
 
 # Community Data License Agreement - Permissive - Version 2.0
@@ -12880,7 +12907,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: zeroize 1.9.1 (LICENSE-MIT)
+Used by: zeroize 1.9.2 (LICENSE-MIT)
 ==============================================================================
 
 Copyright (c) 2018-2026 The RustCrypto Project Developers
@@ -12940,7 +12967,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: zip 9.1.2 (LICENSE)
+Used by: zip 9.7.0 (LICENSE)
 ==============================================================================
 
 The MIT License (MIT)

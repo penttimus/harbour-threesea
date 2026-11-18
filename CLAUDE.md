@@ -89,7 +89,6 @@ harbour-threesea/
     threema-android/        git submodule of upstream (read-only reference)
     libthreema/             vendored upstream domain/libthreema + our commits (ADR 0006;
                             pristine imports on branch vendor/libthreema)
-    opus-pure/              vendored Opus encoder/decoder (voice fallback), one patch
     webrtc-audio-processing/  submodule: echo cancellation for calls (Full)
   core/                     Rust crate `threesea-core`: our application core (see §4); SQLCipher
                             comes bundled through rusqlite (pinned in Cargo.lock)
@@ -138,7 +137,8 @@ harbour-threesea/
 the upstream repository is a pristine submodule for reference. Update both together with
 `scripts/update-libthreema.sh <tag>` and record the version in `docs/build.md`. Since 6.6.0 the
 two differ: libthreema's code stays on 6.5.3 (only 6.6.0's protocol files came over) until
-upstream's new message layer covers ours, the submodule is at 6.6.0 (ADR 0036).
+upstream's new message layer covers ours, the submodule is at 6.6.1, whose libthreema is
+6.6.0's (ADR 0036).
 
 ---
 
@@ -552,7 +552,7 @@ volume keys and video calls after the first tries on a phone); details in `docs/
 Facts:
 - Upstream is AGPL-3.0; Threema is a paid app and an ID must be registered with a license. A
   third-party client works with a valid license but has no official support.
-- Pinned upstream: the reference submodule at `6.6.0-1237` (`097cc6b8`), libthreema's code at
+- Pinned upstream: the reference submodule at `6.6.1-1240` (`895c101e`), libthreema's code at
   `6.5.3-1216` (`d44a2b53`) with 6.6.0's protocol files (ADR 0036). libthreema is pure Rust (no libsodium/C deps),
   sans-I/O, not `Send`. It covers CSP transport, part of CSP-E2E, D2M, D2D rendezvous, ID backup,
   identity creation, parts of the directory API. Upstream does **not** cover groups, PFS, blobs,

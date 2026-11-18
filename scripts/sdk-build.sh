@@ -42,7 +42,7 @@ for ARCH in $ARCHES; do
       # third_party: only webrtc-audio-processing is built here (Full); the rest is Rust.
       (cd /src && tar cf - --exclude=./target --exclude=./RPMS --exclude=./tools --exclude=.git \
          --exclude=./third_party/threema-android --exclude=./third_party/libthreema \
-         --exclude=./third_party/opus-pure --exclude=./.idea . ) | tar xf - -C $B
+         --exclude=./.idea . ) | tar xf - -C $B
       for a in /src/target/*/release/libthreesea_core.a; do
         d=$B/target/${a#/src/target/}; mkdir -p ${d%/*}; cp $a $d
       done
