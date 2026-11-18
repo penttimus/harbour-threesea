@@ -75,9 +75,9 @@ if [ "${FLAVOUR_SUFFIX:-1}" = 0 ]; then
   ls -1 "$OUT"/*.rpm
   exit 0
 fi
-for f in "$OUT"/harbour-threesea-*.aarch64.rpm "$OUT"/harbour-threesea-*.armv7hl.rpm \
-         "$OUT"/harbour-threesea-*.i486.rpm; do
+for f in "$OUT"/harbour-threesea-[0-9]*.rpm "$OUT"/harbour-threesea-debug*-[0-9]*.rpm; do
   [ -e "$f" ] || continue
+  case "$f" in *-"$FLAVOUR".rpm) continue ;; esac
   mv -f "$f" "${f%.rpm}-$FLAVOUR.rpm"
 done
 ls -1 "$OUT"/*.rpm
