@@ -557,7 +557,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 The map renderer, bundled under /usr/share/harbour-threesea/lib. Its exact source:
 https://github.com/rinigus/pkg-maplibre-gl-native at 3.0.0+git2 (b0f203d517135c60c30ca99c6e8c2e0a5af5b4d1)
 with its submodules (maplibre-native-qt, maplibre-native), and
-https://github.com/rinigus/mapbox-gl-qml at 3.2.1 (426eb3de463cdde60f9949e8beb4080b9a017c75),
+https://github.com/rinigus/mapbox-gl-qml at 3.2.2 (79e0cccea5720b6937c39ce33dc7159df63225fa),
 with harbour-threesea's patches to both in its source repository, scripts/maplibre/patches,
 built by scripts/maplibre/build.sh.
 
@@ -1758,7 +1758,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ----------------------------------------------------------------------
-mapbox-gl-qml 3.2.1 (the QML module MapboxMap), https://github.com/rinigus/mapbox-gl-qml,
+mapbox-gl-qml 3.2.2 (the QML module MapboxMap), https://github.com/rinigus/mapbox-gl-qml,
 by rinigus and contributors, GNU Lesser General Public License 3.0. Its source is at that address;
 the version and how it is built are in this application's source, scripts/maplibre. The LGPL 3.0
 adds to the GNU General Public License 3.0, which follows it.

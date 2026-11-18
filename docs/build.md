@@ -10,7 +10,7 @@
 | Sailfish OS build target | 5.1.0.11 (Qt 5.6.3, glibc 2.41) | `coderus/sailfishos-platform-sdk:5.1.0.11` |
 | libthreema | code of `6.5.3-1216` (`d44a2b53`), protocol files of `6.6.0-1237`, vendored in `third_party/libthreema` + our commits (ADR 0006, 0036); `vendor/libthreema` has the pristine 6.6.0, not merged (6.6.1's is the same) | `scripts/update-libthreema.sh` |
 | Map renderer: MapLibre Native Qt (BSD-2-Clause) as rinigus packages it for Sailfish (patches: curl downloads, Qt 5.6 fixes) | `pkg-maplibre-gl-native` tag `3.0.0+git2`, commit `b0f203d5` (maplibre-native-qt `d929c783`, maplibre-native `0a4e5a44`) | `scripts/maplibre/versions`; fetched into `target/maplibre-src`, built by `scripts/maplibre/build.sh` |
-| Map QML module `MapboxMap` (LGPL-3.0) | mapbox-gl-qml tag `3.2.1`, commit `426eb3de` | same |
+| Map QML module `MapboxMap` (LGPL-3.0) | mapbox-gl-qml tag `3.2.2`, commit `79e0ccce` | same |
 | webrtc-audio-processing (Full: call echo cancellation, BSD) | tag `v2.1`, commit `846fe90a` | `third_party/webrtc-audio-processing` (submodule; built by the spec's `%build` with meson against SFOS's abseil-cpp, linked statically) |
 
 ## Prerequisites
