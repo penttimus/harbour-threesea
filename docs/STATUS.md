@@ -1769,5 +1769,4 @@ Bluetooth headphones; and the stall probe only while the app is in front.
 Found while checking `main` for it: the merge of `main` into the reactions' branch had left an
 entry open in all four `.ts` files (not well-formed XML; repaired in pull request 32).
 
-Not retaken: `docs/screenshots/09-launcher.png` still shows the icon of before (the README does
-not use it), and the other pictures are from 0.2.0.
+Retaken: the cover and the launcher icon (`08`, `09`). The other pictures are from 0.2.0.
