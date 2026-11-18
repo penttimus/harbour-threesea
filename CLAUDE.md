@@ -217,14 +217,15 @@ Rules:
 - Everything the user sees must be translatable — id-based like Jolla's apps:
   `qsTrId("threesea-<kind>-<name>")` with a `//%` engineering-English comment; `.ts` files in
   `translations/`, refreshed with `scripts/update-translations.sh` after UI text changes; German
-  texts live in `scripts/translations-de.py` and the French in `scripts/translations-fr.py`,
-  which are always the **last** step (they fill the texts and write the files in the
-  repository's layout; running lupdate afterwards reformats every line). New and reworded
-  texts get their German and French at the very end, after all features and UI polish (user
-  decision 2026-10-22); until then they stay unfinished. Each entry keeps the English it was
-  translated from: a text whose English changed (a reworded text keeps its id) stays unfinished
-  until it is translated again, and `scripts/check.sh --release` fails on any unfinished text.
-  Plurals: `qsTrId(id, n)` with `%n`, forms in both files. The few texts the core writes itself
+  texts live in `scripts/translations-de.py`, the French in `scripts/translations-fr.py` and the
+  Finnish in `scripts/translations-fi.py`, which are always the **last** step (they fill the
+  texts and write the files in the repository's layout; running lupdate afterwards reformats
+  every line). New and reworded texts get their German, French and Finnish before the work is
+  pushed, never later (user decision 2026-11-18, replacing "at the very end" of 2026-10-22).
+  Each entry keeps the English it was translated from: a text whose English changed (a reworded
+  text keeps its id) stays unfinished until it is translated again, and
+  `scripts/check.sh --release` fails on any unfinished text. Plurals: `qsTrId(id, n)` with
+  `%n`, forms in all three files. The few texts the core writes itself
   (Threema Web's status lines) have their own small table in `core/src/app_web_data.rs`.
 
 ---

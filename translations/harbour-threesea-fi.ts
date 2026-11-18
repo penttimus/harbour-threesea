@@ -75,7 +75,7 @@
         <message id="threesea-la-license-text">
             <source>Free software under the GNU AGPL v3.</source>
             <oldsource>An unofficial Threema client for Sailfish OS, licensed under the GNU AGPL v3. Uses libthreema by Threema AG. Requires a Threema Libre license from the Threema Shop. Not affiliated with or supported by Threema AG.</oldsource>
-            <translation type="unfinished">Epävirallinen Threema-sovellus Sailfish OS:lle, lisensoitu GNU AGPL v3 -lisenssillä. Käyttää Threema AG:n libthreema-kirjastoa. Vaatii Threema Libre -lisenssin Threema Shopista. Ei ole sidoksissa Threema AG:hen eikä sen tukema.</translation>
+            <translation>Vapaa ohjelmisto GNU AGPL v3 -lisenssillä.</translation>
         </message>
         <message id="threesea-he-add">
             <source>Add</source>
@@ -2423,17 +2423,17 @@
         <message id="threesea-la-disclaimer-ai">
             <source>Made with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. A research and experimentation project.</source>
             <oldsource>Threesea was developed with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. It is a research and experimentation project.</oldsource>
-            <translation type="unfinished">Threesea on kehitetty Claude Codella (Anthropic) ja auditoitu OpenAI Codexilla ihmisylläpitäjän ohjauksessa ja testaamana. Se on tutkimus- ja kokeiluprojekti.</translation>
+            <translation>Kehitetty Claude Codella (Anthropic) ja auditoitu OpenAI Codexilla ihmisylläpitäjän ohjauksessa ja testaamana. Tutkimus- ja kokeiluprojekti.</translation>
         </message>
         <message id="threesea-la-disclaimer-warranty">
             <source>AI makes mistakes, also in security-relevant code. There is no warranty: you use Threesea at your own risk.</source>
             <oldsource>AI makes mistakes. The code, including its security-relevant parts, can contain errors nobody noticed. The developers give no warranty of any kind; you use the app at your own risk.</oldsource>
-            <translation type="unfinished">Tekoäly tekee virheitä. Koodi, myös sen tietoturvan kannalta olennaiset osat, voi sisältää virheitä, joita kukaan ei ole huomannut. Kehittäjät eivät anna minkäänlaista takuuta; käytät sovellusta omalla vastuullasi.</translation>
+            <translation>Tekoäly tekee virheitä, myös tietoturvan kannalta olennaisessa koodissa. Takuuta ei ole: käytät Threeseaa omalla vastuullasi.</translation>
         </message>
         <message id="threesea-la-disclaimer-threema">
             <source>Unofficial: not affiliated with, endorsed or supported by Threema AG. Threema doesn't actively block third-party apps that play fair, as Threesea aims to, but that isn't a permission. Keep a backup of your ID.</source>
             <oldsource>Threesea is based on Threema Libre's open-source code and tries to play fair with Threema's APIs and licensing. Threema told us it doesn't actively block third-party apps that cause no stability issues or high server load, are clearly marked as unofficial without using its branding, and don't circumvent the licensing. Threesea aims to meet that. This is not a permission, and Threesea is not affiliated with, endorsed or supported by Threema AG. As with any Threema app, keep a backup of your ID.</oldsource>
-            <translation type="unfinished">Threesea perustuu Threema Libren avoimeen lähdekoodiin ja pyrkii toimimaan reilusti Threeman rajapintojen ja lisensoinnin suhteen. Threema on kertonut meille, ettei se aktiivisesti estä kolmannen osapuolen sovelluksia, jotka eivät aiheuta vakausongelmia tai suurta palvelinkuormaa, on selvästi merkitty epävirallisiksi käyttämättä sen tuotemerkkiä eivätkä kierrä lisensointia. Threesea pyrkii täyttämään nämä ehdot. Tämä ei ole lupa, eikä Threesea ole Threema AG:n kanssa sidoksissa eikä sen hyväksymä tai tukema. Kuten minkä tahansa Threema-sovelluksen kanssa, pidä tunnuksestasi varmuuskopio.</translation>
+            <translation>Epävirallinen: ei sidoksissa Threema AG:hen eikä sen hyväksymä tai tukema. Threema ei aktiivisesti estä kolmannen osapuolen sovelluksia, jotka toimivat reilusti, kuten Threesea pyrkii toimimaan, mutta se ei ole lupa. Pidä tunnuksestasi varmuuskopio.</translation>
         </message>
         <message id="threesea-se-credits">
             <source>Credits</source>
@@ -5018,15 +5018,15 @@
         </message>
         <message id="threesea-la-credit-harpoon">
             <source>Harpoon by Juhani Lehtimäki (GPL-3.0): how the waves on the cover are coloured.</source>
-            <translation type="unfinished" />
+            <translation>Harpoon, tekijä Juhani Lehtimäki (GPL-3.0): kannen aaltojen väritys.</translation>
         </message>
         <message id="threesea-la-cover-previews">
             <source>Show messages on the cover</source>
-            <translation type="unfinished" />
+            <translation>Näytä viestit kannessa</translation>
         </message>
         <message id="threesea-la-cover-previews-description">
             <source>Under each chat that has something new, the cover also shows its last message. Never for private chats.</source>
-            <translation type="unfinished" />
+            <translation>Kansi näyttää jokaisen keskustelun alla, jossa on uutta, myös sen viimeisen viestin. Ei koskaan yksityisistä keskusteluista.</translation>
         </message>
     </context>
 </TS>

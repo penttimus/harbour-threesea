@@ -62,8 +62,8 @@ FI = {
         ("License",
          "Lisenssi"),
     "threesea-la-license-text":
-        ("An unofficial Threema client for Sailfish OS, licensed under the GNU AGPL v3. Uses libthreema by Threema AG. Requires a Threema Libre license from the Threema Shop. Not affiliated with or supported by Threema AG.",
-         "Epävirallinen Threema-sovellus Sailfish OS:lle, lisensoitu GNU AGPL v3 -lisenssillä. Käyttää Threema AG:n libthreema-kirjastoa. Vaatii Threema Libre -lisenssin Threema Shopista. Ei ole sidoksissa Threema AG:hen eikä sen tukema."),
+        ("Free software under the GNU AGPL v3.",
+         "Vapaa ohjelmisto GNU AGPL v3 -lisenssillä."),
     "threesea-he-add":
         ("Add",
          "Lisää"),
@@ -1222,6 +1222,12 @@ FI = {
     "threesea-la-hide-cover-description":
         ("The cover only shows the number of new messages, not who wrote.",
          "Kansi näyttää vain uusien viestien määrän, ei kirjoittajaa."),
+    "threesea-la-cover-previews":
+        ("Show messages on the cover",
+         "Näytä viestit kannessa"),
+    "threesea-la-cover-previews-description":
+        ("Under each chat that has something new, the cover also shows its last message. Never for private chats.",
+         "Kansi näyttää jokaisen keskustelun alla, jossa on uutta, myös sen viimeisen viestin. Ei koskaan yksityisistä keskusteluista."),
     "threesea-se-appearance":
         ("Appearance",
          "Ulkoasu"),
@@ -1786,14 +1792,14 @@ FI = {
         ("Disclaimer",
          "Vastuuvapauslauseke"),
     "threesea-la-disclaimer-ai":
-        ("Threesea was developed with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. It is a research and experimentation project.",
-         "Threesea on kehitetty Claude Codella (Anthropic) ja auditoitu OpenAI Codexilla ihmisylläpitäjän ohjauksessa ja testaamana. Se on tutkimus- ja kokeiluprojekti."),
+        ("Made with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. A research and experimentation project.",
+         "Kehitetty Claude Codella (Anthropic) ja auditoitu OpenAI Codexilla ihmisylläpitäjän ohjauksessa ja testaamana. Tutkimus- ja kokeiluprojekti."),
     "threesea-la-disclaimer-warranty":
-        ("AI makes mistakes. The code, including its security-relevant parts, can contain errors nobody noticed. The developers give no warranty of any kind; you use the app at your own risk.",
-         "Tekoäly tekee virheitä. Koodi, myös sen tietoturvan kannalta olennaiset osat, voi sisältää virheitä, joita kukaan ei ole huomannut. Kehittäjät eivät anna minkäänlaista takuuta; käytät sovellusta omalla vastuullasi."),
+        ("AI makes mistakes, also in security-relevant code. There is no warranty: you use Threesea at your own risk.",
+         "Tekoäly tekee virheitä, myös tietoturvan kannalta olennaisessa koodissa. Takuuta ei ole: käytät Threeseaa omalla vastuullasi."),
     "threesea-la-disclaimer-threema":
-        ("Threesea is based on Threema Libre's open-source code and tries to play fair with Threema's APIs and licensing. Threema told us it doesn't actively block third-party apps that cause no stability issues or high server load, are clearly marked as unofficial without using its branding, and don't circumvent the licensing. Threesea aims to meet that. This is not a permission, and Threesea is not affiliated with, endorsed or supported by Threema AG. As with any Threema app, keep a backup of your ID.",
-         "Threesea perustuu Threema Libren avoimeen lähdekoodiin ja pyrkii toimimaan reilusti Threeman rajapintojen ja lisensoinnin suhteen. Threema on kertonut meille, ettei se aktiivisesti estä kolmannen osapuolen sovelluksia, jotka eivät aiheuta vakausongelmia tai suurta palvelinkuormaa, on selvästi merkitty epävirallisiksi käyttämättä sen tuotemerkkiä eivätkä kierrä lisensointia. Threesea pyrkii täyttämään nämä ehdot. Tämä ei ole lupa, eikä Threesea ole Threema AG:n kanssa sidoksissa eikä sen hyväksymä tai tukema. Kuten minkä tahansa Threema-sovelluksen kanssa, pidä tunnuksestasi varmuuskopio."),
+        ("Unofficial: not affiliated with, endorsed or supported by Threema AG. Threema doesn't actively block third-party apps that play fair, as Threesea aims to, but that isn't a permission. Keep a backup of your ID.",
+         "Epävirallinen: ei sidoksissa Threema AG:hen eikä sen hyväksymä tai tukema. Threema ei aktiivisesti estä kolmannen osapuolen sovelluksia, jotka toimivat reilusti, kuten Threesea pyrkii toimimaan, mutta se ei ole lupa. Pidä tunnuksestasi varmuuskopio."),
     "threesea-se-credits":
         ("Credits",
          "Kiitokset"),
@@ -1812,6 +1818,9 @@ FI = {
     "threesea-la-credit-whisperfish":
         ("Whisperfish, the Signal client for Sailfish OS: a reference for building such an app.",
          "Whisperfish, Sailfish OS:n Signal-sovellus: esimerkki tällaisen sovelluksen rakentamisesta."),
+    "threesea-la-credit-harpoon":
+        ("Harpoon by Juhani Lehtimäki (GPL-3.0): how the waves on the cover are coloured.",
+         "Harpoon, tekijä Juhani Lehtimäki (GPL-3.0): kannen aaltojen väritys."),
     "threesea-la-credit-libraries":
         ("SQLCipher, GStreamer, Qt and many Rust libraries (tokio, rustls, reqwest, rusqlite, RustCrypto and others).",
          "SQLCipher, GStreamer, Qt ja monet Rust-kirjastot (tokio, rustls, reqwest, rusqlite, RustCrypto ja muut)."),
