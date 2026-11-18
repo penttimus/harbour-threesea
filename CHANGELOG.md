@@ -36,6 +36,10 @@ Changed:
 - With "Block unknown senders" on, someone you don't know can no longer add you to a new group,
   as in Threema for Android 6.6.0. That is how spam groups mostly arrive, by
   [penttimus](https://github.com/penttimus).
+- Bundled libraries are up to date: the Rust crates within their pinned lines (TLS certificate
+  checking among them), opus-pure 0.2.3 and mapbox-gl-qml 3.2.2, and the reference for Threema
+  for Android is 6.6.1, by [penttimus](https://github.com/penttimus).
+
 Fixed:
 
 - With the log on "Detailed" and a chat open, Threesea no longer wakes the processor 60 times a
