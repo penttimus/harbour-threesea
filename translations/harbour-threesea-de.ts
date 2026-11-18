@@ -5057,6 +5057,7 @@
         <message id="threesea-la-notification-reactions-groups-description">
             <source>Notify when someone reacts to one of your messages in a group.</source>
             <translation>Benachrichtigen, wenn jemand in einer Gruppe auf eine deiner Nachrichten reagiert.</translation>
+        </message>
         <message id="threesea-la-credit-harpoon">
             <source>Harpoon by Juhani Lehtimäki (GPL-3.0): how the waves on the cover are coloured.</source>
             <translation>Harpoon von Juhani Lehtimäki (GPL-3.0): wie die Wellen auf dem Cover gefärbt sind.</translation>
