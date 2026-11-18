@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import QtQuick 2.6
 import Sailfish.Silica 1.0
+import "../components"
+import "../components/Format.js" as Fmt
 
 CoverBackground {
     id: cover
@@ -30,6 +32,53 @@ CoverBackground {
         repeat: true
         triggeredOnStart: true
         onTriggered: cover.seconds = Math.max(0, Math.floor((Date.now() - cover.callStart()) / 1000))
+    }
+
+    // The cover as a sea (the launcher icon's picture): the count up left, who waits on the wave
+    // under it, the actions on the last wave. The water rises a row for every chat listed.
+    readonly property bool listsChats: !cover.inCall && backend.unreadCount > 0 && !window.locked
+                                       && window.appSettings.disableScreenshots !== true
+    // "Show messages on the cover" (Privacy): each chat's last message under its name.
+    readonly property bool previews: backend.coverPreviews
+    readonly property real rowHeight: nameMetrics.height + (previews ? previewMetrics.height : 0)
+    readonly property real waveHeight: Theme.paddingSmall
+    // The actions' wave, and the list's last row just above it.
+    readonly property real actionsY: height - Theme.itemSizeSmall
+    readonly property real listBottom: actionsY - waveHeight
+    // Under the count: both upper waves, then the rows.
+    readonly property real seaGap: Theme.paddingLarge + Theme.paddingMedium + waveHeight
+    // The first wave may come up to the count's digits: the huge font's line is much taller.
+    readonly property int rowsMax: Math.max(1, Math.min(previews ? 3 : 5, Math.floor(
+        (listBottom - (head.y + count.baselineOffset + waveHeight) - seaGap)
+        / Math.max(1, rowHeight))))
+    readonly property var waiting: listsChats ? backend.unreadChats.slice(0, rowsMax) : []
+    // The water's level in rows: it glides while the cover is seen and is in place when it is not.
+    property real tide: waiting.length
+    Behavior on tide {
+        enabled: cover.status === Cover.Active
+        NumberAnimation { duration: 400; easing.type: Easing.InOutQuad }
+    }
+
+    FontMetrics {
+        id: nameMetrics
+        font.family: Theme.fontFamily
+        font.pixelSize: Theme.fontSizeSmall
+    }
+    FontMetrics {
+        id: previewMetrics
+        font.family: Theme.fontFamily
+        font.pixelSize: Theme.fontSizeExtraSmall
+    }
+
+    CoverSea {
+        id: sea
+        anchors.fill: parent
+        level: cover.tide
+        emulator: backend.emulator
+        amplitude: cover.waveHeight
+        thirdY: cover.actionsY
+        secondY: cover.listBottom - cover.tide * cover.rowHeight - Theme.paddingMedium - cover.waveHeight
+        firstY: secondY - Theme.paddingLarge
     }
 
     Column {
@@ -111,24 +160,34 @@ CoverBackground {
         }
     }
 
-    Column {
+    // The count and what it counts, or with nothing unread the state. Where the bubble floats
+    // (right of it) stays free.
+    Row {
+        id: head
         visible: !cover.inCall
-        anchors.centerIn: parent
-        width: parent.width - 2 * Theme.paddingLarge
-        spacing: Theme.paddingSmall
+        x: Theme.paddingLarge
+        y: Theme.paddingMedium
+        spacing: Theme.paddingMedium
 
         Label {
+            id: count
             visible: backend.unreadCount > 0
-            anchors.horizontalCenter: parent.horizontalCenter
             text: backend.unreadCount
             font.pixelSize: Theme.fontSizeHuge
             color: Theme.primaryColor
         }
 
         Label {
-            width: parent.width
-            horizontalAlignment: Text.AlignHCenter
+            anchors.verticalCenter: count.visible ? count.verticalCenter : undefined
+            // The huge count's line is the height of the row also without the count.
+            height: count.visible ? implicitHeight : Math.max(implicitHeight, count.height)
+            verticalAlignment: Text.AlignVCenter
+            width: cover.width - 2 * Theme.paddingLarge - sea.bubbleWidth
+                   - (count.visible ? count.width + head.spacing : 0)
             wrapMode: Text.Wrap
+            maximumLineCount: 2
+            lineHeight: 0.9
+            font.pixelSize: count.visible ? Theme.fontSizeExtraSmall : Theme.fontSizeSmall
             color: Theme.secondaryColor
             text: backend.unreadCount === 1
                   //% "unread message"
@@ -148,17 +207,69 @@ CoverBackground {
                           ? qsTrId("threesea-la-connecting")
                           : qsTrId("threesea-la-offline")
         }
+    }
 
-        Label {
-            // Who is waiting: the newest chat that still has something unread. "Hide content on
-            // the cover" (Privacy) and the app lock show only the count.
-            visible: cover.namesChat
-            width: parent.width
-            horizontalAlignment: Text.AlignHCenter
-            truncationMode: TruncationMode.Fade
-            text: backend.unreadFrom
-            font.pixelSize: Theme.fontSizeSmall
-            color: Theme.highlightColor
+    // Who is waiting, newest first: the chats that still have something unread, each with its
+    // own count and, if asked for, its last message. Never a private or an archived chat (the
+    // core leaves them out); "Hide content on the cover" (Privacy) and the app lock show only
+    // the count.
+    Column {
+        id: names
+        visible: !cover.inCall
+        x: Theme.paddingLarge
+        y: cover.listBottom - height
+        width: cover.width - 2 * Theme.paddingLarge
+
+        Repeater {
+            model: cover.waiting
+
+            Column {
+                width: names.width
+
+                Item {
+                    width: parent.width
+                    height: nameMetrics.height
+
+                    Label {
+                        anchors {
+                            left: parent.left
+                            right: unread.left
+                            rightMargin: Theme.paddingSmall
+                            verticalCenter: parent.verticalCenter
+                        }
+                        truncationMode: TruncationMode.Fade
+                        text: modelData.displayName
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.primaryColor
+                    }
+
+                    Label {
+                        id: unread
+                        anchors { right: parent.right; verticalCenter: parent.verticalCenter }
+                        text: modelData.unread
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.highlightColor
+                    }
+                }
+
+                Label {
+                    visible: cover.previews
+                    width: parent.width
+                    height: previewMetrics.height
+                    verticalAlignment: Text.AlignVCenter
+                    truncationMode: TruncationMode.Fade
+                    maximumLineCount: 1
+                    // A group's with who wrote it, like the chat list.
+                    text: cover.previews
+                          ? (modelData.senderName && !modelData.lastMessage.outgoing
+                             && modelData.lastMessage.kind !== "status"
+                             ? modelData.senderName + ": " : "") + Fmt.preview(modelData.lastMessage)
+                          : ""
+                    textFormat: Text.PlainText
+                    font.pixelSize: Theme.fontSizeExtraSmall
+                    color: Theme.secondaryColor
+                }
+            }
         }
     }
 

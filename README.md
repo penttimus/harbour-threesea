@@ -1,3 +1,5 @@
+<img src="icons/172x172/harbour-threesea.png" width="96" alt="Threesea's icon: a speech bubble afloat in a green sea">
+
 # Threesea
 
 **An unofficial [Threema](https://threema.ch) client for Sailfish OS.** Native, private, no Google.
@@ -187,6 +189,8 @@ Threesea stands on the work of others. Thank you!
   model for the UI
 - **[Whisperfish](https://gitlab.com/whisperfish/whisperfish)**: the reference for a Rust app on
   Sailfish OS
+- **[Harpoon](https://github.com/JuhaniLehtimaeki/Harpoon)** by Juhani Lehtimäki (GPL-3.0): how
+  the waves on the cover are coloured
 - **[SQLCipher](https://www.zetetic.net/sqlcipher/)**, **[GStreamer](https://gstreamer.freedesktop.org/)**,
   **[Qt](https://www.qt.io/)** and the Rust crates in [Cargo.lock](Cargo.lock)
 - The **"AI generated" label** is the European Commission's icon for AI-generated content

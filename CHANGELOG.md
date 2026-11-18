@@ -5,8 +5,21 @@ All notable changes. Versions follow `MAJOR.MINOR.PATCH`; each release is built 
 
 ## [Unreleased]
 
+Added:
+
+- The cover lists the chats that wait, newest first, each with its own count, instead of one
+  name. Settings → Privacy → "Show messages on the cover" adds each chat's last message (off by
+  default; never for private chats, and "Hide content on the cover" still leaves only the count),
+  by [penttimus](https://github.com/penttimus).
+
 Changed:
 
+- A new app icon: a speech bubble afloat in a green sea. The cover shows the same picture in
+  your ambience's colour, and the water rises with the number of chats that wait. The idea of the
+  icon on the cover is [jmpx448](https://github.com/jmpx448)'s
+  ([#27](https://github.com/penttimus/harbour-threesea/pull/27)), the waves' colouring is
+  [Harpoon](https://github.com/JuhaniLehtimaeki/Harpoon)'s, by
+  [penttimus](https://github.com/penttimus).
 - About: the license texts are in the pull-down menu, and the disclaimer is shorter. The README
   is shorter too, and recommends installing through
   [Harpoon](https://github.com/JuhaniLehtimaeki/Harpoon), which keeps Threesea up to date, by

@@ -75,7 +75,7 @@
         <message id="threesea-la-license-text">
             <source>Free software under the GNU AGPL v3.</source>
             <oldsource>An unofficial Threema client for Sailfish OS, licensed under the GNU AGPL v3. Uses libthreema by Threema AG. Requires a Threema Libre license from the Threema Shop. Not affiliated with or supported by Threema AG.</oldsource>
-            <translation type="unfinished">Ein inoffizieller Threema-Client für Sailfish OS unter der GNU AGPL v3. Verwendet libthreema von der Threema AG. Benötigt eine Threema-Libre-Lizenz aus dem Threema Shop. Nicht mit der Threema AG verbunden und nicht von ihr unterstützt.</translation>
+            <translation>Freie Software unter der GNU AGPL v3.</translation>
         </message>
         <message id="threesea-he-add">
             <source>Add</source>
@@ -2423,17 +2423,17 @@
         <message id="threesea-la-disclaimer-ai">
             <source>Made with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. A research and experimentation project.</source>
             <oldsource>Threesea was developed with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. It is a research and experimentation project.</oldsource>
-            <translation type="unfinished">Threesea wurde mit Claude Code (Anthropic) entwickelt und mit OpenAI Codex geprüft, angeleitet und getestet von einem menschlichen Maintainer. Es ist ein Forschungs- und Experimentierprojekt.</translation>
+            <translation>Mit Claude Code (Anthropic) entwickelt und mit OpenAI Codex geprüft, angeleitet und getestet von einem menschlichen Maintainer. Ein Forschungs- und Experimentierprojekt.</translation>
         </message>
         <message id="threesea-la-disclaimer-warranty">
             <source>AI makes mistakes, also in security-relevant code. There is no warranty: you use Threesea at your own risk.</source>
             <oldsource>AI makes mistakes. The code, including its security-relevant parts, can contain errors nobody noticed. The developers give no warranty of any kind; you use the app at your own risk.</oldsource>
-            <translation type="unfinished">KI macht Fehler. Der Code, auch seine sicherheitsrelevanten Teile, kann Fehler enthalten, die niemand bemerkt hat. Die Entwickler übernehmen keinerlei Gewährleistung; du verwendest die App auf eigenes Risiko.</translation>
+            <translation>KI macht Fehler, auch in sicherheitsrelevantem Code. Es gibt keine Gewährleistung: Du verwendest Threesea auf eigenes Risiko.</translation>
         </message>
         <message id="threesea-la-disclaimer-threema">
             <source>Unofficial: not affiliated with, endorsed or supported by Threema AG. Threema doesn't actively block third-party apps that play fair, as Threesea aims to, but that isn't a permission. Keep a backup of your ID.</source>
             <oldsource>Threesea is based on Threema Libre's open-source code and tries to play fair with Threema's APIs and licensing. Threema told us it doesn't actively block third-party apps that cause no stability issues or high server load, are clearly marked as unofficial without using its branding, and don't circumvent the licensing. Threesea aims to meet that. This is not a permission, and Threesea is not affiliated with, endorsed or supported by Threema AG. As with any Threema app, keep a backup of your ID.</oldsource>
-            <translation type="unfinished">Threesea beruht auf dem Open-Source-Code von Threema Libre und versucht, fair mit Threemas Schnittstellen und Lizenzen umzugehen. Threema hat uns mitgeteilt, dass es Apps von Dritten nicht aktiv blockiert, solange sie keine Stabilitätsprobleme oder hohe Serverlast verursachen, klar als inoffiziell gekennzeichnet sind, ohne Threemas Marke zu verwenden, und die Lizenzierung nicht umgehen. Threesea will dem entsprechen. Das ist keine Erlaubnis, und Threesea ist nicht mit der Threema AG verbunden, nicht von ihr empfohlen und nicht von ihr unterstützt. Wie bei jeder Threema-App gilt: Bewahre ein Backup deiner ID auf.</translation>
+            <translation>Inoffiziell: nicht mit der Threema AG verbunden, nicht von ihr empfohlen und nicht von ihr unterstützt. Threema blockiert Apps von Dritten nicht aktiv, wenn sie fair spielen, wie Threesea es will; eine Erlaubnis ist das aber nicht. Bewahre ein Backup deiner ID auf.</translation>
         </message>
         <message id="threesea-se-credits">
             <source>Credits</source>
@@ -5015,6 +5015,18 @@
         <message id="threesea-me-license-agpl">
             <source>License text</source>
             <translation>Lizenztext</translation>
+        </message>
+        <message id="threesea-la-credit-harpoon">
+            <source>Harpoon by Juhani Lehtimäki (GPL-3.0): how the waves on the cover are coloured.</source>
+            <translation>Harpoon von Juhani Lehtimäki (GPL-3.0): wie die Wellen auf dem Cover gefärbt sind.</translation>
+        </message>
+        <message id="threesea-la-cover-previews">
+            <source>Show messages on the cover</source>
+            <translation>Nachrichten auf dem Cover anzeigen</translation>
+        </message>
+        <message id="threesea-la-cover-previews-description">
+            <source>Under each chat that has something new, the cover also shows its last message. Never for private chats.</source>
+            <translation>Unter jedem Chat, in dem es Neues gibt, zeigt das Cover auch dessen letzte Nachricht. Nie bei privaten Chats.</translation>
         </message>
     </context>
 </TS>
