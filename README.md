@@ -62,7 +62,7 @@ releases and keeps them up to date, picking the right package for your phone
    up to 0.3.1 name their files so that it can't ask: in the same dialog, set
    **Package filter (regular expression)** to `full` (or `lite`). The filter keeps working later.
 
-That's it: new versions come to you through Harpoon. From the release after 0.3.1 on it also
+That's it: new versions come to you through Harpoon. From 0.4.0 on it also
 recognises a Threesea you installed by hand, and shows its icon.
 
 ### By hand

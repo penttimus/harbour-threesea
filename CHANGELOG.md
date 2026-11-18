@@ -5,6 +5,11 @@ All notable changes. Versions follow `MAJOR.MINOR.PATCH`; each release is built 
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-19
+
+A new icon and a cover that lists who is waiting, notifications for reactions, and what Threema
+for Android 6.6.0 and 6.6.1 changed around spam groups.
+
 Added:
 
 - A notification when someone reacts to one of your messages, as in Threema for Android 6.6.1:
@@ -33,7 +38,6 @@ Changed:
   (`harbour-threesea-<version>-1.aarch64-full.rpm`, was `harbour-threesea-full-<version>-1.aarch64.rpm`):
   Harpoon then sees one package in two builds, asks which one you want, recognises a Threesea
   installed by hand and shows its icon, by [penttimus](https://github.com/penttimus).
-
 - Reporting a group as spam no longer waits for Threema's server, as in Threema for Android 6.6.0:
   blocking its creator, leaving and deleting happen at once, also without a connection, and the
   report is sent in the background and tried again until it is through. A call with the creator
@@ -50,13 +54,11 @@ Fixed:
 - With the log on "Detailed" and a chat open, Threesea no longer wakes the processor 60 times a
   second while it is in the background: the check for a stalling interface now runs only while
   the app is in front, by [penttimus](https://github.com/penttimus).
-
 - With Bluetooth headphones or a headset, voice messages play in them again: once the phone had
   been at the ear, they came from the loudspeaker until Threesea closed. Holding the phone to the
   ear changes nothing while headphones are connected, as in Threema for Android (Full), by
   [penttimus](https://github.com/penttimus), reported by
   [jmpx448](https://github.com/jmpx448) ([#22](https://github.com/penttimus/harbour-threesea/issues/22)).
-
 - The bundled SQLite no longer has the fault of RUSTSEC-2026-0459: the store now uses SQLCipher
   4.20 on SQLite 3.54.1, through `rusqlite` 0.42. Existing data opens as before, by
   [penttimus](https://github.com/penttimus) ([#9](https://github.com/penttimus/harbour-threesea/issues/9)).
