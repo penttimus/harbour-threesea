@@ -1793,7 +1793,7 @@ FI = {
          "Vastuuvapauslauseke"),
     "threesea-la-disclaimer-ai":
         ("Made with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. A research and experimentation project.",
-         "Kehitetty Claude Codella (Anthropic) ja auditoitu OpenAI Codexilla ihmisylläpitäjän ohjauksessa ja testaamana. Tutkimus- ja kokeiluprojekti."),
+         "Tehty Claude Codella (Anthropic) ja auditoitu OpenAI Codexilla ihmisylläpitäjän ohjauksessa ja testaamana. Tutkimus- ja kokeiluprojekti."),
     "threesea-la-disclaimer-warranty":
         ("AI makes mistakes, also in security-relevant code. There is no warranty: you use Threesea at your own risk.",
          "Tekoäly tekee virheitä, myös tietoturvan kannalta olennaisessa koodissa. Takuuta ei ole: käytät Threeseaa omalla vastuullasi."),
@@ -3708,6 +3708,35 @@ FI = {
     "threesea-la-voice-volume-zero":
         ("Turn the volume up to hear the message",
          "Lisää äänenvoimakkuutta kuullaksesi viestin"),
+    "threesea-la-new-reactions":
+        ("%n new reaction(s)",
+         ("%n uusi reaktio",
+          "%n uutta reaktiota")),
+    "threesea-la-reaction-quote":
+        ("“%1”",
+         "”%1”"),
+    "threesea-la-reaction-chat":
+        ("Reacted %1 to: %2",
+         "Reagoi %1 viestiin: %2"),
+    "threesea-la-reaction-group-one":
+        ("%1 reacted %2 to: %3",
+         "%1 reagoi %2 viestiin: %3"),
+    "threesea-la-reaction-group-two":
+        ("%1 and %2 reacted to: %3",
+         "%1 ja %2 reagoivat viestiin: %3"),
+    "threesea-la-reaction-group-more":
+        ("%1 and %n other(s) reacted to: %2",
+         ("%1 ja %n muu reagoivat viestiin: %2",
+          "%1 ja %n muuta reagoivat viestiin: %2")),
+    "threesea-la-notification-reactions":
+        ("Reactions",
+         "Reaktiot"),
+    "threesea-la-notification-reactions-chats-description":
+        ("Notify when someone reacts to one of your messages in a chat.",
+         "Ilmoita, kun joku reagoi viestiisi keskustelussa."),
+    "threesea-la-notification-reactions-groups-description":
+        ("Notify when someone reacts to one of your messages in a group.",
+         "Ilmoita, kun joku reagoi viestiisi ryhmässä."),
 }
 
 

@@ -5016,6 +5016,46 @@
             <source>License text</source>
             <translation type="unfinished" />
         </message>
+        <message id="threesea-la-new-reactions" numerus="yes">
+            <source>%n new reaction(s)</source>
+            <translation>
+                <numerusform>%n new reaction</numerusform>
+                <numerusform>%n new reactions</numerusform>
+            </translation>
+        </message>
+        <message id="threesea-la-reaction-quote">
+            <source>“%1”</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-reaction-chat">
+            <source>Reacted %1 to: %2</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-reaction-group-one">
+            <source>%1 reacted %2 to: %3</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-reaction-group-two">
+            <source>%1 and %2 reacted to: %3</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-reaction-group-more" numerus="yes">
+            <source>%1 and %n other(s) reacted to: %2</source>
+            <translation>
+                <numerusform>%1 and %n other reacted to: %2</numerusform>
+                <numerusform>%1 and %n others reacted to: %2</numerusform>
+            </translation>
+        </message>
+        <message id="threesea-la-notification-reactions">
+            <source>Reactions</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-notification-reactions-chats-description">
+            <source>Notify when someone reacts to one of your messages in a chat.</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-notification-reactions-groups-description">
+            <source>Notify when someone reacts to one of your messages in a group.</source>
         <message id="threesea-la-credit-harpoon">
             <source>Harpoon by Juhani Lehtimäki (GPL-3.0): how the waves on the cover are coloured.</source>
             <translation type="unfinished" />

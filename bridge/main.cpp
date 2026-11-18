@@ -329,6 +329,11 @@ int main(int argc, char *argv[])
             view->showFullScreen();
         }
     });
+    QObject::connect(dbus, &DBusInterface::openMessageRequested, view.data(), [&view]() {
+        if (!view->isVisible()) {
+            view->showFullScreen();
+        }
+    });
 
 #ifdef THREESEA_DEMO
     // The emulator's demo chats: asked for over D-Bus, so the interface has nothing of them.

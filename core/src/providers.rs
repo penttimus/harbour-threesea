@@ -88,6 +88,9 @@ pub enum CoreEvent {
     MultiDeviceChanged,
     /// A held notification is due (a forwarded message still unread after its grace time).
     Notify(Message),
+    /// Someone reacted to one of our messages, or took a reaction back (after the
+    /// `MessagesChanged` that shows it in the chat): the UI's notification for it.
+    Reaction(reactions::ReactionNews),
     /// The chat server saw this ID log in with another device cookie (another device used
     /// it, or a restore): the UI warns, like Android's rogue-device warning.
     DeviceCookieChanged,
@@ -231,6 +234,20 @@ impl CoreEvent {
                     "private": private,
                 })
             }
+            // Behind the lock a private chat's reactions stay in the core, like its typing.
+            Self::Reaction(news) if !hidden(&news.message.conversation) => json!({
+                "event": "reaction",
+                "message": store.message_json(&news.message),
+                "sender": news.sender,
+                "emoji": news.emoji,
+                "apply": news.apply,
+                "replaces": news.replaces,
+                "at": news.at,
+                // The chat isn't muted.
+                "notify": store.reactions_notify(&news.message.conversation),
+                "private": store.is_private(&news.message.conversation).unwrap_or(false),
+            }),
+            Self::Reaction(_) => json!({"event": "internal"}),
             Self::DeviceCookieChanged => json!({"event": "deviceCookieChanged"}),
             Self::StorageProblem { active } => json!({"event": "storageProblem", "active": active}),
             // Who is in a call of a private group is its content like any other.
@@ -731,6 +748,7 @@ impl StoreConversations {
                 if !outcome.changed.is_empty() {
                     events.push(CoreEvent::MessagesChanged(outcome.changed));
                 }
+                events.extend(outcome.reactions.into_iter().map(CoreEvent::Reaction));
                 if outcome.groups_changed {
                     events.push(CoreEvent::GroupsChanged);
                 }
@@ -827,9 +845,17 @@ impl StoreConversations {
                         .store
                         .set_reaction(id, &sender, emoji, apply, created_at)
                         .map_err(foreign)?;
-                    self.events
-                        .borrow_mut()
-                        .push(CoreEvent::MessagesChanged(changed.into_iter().collect()));
+                    let news = reactions::ReactionNews::of(
+                        changed.as_ref(),
+                        &sender,
+                        emoji,
+                        apply,
+                        false,
+                        created_at,
+                    );
+                    let mut events = self.events.borrow_mut();
+                    events.push(CoreEvent::MessagesChanged(changed.into_iter().collect()));
+                    events.extend(news.map(CoreEvent::Reaction));
                 }
                 return Ok(());
             }
@@ -952,23 +978,32 @@ impl StoreConversations {
             ContactMessageBody::LegacyReaction(reaction) => {
                 let emoji = reactions::legacy_emoji(reaction.reaction_type);
                 let mut changed = Vec::new();
+                let mut news = Vec::new();
                 for message_id in &reaction.message_ids {
                     if let Some(id) = self
                         .store
                         .reactable_message(&sender, message_id.0)
                         .map_err(foreign)?
                     {
-                        changed.extend(
-                            self.store
-                                .replace_reactions(id, &sender, emoji, created_at)
-                                .map_err(foreign)?,
-                        );
+                        let replaced = self
+                            .store
+                            .replace_reactions(id, &sender, emoji, created_at)
+                            .map_err(foreign)?;
+                        news.extend(reactions::ReactionNews::of(
+                            replaced.as_ref(),
+                            &sender,
+                            emoji,
+                            true,
+                            true,
+                            created_at,
+                        ));
+                        changed.extend(replaced);
                     }
                 }
                 if !changed.is_empty() {
-                    self.events
-                        .borrow_mut()
-                        .push(CoreEvent::MessagesChanged(changed));
+                    let mut events = self.events.borrow_mut();
+                    events.push(CoreEvent::MessagesChanged(changed));
+                    events.extend(news.into_iter().map(CoreEvent::Reaction));
                 }
                 return Ok(());
             }
@@ -1066,7 +1101,9 @@ impl StoreConversations {
 mod tests {
     use libthreema::{
         common::config::ConfigEnvironment,
-        model::message::{GroupMessageBody, IncomingGroupMessageBody, TextMessage},
+        model::message::{
+            GroupMessageBody, IncomingGroupMessageBody, ReactionMessage, TextMessage,
+        },
     };
 
     use super::*;
@@ -1933,6 +1970,175 @@ mod tests {
         assert!(shows(OTHER));
         settings(&store, &json!({ "blockUnknown": true }));
         assert!(!shows(OTHER));
+    }
+
+    /// The UI events a delivered message leaves, as JSON (`unlocked`: no lock is on).
+    fn delivered_events(
+        store: &Rc<Store>,
+        sender: &str,
+        id: u64,
+        body: IncomingMessageBody,
+        unlocked: bool,
+    ) -> Vec<Value> {
+        let events = EventSink::default();
+        let mut conversations = StoreConversations {
+            store: Rc::clone(store),
+            events: Rc::clone(&events),
+            user: ThreemaId::try_from("USER0001").unwrap(),
+            from_sync: false,
+        };
+        conversations
+            .add_or_update_incoming_message(IncomingMessage {
+                sender_identity: ThreemaId::try_from(sender).unwrap(),
+                id: MessageId(id),
+                overrides: libthreema::model::message::MessageOverrides::default(),
+                created_at: 50,
+                body,
+            })
+            .unwrap();
+        events
+            .borrow()
+            .iter()
+            .map(|event| event.to_json(store, unlocked))
+            .collect()
+    }
+
+    fn reaction(message_id: u64, emoji: &str, apply: bool) -> ReactionMessage {
+        ReactionMessage {
+            message_id: MessageId(message_id),
+            action: if apply {
+                ReactionAction::Apply(emoji.to_owned())
+            } else {
+                ReactionAction::Withdraw(emoji.to_owned())
+            },
+        }
+    }
+
+    /// Android 6.6.1's reaction notifications: the UI hears of a reaction to one of our messages,
+    /// given or taken back, in a chat and in a group, after the change that shows it in the chat.
+    #[test]
+    fn a_reaction_to_our_message_is_news_and_one_to_theirs_is_not() {
+        use libthreema::model::message::{LegacyReactionMessage, LegacyReactionType};
+        let (_dir, store) = store();
+        contact(
+            &store,
+            MEMBER,
+            pc::AcquaintanceLevel::Direct,
+            pc::ActivityState::Active,
+        );
+        let key = group(&store, &["ABCD1234", "USER0001", MEMBER], false);
+        let ours = store.insert_outgoing(MEMBER, 1, "text", "from us").unwrap();
+        store
+            .insert_incoming(MEMBER, 2, "text", "from them", 1)
+            .unwrap()
+            .unwrap();
+        let ours_in_group = store.insert_outgoing(&key, 3, "text", "to all").unwrap();
+        let store = Rc::new(store);
+        let direct = |body: ReactionMessage| {
+            IncomingMessageBody::Contact(ContactMessageBody::Reaction(body))
+        };
+
+        let events = delivered_events(&store, MEMBER, 10, direct(reaction(1, "👍", true)), true);
+        assert_eq!(events[0]["event"], "messagesChanged");
+        let news = &events[1];
+        assert_eq!(news["event"], "reaction");
+        assert_eq!(news["message"]["id"], ours.id);
+        assert_eq!(news["message"]["text"], "from us");
+        assert_eq!(
+            (&news["sender"], &news["emoji"], &news["apply"]),
+            (&json!(MEMBER), &json!("👍"), &json!(true))
+        );
+        assert_eq!(
+            (&news["replaces"], &news["at"], &news["notify"]),
+            (&json!(false), &json!(50), &json!(true))
+        );
+        assert_eq!(news["private"], false);
+
+        // Taken back: so that the notification can follow.
+        let events = delivered_events(&store, MEMBER, 11, direct(reaction(1, "👍", false)), true);
+        assert_eq!(events[1]["event"], "reaction");
+        assert_eq!(events[1]["apply"], false);
+
+        // To a message of theirs: the chat shows it, nothing more.
+        let events = delivered_events(&store, MEMBER, 12, direct(reaction(2, "👍", true)), true);
+        assert!(
+            events.iter().all(|event| event["event"] != "reaction"),
+            "{events:?}"
+        );
+
+        // A thumb from an old app takes the place of what its sender gave before.
+        let legacy = IncomingMessageBody::Contact(ContactMessageBody::LegacyReaction(
+            LegacyReactionMessage {
+                reaction_type: LegacyReactionType::Decline,
+                message_ids: vec![MessageId(1), MessageId(2)],
+            },
+        ));
+        let events = delivered_events(&store, MEMBER, 13, legacy, true);
+        let news: Vec<_> = events
+            .iter()
+            .filter(|event| event["event"] == "reaction")
+            .collect();
+        assert_eq!(news.len(), 1, "{events:?}");
+        assert_eq!(news[0]["message"]["id"], ours.id);
+        assert_eq!(
+            (&news[0]["emoji"], &news[0]["apply"], &news[0]["replaces"]),
+            (&json!("👎"), &json!(true), &json!(true))
+        );
+
+        // In a group, with who it was.
+        let events = delivered_events(
+            &store,
+            MEMBER,
+            14,
+            group_body(GroupMessageBody::Reaction(reaction(3, "🎉", true))),
+            true,
+        );
+        let news = events
+            .iter()
+            .find(|event| event["event"] == "reaction")
+            .unwrap();
+        assert_eq!(news["message"]["id"], ours_in_group.id);
+        assert_eq!(news["message"]["conversation"], key);
+        assert_eq!(news["sender"], MEMBER);
+    }
+
+    /// A muted chat's reactions don't notify (Android: "mentions only" mutes them too), and a
+    /// private chat's stay in the core while the lock is on.
+    #[test]
+    fn reaction_news_respects_muting_and_the_lock() {
+        use crate::chat_notifications::Policy;
+        let (_dir, store) = store();
+        contact(
+            &store,
+            MEMBER,
+            pc::AcquaintanceLevel::Direct,
+            pc::ActivityState::Active,
+        );
+        store.insert_outgoing(MEMBER, 1, "text", "secret").unwrap();
+        let store = Rc::new(store);
+        let news = |id, unlocked| {
+            let body =
+                IncomingMessageBody::Contact(ContactMessageBody::Reaction(reaction(1, "👍", true)));
+            delivered_events(&store, MEMBER, id, body, unlocked)
+                .into_iter()
+                .filter(|event| event["event"] != "messagesChanged")
+                .collect::<Vec<_>>()
+        };
+        for policy in [Policy::Never, Policy::Mentioned] {
+            store
+                .set_chat_notifications(MEMBER, Some((policy, None)))
+                .unwrap();
+            assert_eq!(news(10, true)[0]["notify"], false);
+        }
+        store.set_chat_notifications(MEMBER, None).unwrap();
+        assert_eq!(news(11, true)[0]["notify"], true);
+
+        store.set_private(MEMBER, true).unwrap();
+        let hidden = news(12, false);
+        assert_eq!(hidden, [json!({"event": "internal"})]);
+        let shown = news(13, true);
+        assert_eq!(shown[0]["event"], "reaction");
+        assert_eq!(shown[0]["private"], true);
     }
 
     #[test]

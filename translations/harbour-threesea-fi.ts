@@ -2423,7 +2423,7 @@
         <message id="threesea-la-disclaimer-ai">
             <source>Made with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. A research and experimentation project.</source>
             <oldsource>Threesea was developed with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. It is a research and experimentation project.</oldsource>
-            <translation>Kehitetty Claude Codella (Anthropic) ja auditoitu OpenAI Codexilla ihmisylläpitäjän ohjauksessa ja testaamana. Tutkimus- ja kokeiluprojekti.</translation>
+            <translation>Tehty Claude Codella (Anthropic) ja auditoitu OpenAI Codexilla ihmisylläpitäjän ohjauksessa ja testaamana. Tutkimus- ja kokeiluprojekti.</translation>
         </message>
         <message id="threesea-la-disclaimer-warranty">
             <source>AI makes mistakes, also in security-relevant code. There is no warranty: you use Threesea at your own risk.</source>
@@ -5016,6 +5016,47 @@
             <source>License text</source>
             <translation>Lisenssiteksti</translation>
         </message>
+        <message id="threesea-la-new-reactions" numerus="yes">
+            <source>%n new reaction(s)</source>
+            <translation>
+                <numerusform>%n uusi reaktio</numerusform>
+                <numerusform>%n uutta reaktiota</numerusform>
+            </translation>
+        </message>
+        <message id="threesea-la-reaction-quote">
+            <source>“%1”</source>
+            <translation>”%1”</translation>
+        </message>
+        <message id="threesea-la-reaction-chat">
+            <source>Reacted %1 to: %2</source>
+            <translation>Reagoi %1 viestiin: %2</translation>
+        </message>
+        <message id="threesea-la-reaction-group-one">
+            <source>%1 reacted %2 to: %3</source>
+            <translation>%1 reagoi %2 viestiin: %3</translation>
+        </message>
+        <message id="threesea-la-reaction-group-two">
+            <source>%1 and %2 reacted to: %3</source>
+            <translation>%1 ja %2 reagoivat viestiin: %3</translation>
+        </message>
+        <message id="threesea-la-reaction-group-more" numerus="yes">
+            <source>%1 and %n other(s) reacted to: %2</source>
+            <translation>
+                <numerusform>%1 ja %n muu reagoivat viestiin: %2</numerusform>
+                <numerusform>%1 ja %n muuta reagoivat viestiin: %2</numerusform>
+            </translation>
+        </message>
+        <message id="threesea-la-notification-reactions">
+            <source>Reactions</source>
+            <translation>Reaktiot</translation>
+        </message>
+        <message id="threesea-la-notification-reactions-chats-description">
+            <source>Notify when someone reacts to one of your messages in a chat.</source>
+            <translation>Ilmoita, kun joku reagoi viestiisi keskustelussa.</translation>
+        </message>
+        <message id="threesea-la-notification-reactions-groups-description">
+            <source>Notify when someone reacts to one of your messages in a group.</source>
+            <translation>Ilmoita, kun joku reagoi viestiisi ryhmässä.</translation>
         <message id="threesea-la-credit-harpoon">
             <source>Harpoon by Juhani Lehtimäki (GPL-3.0): how the waves on the cover are coloured.</source>
             <translation>Harpoon, tekijä Juhani Lehtimäki (GPL-3.0): kannen aaltojen väritys.</translation>

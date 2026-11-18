@@ -78,6 +78,10 @@ Notes:
   then takes QMediaPlayer's route instead of the core's PCM fallback. For a test video add
   `gstreamer1.0-tools` and write one with `gst-launch-1.0` (`avenc_mpeg4`, `avenc_aac`, `mp4mux`).
 - `pkill` patterns: the process name is truncated to 15 chars (`harbour-threese`).
+- **Don't unplug the VM's network to test being offline** (`VBoxManage controlvm … setlinkstate1
+  off`): after `on` the guest stays without network, SSH included, until it is restarted. What was
+  queued meanwhile goes out after the restart, which is a way to have something arrive with the
+  app in the background.
 - **Going back a page does not work with the edge swipe here**: a swipe from the left edge
   minimizes the app (the home screen appears) instead of popping the page, whatever its
   length. Drive forward only and start the app again (`pkill` + launch) to get back to the

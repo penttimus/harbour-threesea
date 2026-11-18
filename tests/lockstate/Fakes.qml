@@ -26,6 +26,8 @@ QtObject {
         property double addressBookSyncedAt: 0
         property bool notificationsEnabled: true
         property bool notificationPreview: true
+        property bool reactionsChats: true
+        property bool reactionsGroups: true
         property bool passphraseKeyboard: true
         signal coreEvent(string name, var data)
         // Commands so far, for the checks.
@@ -103,6 +105,7 @@ QtObject {
     }
     property QtObject dbus: QtObject {
         signal openChatRequested(string identity)
+        signal openMessageRequested(string identity, string message)
         signal activateRequested()
         signal launched()
         // What the window guard last dropped.

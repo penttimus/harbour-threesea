@@ -64,6 +64,15 @@ void DBusInterface::openChat(const QString &identity)
     emit openChatRequested(identity);
 }
 
+void DBusInterface::openMessage(const QString &identity, const QString &message)
+{
+    if (windowRefused(QStringLiteral("openMessage"), { identity, message })) {
+        return;
+    }
+    emit called();
+    emit openMessageRequested(identity, message);
+}
+
 void DBusInterface::activate()
 {
     if (windowRefused(QStringLiteral("activate"))) {

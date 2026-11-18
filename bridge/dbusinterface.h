@@ -73,6 +73,8 @@ private:
 
 public slots:
     Q_SCRIPTABLE void openChat(const QString &identity);
+    // The reactions' notification: the chat, at the message reacted to (its local id).
+    Q_SCRIPTABLE void openMessage(const QString &identity, const QString &message);
     Q_SCRIPTABLE void activate();
     Q_SCRIPTABLE void activate(const QStringList &urls);
     // One link, as activate(urls) with it: what the notification after an update calls.
@@ -102,6 +104,7 @@ signals:
     void called();
     void backgroundRequested();
     void openChatRequested(const QString &identity);
+    void openMessageRequested(const QString &identity, const QString &message);
     void replyRequested(const QString &identity, const QString &text);
     void markReadRequested(const QString &identity);
     void answerCallRequested();

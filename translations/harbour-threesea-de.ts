@@ -2433,7 +2433,7 @@
         <message id="threesea-la-disclaimer-threema">
             <source>Unofficial: not affiliated with, endorsed or supported by Threema AG. Threema doesn't actively block third-party apps that play fair, as Threesea aims to, but that isn't a permission. Keep a backup of your ID.</source>
             <oldsource>Threesea is based on Threema Libre's open-source code and tries to play fair with Threema's APIs and licensing. Threema told us it doesn't actively block third-party apps that cause no stability issues or high server load, are clearly marked as unofficial without using its branding, and don't circumvent the licensing. Threesea aims to meet that. This is not a permission, and Threesea is not affiliated with, endorsed or supported by Threema AG. As with any Threema app, keep a backup of your ID.</oldsource>
-            <translation>Inoffiziell: nicht mit der Threema AG verbunden, nicht von ihr empfohlen und nicht von ihr unterstützt. Threema blockiert Apps von Dritten nicht aktiv, wenn sie fair spielen, wie Threesea es will; eine Erlaubnis ist das aber nicht. Bewahre ein Backup deiner ID auf.</translation>
+            <translation>Inoffiziell: nicht mit der Threema AG verbunden, nicht von ihr empfohlen und nicht von ihr unterstützt. Threema blockiert Apps von Dritten nicht aktiv, wenn sie sich fair verhalten, wie Threesea es anstrebt; eine Erlaubnis ist das aber nicht. Bewahre ein Backup deiner ID auf.</translation>
         </message>
         <message id="threesea-se-credits">
             <source>Credits</source>
@@ -5016,6 +5016,47 @@
             <source>License text</source>
             <translation>Lizenztext</translation>
         </message>
+        <message id="threesea-la-new-reactions" numerus="yes">
+            <source>%n new reaction(s)</source>
+            <translation>
+                <numerusform>%n neue Reaktion</numerusform>
+                <numerusform>%n neue Reaktionen</numerusform>
+            </translation>
+        </message>
+        <message id="threesea-la-reaction-quote">
+            <source>“%1”</source>
+            <translation>„%1“</translation>
+        </message>
+        <message id="threesea-la-reaction-chat">
+            <source>Reacted %1 to: %2</source>
+            <translation>Hat mit %1 reagiert auf: %2</translation>
+        </message>
+        <message id="threesea-la-reaction-group-one">
+            <source>%1 reacted %2 to: %3</source>
+            <translation>%1 hat mit %2 reagiert auf: %3</translation>
+        </message>
+        <message id="threesea-la-reaction-group-two">
+            <source>%1 and %2 reacted to: %3</source>
+            <translation>%1 und %2 haben reagiert auf: %3</translation>
+        </message>
+        <message id="threesea-la-reaction-group-more" numerus="yes">
+            <source>%1 and %n other(s) reacted to: %2</source>
+            <translation>
+                <numerusform>%1 und %n weitere Person haben reagiert auf: %2</numerusform>
+                <numerusform>%1 und %n weitere haben reagiert auf: %2</numerusform>
+            </translation>
+        </message>
+        <message id="threesea-la-notification-reactions">
+            <source>Reactions</source>
+            <translation>Reaktionen</translation>
+        </message>
+        <message id="threesea-la-notification-reactions-chats-description">
+            <source>Notify when someone reacts to one of your messages in a chat.</source>
+            <translation>Benachrichtigen, wenn jemand in einem Chat auf eine deiner Nachrichten reagiert.</translation>
+        </message>
+        <message id="threesea-la-notification-reactions-groups-description">
+            <source>Notify when someone reacts to one of your messages in a group.</source>
+            <translation>Benachrichtigen, wenn jemand in einer Gruppe auf eine deiner Nachrichten reagiert.</translation>
         <message id="threesea-la-credit-harpoon">
             <source>Harpoon by Juhani Lehtimäki (GPL-3.0): how the waves on the cover are coloured.</source>
             <translation>Harpoon von Juhani Lehtimäki (GPL-3.0): wie die Wellen auf dem Cover gefärbt sind.</translation>

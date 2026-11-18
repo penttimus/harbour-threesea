@@ -7,6 +7,11 @@ All notable changes. Versions follow `MAJOR.MINOR.PATCH`; each release is built 
 
 Added:
 
+- A notification when someone reacts to one of your messages, as in Threema for Android 6.6.1:
+  what they reacted with and to which message, in groups also who; tapping it opens the chat at
+  that message. Settings → Notifications has a switch for chats and one for groups, both on. None
+  for muted chats or while the app is locked; private chats only say how many, by
+  [penttimus](https://github.com/penttimus).
 - The cover lists the chats that wait, newest first, each with its own count, instead of one
   name. Settings → Privacy → "Show messages on the cover" adds each chat's last message (off by
   default; never for private chats, and "Hide content on the cover" still leaves only the count),

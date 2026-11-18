@@ -2423,7 +2423,7 @@
         <message id="threesea-la-disclaimer-ai">
             <source>Made with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. A research and experimentation project.</source>
             <oldsource>Threesea was developed with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. It is a research and experimentation project.</oldsource>
-            <translation>Développé avec Claude Code (Anthropic) et audité avec OpenAI Codex, sous la direction d’un mainteneur humain qui l’a aussi testé. Un projet de recherche et d’expérimentation.</translation>
+            <translation>Réalisé avec Claude Code (Anthropic) et audité avec OpenAI Codex, sous la direction d’un mainteneur humain qui l’a aussi testé. Un projet de recherche et d’expérimentation.</translation>
         </message>
         <message id="threesea-la-disclaimer-warranty">
             <source>AI makes mistakes, also in security-relevant code. There is no warranty: you use Threesea at your own risk.</source>
@@ -5016,6 +5016,47 @@
             <source>License text</source>
             <translation>Texte de la licence</translation>
         </message>
+        <message id="threesea-la-new-reactions" numerus="yes">
+            <source>%n new reaction(s)</source>
+            <translation>
+                <numerusform>%n nouvelle réaction</numerusform>
+                <numerusform>%n nouvelles réactions</numerusform>
+            </translation>
+        </message>
+        <message id="threesea-la-reaction-quote">
+            <source>“%1”</source>
+            <translation>« %1 »</translation>
+        </message>
+        <message id="threesea-la-reaction-chat">
+            <source>Reacted %1 to: %2</source>
+            <translation>A réagi avec %1 à : %2</translation>
+        </message>
+        <message id="threesea-la-reaction-group-one">
+            <source>%1 reacted %2 to: %3</source>
+            <translation>%1 a réagi avec %2 à : %3</translation>
+        </message>
+        <message id="threesea-la-reaction-group-two">
+            <source>%1 and %2 reacted to: %3</source>
+            <translation>%1 et %2 ont réagi à : %3</translation>
+        </message>
+        <message id="threesea-la-reaction-group-more" numerus="yes">
+            <source>%1 and %n other(s) reacted to: %2</source>
+            <translation>
+                <numerusform>%1 et %n autre personne ont réagi à : %2</numerusform>
+                <numerusform>%1 et %n autres personnes ont réagi à : %2</numerusform>
+            </translation>
+        </message>
+        <message id="threesea-la-notification-reactions">
+            <source>Reactions</source>
+            <translation>Réactions</translation>
+        </message>
+        <message id="threesea-la-notification-reactions-chats-description">
+            <source>Notify when someone reacts to one of your messages in a chat.</source>
+            <translation>Notifier quand quelqu’un réagit à l’un de vos messages dans une discussion.</translation>
+        </message>
+        <message id="threesea-la-notification-reactions-groups-description">
+            <source>Notify when someone reacts to one of your messages in a group.</source>
+            <translation>Notifier quand quelqu’un réagit à l’un de vos messages dans un groupe.</translation>
         <message id="threesea-la-credit-harpoon">
             <source>Harpoon by Juhani Lehtimäki (GPL-3.0): how the waves on the cover are coloured.</source>
             <translation>Harpoon de Juhani Lehtimäki (GPL-3.0) : la coloration des vagues sur la couverture.</translation>

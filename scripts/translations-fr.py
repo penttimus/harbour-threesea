@@ -1799,7 +1799,7 @@ FR = {
          "Avertissement"),
     "threesea-la-disclaimer-ai":
         ("Made with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. A research and experimentation project.",
-         "Développé avec Claude Code (Anthropic) et audité avec OpenAI Codex, sous la direction d’un mainteneur humain qui l’a aussi testé. Un projet de recherche et d’expérimentation."),
+         "Réalisé avec Claude Code (Anthropic) et audité avec OpenAI Codex, sous la direction d’un mainteneur humain qui l’a aussi testé. Un projet de recherche et d’expérimentation."),
     "threesea-la-disclaimer-warranty":
         ("AI makes mistakes, also in security-relevant code. There is no warranty: you use Threesea at your own risk.",
          "L’IA se trompe, y compris dans le code lié à la sécurité. Il n’y a aucune garantie : vous utilisez Threesea à vos propres risques."),
@@ -3714,6 +3714,35 @@ FR = {
     "threesea-la-voice-volume-zero":
         ("Turn the volume up to hear the message",
          "Augmentez le volume pour entendre le message"),
+    "threesea-la-new-reactions":
+        ("%n new reaction(s)",
+         ("%n nouvelle réaction",
+          "%n nouvelles réactions")),
+    "threesea-la-reaction-quote":
+        ("“%1”",
+         "« %1 »"),
+    "threesea-la-reaction-chat":
+        ("Reacted %1 to: %2",
+         "A réagi avec %1 à : %2"),
+    "threesea-la-reaction-group-one":
+        ("%1 reacted %2 to: %3",
+         "%1 a réagi avec %2 à : %3"),
+    "threesea-la-reaction-group-two":
+        ("%1 and %2 reacted to: %3",
+         "%1 et %2 ont réagi à : %3"),
+    "threesea-la-reaction-group-more":
+        ("%1 and %n other(s) reacted to: %2",
+         ("%1 et %n autre personne ont réagi à : %2",
+          "%1 et %n autres personnes ont réagi à : %2")),
+    "threesea-la-notification-reactions":
+        ("Reactions",
+         "Réactions"),
+    "threesea-la-notification-reactions-chats-description":
+        ("Notify when someone reacts to one of your messages in a chat.",
+         "Notifier quand quelqu’un réagit à l’un de vos messages dans une discussion."),
+    "threesea-la-notification-reactions-groups-description":
+        ("Notify when someone reacts to one of your messages in a group.",
+         "Notifier quand quelqu’un réagit à l’un de vos messages dans un groupe."),
 }
 
 

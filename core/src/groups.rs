@@ -1021,6 +1021,8 @@ pub struct GroupOutcome {
     /// Messages added or changed in conversations.
     pub added: Vec<Message>,
     pub changed: Vec<Message>,
+    /// Reactions of others to our messages, given or taken back (they are in `changed` too).
+    pub reactions: Vec<reactions::ReactionNews>,
     /// Something was queued to be sent (reply, sync request).
     pub send: bool,
     /// Member identities we have no contact for (fetch them from the directory).
@@ -1285,18 +1287,32 @@ fn receive_steps(
                 libthreema::model::message::ReactionAction::Withdraw(emoji) => (emoji, false),
             };
             if let Some(id) = store.reactable_message(&key, reaction.message_id.0)? {
-                outcome
-                    .changed
-                    .extend(store.set_reaction(id, sender, emoji, apply, created_at)?);
+                let changed = store.set_reaction(id, sender, emoji, apply, created_at)?;
+                outcome.reactions.extend(reactions::ReactionNews::of(
+                    changed.as_ref(),
+                    sender,
+                    emoji,
+                    apply,
+                    false,
+                    created_at,
+                ));
+                outcome.changed.extend(changed);
             }
         }
         GroupMessageBody::LegacyReaction(reaction) => {
             let emoji = reactions::legacy_emoji(reaction.reaction_type);
             for referred in &reaction.message_ids {
                 if let Some(id) = store.reactable_message(&key, referred.0)? {
-                    outcome
-                        .changed
-                        .extend(store.replace_reactions(id, sender, emoji, created_at)?);
+                    let changed = store.replace_reactions(id, sender, emoji, created_at)?;
+                    outcome.reactions.extend(reactions::ReactionNews::of(
+                        changed.as_ref(),
+                        sender,
+                        emoji,
+                        true,
+                        true,
+                        created_at,
+                    ));
+                    outcome.changed.extend(changed);
                 }
             }
         }

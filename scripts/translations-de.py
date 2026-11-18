@@ -1802,7 +1802,7 @@ DE = {
          "KI macht Fehler, auch in sicherheitsrelevantem Code. Es gibt keine Gewährleistung: Du verwendest Threesea auf eigenes Risiko."),
     "threesea-la-disclaimer-threema":
         ("Unofficial: not affiliated with, endorsed or supported by Threema AG. Threema doesn't actively block third-party apps that play fair, as Threesea aims to, but that isn't a permission. Keep a backup of your ID.",
-         "Inoffiziell: nicht mit der Threema AG verbunden, nicht von ihr empfohlen und nicht von ihr unterstützt. Threema blockiert Apps von Dritten nicht aktiv, wenn sie fair spielen, wie Threesea es will; eine Erlaubnis ist das aber nicht. Bewahre ein Backup deiner ID auf."),
+         "Inoffiziell: nicht mit der Threema AG verbunden, nicht von ihr empfohlen und nicht von ihr unterstützt. Threema blockiert Apps von Dritten nicht aktiv, wenn sie sich fair verhalten, wie Threesea es anstrebt; eine Erlaubnis ist das aber nicht. Bewahre ein Backup deiner ID auf."),
     "threesea-se-credits":
         ("Credits",
          "Danksagungen"),
@@ -3711,6 +3711,35 @@ DE = {
     "threesea-la-voice-volume-zero":
         ("Turn the volume up to hear the message",
          "Erhöhe die Lautstärke, um die Nachricht zu hören"),
+    "threesea-la-new-reactions":
+        ("%n new reaction(s)",
+         ("%n neue Reaktion",
+          "%n neue Reaktionen")),
+    "threesea-la-reaction-quote":
+        ("“%1”",
+         "„%1“"),
+    "threesea-la-reaction-chat":
+        ("Reacted %1 to: %2",
+         "Hat mit %1 reagiert auf: %2"),
+    "threesea-la-reaction-group-one":
+        ("%1 reacted %2 to: %3",
+         "%1 hat mit %2 reagiert auf: %3"),
+    "threesea-la-reaction-group-two":
+        ("%1 and %2 reacted to: %3",
+         "%1 und %2 haben reagiert auf: %3"),
+    "threesea-la-reaction-group-more":
+        ("%1 and %n other(s) reacted to: %2",
+         ("%1 und %n weitere Person haben reagiert auf: %2",
+          "%1 und %n weitere haben reagiert auf: %2")),
+    "threesea-la-notification-reactions":
+        ("Reactions",
+         "Reaktionen"),
+    "threesea-la-notification-reactions-chats-description":
+        ("Notify when someone reacts to one of your messages in a chat.",
+         "Benachrichtigen, wenn jemand in einem Chat auf eine deiner Nachrichten reagiert."),
+    "threesea-la-notification-reactions-groups-description":
+        ("Notify when someone reacts to one of your messages in a group.",
+         "Benachrichtigen, wenn jemand in einer Gruppe auf eine deiner Nachrichten reagiert."),
 }
 
 # The engineering-English base file: only the plural forms need filling in.
@@ -3819,6 +3848,14 @@ EN_PLURALS = {
         ("Cleared for %n contact(s)",
          ("Cleared for %n contact",
           "Cleared for %n contacts")),
+    "threesea-la-new-reactions":
+        ("%n new reaction(s)",
+         ("%n new reaction",
+          "%n new reactions")),
+    "threesea-la-reaction-group-more":
+        ("%1 and %n other(s) reacted to: %2",
+         ("%1 and %n other reacted to: %2",
+          "%1 and %n others reacted to: %2")),
 }
 
 

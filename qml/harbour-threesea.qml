@@ -250,7 +250,10 @@ ApplicationWindow {
             if (!locked) clearNotification("appLocked")
             var waiting = notificationsWaiting
             notificationsWaiting = []
-            waiting.forEach(function(item) { notify(item.message, item.isPrivate, item.held) })
+            waiting.forEach(function(item) {
+                if (item.reaction) reactionArrived(item.reaction)
+                else notify(item.message, item.isPrivate, item.held)
+            })
             runNotificationActions()
         })
     }
@@ -393,6 +396,7 @@ ApplicationWindow {
             window.lockedNotification()
             window.startFailedNotification()
             window.keyConfirmationNotification()
+            window.reactionsSeen()
             // The chat list says it now.
             if (Qt.application.state === Qt.ApplicationActive) {
                 window.clearNotification("serverMessage")
@@ -680,16 +684,23 @@ ApplicationWindow {
         lockedNotification()
     }
 
-    function showChat(identity, text) {
+    // `messageId`: at this message (its local id), as the reactions' notification asks.
+    function showChat(identity, text, messageId) {
+        var atMessage = messageId > 0
         if (openChat !== identity && !showConversations()) {
             pendingChat = identity
+            pendingMessage = atMessage ? messageId : -1
             sayAfterCall()
             activate()
             return
         }
         if (openChat !== identity) {
-            pageStack.push(Qt.resolvedUrl("pages/ChatPage.qml"), { identity: identity, openAtNewest: !!text },
-                           PageStackAction.Immediate)
+            var properties = { identity: identity, openAtNewest: !!text }
+            if (atMessage) properties.focusMessage = messageId
+            pageStack.push(Qt.resolvedUrl("pages/ChatPage.qml"), properties, PageStackAction.Immediate)
+        } else if (atMessage) {
+            var open = pageStack.find(function(page) { return page.objectName === "chat" && page.identity === identity })
+            if (open) open.showMessage(messageId)
         }
         if (text) {
             var chat = pageStack.find(function(page) { return page.identity === identity && page.inputField })
@@ -708,6 +719,8 @@ ApplicationWindow {
     property bool pendingLinkFromMessage: false
     // A chat to open (notification tapped) while still starting.
     property string pendingChat
+    // And the message to open it at, if one was asked for.
+    property int pendingMessage: -1
     // What was shared from another app, until the share page can open.
     property var pendingShare: null
     function showShare() {
@@ -823,8 +836,10 @@ ApplicationWindow {
             if (window.pendingLink.length > 0) window.openLink(window.pendingLink, window.pendingLinkFromMessage)
             // showChat() and showShare() ask again for later if they still can't.
             var chat = window.pendingChat
+            var chatMessage = window.pendingMessage
             window.pendingChat = ""
-            if (chat.length > 0 && backend.state === "ready") window.showChat(chat)
+            window.pendingMessage = -1
+            if (chat.length > 0 && backend.state === "ready") window.showChat(chat, "", chatMessage)
             if (backend.state === "ready") {
                 window.showShare()
             } else if (window.pendingShare !== null) {
@@ -901,7 +916,8 @@ ApplicationWindow {
     // empty transient x-nemo.messaging.im.preview vibrates.
     property var notifications: ({})
 
-    // `token`: Reply and Mark as read carry the chat's action token (bridge/dbusinterface.h).
+    // `token`: Reply and Mark as read carry the chat's action token (bridge/dbusinterface.h); in
+    // its place openMessage carries the message.
     function dbusAction(name, displayName, method, identity, type, token) {
         var action = {
             "name": name,
@@ -1388,6 +1404,9 @@ ApplicationWindow {
         if (actions.length > 0 && actions[0].method === "showSafe") {
             // Still the news it was; checkSafeWarning() takes a failing Safe's away if it is over.
             identity = n.summary === qsTrId("threesea-la-safe-failing-notification") ? "safeFailing" : "backupReminder"
+        } else if (identity && actions[0].method === "openMessage") {
+            // The reactions to our messages in that chat (reactionArrived()).
+            identity = "reaction:" + identity
         } else if (n.summary === qsTrId("threesea-la-reply-not-sent")) {
             // It opens the chat, but isn't that chat's notification.
             identity = identity ? "replyNotSent:" + identity : "replyNotSent"
@@ -1418,6 +1437,7 @@ ApplicationWindow {
     function notificationClosed(identity, n) {
         if (notifications[identity] === n) {
             delete notifications[identity]
+            delete reactionNews[identity]
             dbus.releaseToken(identity)
         }
     }
@@ -1493,6 +1513,7 @@ ApplicationWindow {
             // 4 is failed: not out, and it won't go by itself. The chat shows that.
             if (message.outgoing && message.state !== 0) delete repliesOnTheirWay[message.id]
         })
+        messages.forEach(reactedMessageChanged)
         if (lockActive()) return
         messages.forEach(function(message) {
             var n = notifications[message.conversation]
@@ -1509,6 +1530,195 @@ ApplicationWindow {
                 n = ownNotification(message.conversation, n)
             }
             if (n.body !== text) publishQuietly(n, n.summary, text, false)
+        })
+    }
+
+    // Reactions to our messages (Android's emoji reaction notifications, 6.6.1): one notification
+    // per chat beside the one for its messages, about what came since the chat was last looked
+    // at; tapping it opens the chat at the message reacted to last. The private chats share one
+    // that only counts. None while the lock is on, like Android.
+    // Key ("reaction:<chat>", "reaction:private") -> [{conversation, message, sender, emoji, at}],
+    // oldest first; `message` is the message reacted to as the core gives it.
+    property var reactionNews: ({})
+
+    Component {
+        id: reactionNotificationComponent
+        Notification {
+            id: reactionNotification
+            readonly property bool own: true
+            property real alertedAt: 0
+            property real bannerAt: 0
+            property string identity
+            onClosed: {
+                window.notificationClosed("reaction:" + identity, reactionNotification)
+                reactionNotification.destroy()
+            }
+            appName: "Threesea"
+            appIcon: "harbour-threesea"
+        }
+    }
+
+    // The core's `reaction` event: someone reacted to a message of ours, or took a reaction back.
+    function reactionArrived(data) {
+        if (!lockChecked) {
+            notificationsWaiting.push({ reaction: data })
+            return
+        }
+        var message = data.message
+        var chat = message.conversation
+        var key = "reaction:" + (data.private ? "private" : chat)
+        var told = reactionNews[key] || []
+        // Given again, taken back, or replaced by a thumb of an old app (`replaces`).
+        var news = told.filter(function(entry) {
+            return entry.conversation !== chat || entry.message.id !== message.id || entry.sender !== data.sender
+                   || (!data.replaces && entry.emoji !== data.emoji)
+        })
+        if (!data.apply) {
+            if (news.length < told.length) showReactions(key, news, false)
+            return
+        }
+        var group = chat.indexOf("g:") === 0
+        if (!backend.notificationsEnabled || data.notify === false
+                || !(group ? backend.reactionsGroups : backend.reactionsChats)) return
+        // Not for the chat being read either: the reaction is right there.
+        if (lockActive() || (Qt.application.state === Qt.ApplicationActive && openChat === chat)) return
+        news.push({ conversation: chat, message: message, sender: data.sender, emoji: data.emoji, at: data.at })
+        showReactions(key, news, true)
+    }
+
+    // What `key`'s notification stands for is `news` now; `alerting`: there is something new in it.
+    function showReactions(key, news, alerting) {
+        if (news.length === 0) {
+            clearNotification(key)
+            return
+        }
+        reactionNews[key] = news
+        var chat = news[news.length - 1].conversation
+        if (key === "reaction:private") {
+            publishReactions(key, news, alerting, qsTrId("threesea-la-private-chat"), null)
+        } else if (chat.indexOf("g:") === 0) {
+            backend.call("group", { key: chat }, function(ok, group) {
+                if (!ok || group.left) {
+                    if (reactionNews[key] === news) clearNotification(key)
+                    return
+                }
+                var names = {}
+                group.members.forEach(function(member) { names[member.identity] = member.displayName })
+                window.publishReactions(key, news, alerting, group.title, names)
+            })
+        } else {
+            backend.call("contact", { identity: chat }, function(ok, contact) {
+                window.publishReactions(key, news, alerting, ok ? contact.displayName : chat, {})
+            })
+        }
+    }
+
+    // `names`: who may have reacted (ID -> name); null where only the number shows.
+    function publishReactions(key, news, alerting, title, names) {
+        // The names took a moment: it may stand for something else by now, or for nothing.
+        if (reactionNews[key] !== news || lockActive()) return
+        var last = news[news.length - 1]
+        var chat = names ? last.conversation : ""
+        var n = notifications[key]
+        if (!n || n.own !== true) {
+            // One taken over after a restart: ours takes its place on the screen.
+            var taken = n
+            n = chat ? reactionNotificationComponent.createObject(window, { identity: chat })
+                     : plainNotificationComponent.createObject(window, { key: key })
+            if (taken) n.replacesId = taken.replacesId
+            notifications[key] = n
+        }
+        var text = reactionText(news, names)
+        var action = chat ? dbusAction("default", "", "openMessage", chat, "", String(last.message.id)) : null
+        // As it stands there: nothing to say again.
+        if (!alerting && n.summary === title && n.body === text && n.itemCount === news.length
+                && (!action || n.remoteActions[0].arguments[1] === action.arguments[1])) return
+        if (action) n.remoteActions = [action]
+        n.itemCount = news.length
+        n.timestamp = new Date(last.at)
+        if (alerting) alert(n, chat, last.conversation.indexOf("g:") === 0, title, text)
+        else publishQuietly(n, title, text, false)
+    }
+
+    // Android's wording, about the message reacted to last: what was given and, in a group, by
+    // whom. Only how many where the content stays hidden (private chats, no message content).
+    function reactionText(news, names) {
+        if (!names || !backend.notificationPreview) {
+            //% "%n new reaction(s)"
+            return qsTrId("threesea-la-new-reactions", news.length)
+        }
+        var last = news[news.length - 1]
+        var emojis = []
+        var senders = []
+        news.forEach(function(entry) {
+            if (entry.conversation !== last.conversation || entry.message.id !== last.message.id) return
+            emojis.push(entry.emoji)
+            if (senders.indexOf(entry.sender) < 0) senders.push(entry.sender)
+        })
+        var shown = emojis.slice(0, 3).join("") + (emojis.length > 3 ? " +" + (emojis.length - 3) : "")
+        var message = last.message
+        var preview = Fmt.preview(message)
+        if (message.kind === "text" || (message.kind === "file" && message.body && message.body.caption)) {
+            //% "“%1”"
+            preview = qsTrId("threesea-la-reaction-quote").arg(preview)
+        }
+        // All at once: a name or a message may hold a "%1" of its own.
+        var fill = function(text, args) {
+            return text.replace(/%([1-9])/g, function(place, i) { return args[i - 1] })
+        }
+        var name = function(i) { return names[senders[i]] || senders[i] }
+        if (last.conversation.indexOf("g:") !== 0) {
+            //% "Reacted %1 to: %2"
+            return fill(qsTrId("threesea-la-reaction-chat"), [shown, preview])
+        }
+        if (senders.length === 1) {
+            //% "%1 reacted %2 to: %3"
+            return fill(qsTrId("threesea-la-reaction-group-one"), [name(0), shown, preview])
+        }
+        if (senders.length === 2) {
+            //% "%1 and %2 reacted to: %3"
+            return fill(qsTrId("threesea-la-reaction-group-two"), [name(0), name(1), preview])
+        }
+        //% "%1 and %n other(s) reacted to: %2"
+        return fill(qsTrId("threesea-la-reaction-group-more", senders.length - 1), [name(0), preview])
+    }
+
+    // The reactions in this chat have been seen, or (`messageId`) one of its messages is gone.
+    function dropReactions(chat, messageId) {
+        ["reaction:" + chat, "reaction:private"].forEach(function(key) {
+            var news = reactionNews[key]
+            if (!news) {
+                // Taken over after a restart: it is known whose chat it is for, not which messages.
+                if (messageId === undefined && key !== "reaction:private") clearNotification(key)
+                return
+            }
+            var left = news.filter(function(entry) {
+                return entry.conversation !== chat || (messageId !== undefined && entry.message.id !== messageId)
+            })
+            if (left.length < news.length) showReactions(key, left, false)
+        })
+    }
+
+    // The chat on the screen shows its reactions itself: back in front with it open.
+    function reactionsSeen() {
+        if (openChat && Qt.application.state === Qt.ApplicationActive && !lockActive()) dropReactions(openChat)
+    }
+
+    // A message of ours was edited or deleted: what a reactions' notification quotes of it follows.
+    function reactedMessageChanged(message) {
+        if (!message.outgoing) return
+        if (message.kind === "deleted") {
+            dropReactions(message.conversation, message.id)
+            return
+        }
+        ["reaction:" + message.conversation, "reaction:private"].forEach(function(key) {
+            var news = reactionNews[key] || []
+            var quoted = news.filter(function(entry) {
+                return entry.conversation === message.conversation && entry.message.id === message.id
+            })
+            if (quoted.length === 0) return
+            quoted.forEach(function(entry) { entry.message = message })
+            showReactions(key, news, false)
         })
     }
 
@@ -1565,11 +1775,12 @@ ApplicationWindow {
               qsTrId("threesea-la-locked-notification"), appLockedBody())
     }
 
-    function openChatAsked(identity) {
-        if (backend.state === "ready" && shownState === "ready" && !pageStack.busy) window.showChat(identity)
+    function openChatAsked(identity, messageId) {
+        if (backend.state === "ready" && shownState === "ready" && !pageStack.busy) window.showChat(identity, "", messageId)
         else if (backend.state === "needsLicense") window.activate()
         else {
             window.pendingChat = identity
+            window.pendingMessage = messageId > 0 ? messageId : -1
             // Locked or starting: show the PIN/passphrase screen meanwhile.
             window.activate()
         }
@@ -1623,8 +1834,9 @@ ApplicationWindow {
             var tap = dbus.refusedCall()
             var args = tap.arguments || []
             clearNotification("installChanged")
+            // It carries one argument: of a reactions' notification the chat, without the message.
             var n = plainNotificationComponent.createObject(window, {
-                key: "installChanged", method: tap.method || "",
+                key: "installChanged", method: tap.method === "openMessage" ? "openChat" : tap.method || "",
                 argument: args.length > 0 ? String(args[0]) : "" })
             notifications["installChanged"] = n
             n.summary = qsTrId("threesea-la-updated")
@@ -1746,6 +1958,8 @@ ApplicationWindow {
 
     // Says whether there was one.
     function closeNotification(identity) {
+        // Also what is on its way to becoming one (showReactions()).
+        delete reactionNews[identity]
         var n = notifications[identity]
         if (!n) return false
         n.close()
@@ -1805,6 +2019,7 @@ ApplicationWindow {
     onOpenChatChanged: {
         if (openChat.length === 0) return
         clearNotification(openChat)
+        dropReactions(openChat)
         clearNotification("replyNotSent:" + openChat)
     }
 
@@ -2277,6 +2492,10 @@ ApplicationWindow {
             window.dropTapAfterUpdate()
             window.openChatAsked(identity)
         }
+        onOpenMessageRequested: {
+            window.dropTapAfterUpdate()
+            window.openChatAsked(identity, Number(message))
+        }
         onLaunched: window.launchedNow = true
         onActivateRequested: {
             window.activate()
@@ -2357,11 +2576,14 @@ ApplicationWindow {
                 window.notify(data.message, data.private === true, true)
             } else if (name === "messagesChanged") {
                 window.messagesChanged(data.messages)
+            } else if (name === "reaction") {
+                window.reactionArrived(data)
             } else if (name === "settingsChanged") {
                 window.loadAppSettings()
             } else if (name === "conversationRead") {
                 // Read in Threema Web, on another device, or from a notification.
                 window.clearNotification(data.identity)
+                window.dropReactions(data.identity)
                 backend.refreshUnread()
             } else if (name === "chatDeleted") {
                 // There is no place left to come back to.
@@ -2370,6 +2592,7 @@ ApplicationWindow {
                 // Marked here, on another device or by a restore: its text leaves Events too.
                 if (data.private) {
                     window.clearNotification(data.identity)
+                    window.dropReactions(data.identity)
                     delete window.readingPlaces[data.identity]
                     window.clearNotification("replyNotSent:" + data.identity)
                 }

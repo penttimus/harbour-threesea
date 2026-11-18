@@ -78,6 +78,18 @@ Page {
                 onClicked: backend.vibrateChats = !checked
             }
 
+            // Android's "Emoji reaction notifications", for chats and for groups.
+            TextSwitch {
+                automaticCheck: false
+                enabled: backend.notificationsEnabled
+                checked: backend.reactionsChats
+                //% "Reactions"
+                text: qsTrId("threesea-la-notification-reactions")
+                //% "Notify when someone reacts to one of your messages in a chat."
+                description: qsTrId("threesea-la-notification-reactions-chats-description")
+                onClicked: backend.reactionsChats = !checked
+            }
+
             SectionHeader {
                 //% "Groups"
                 text: qsTrId("threesea-se-notifications-groups")
@@ -105,6 +117,16 @@ Page {
                 checked: backend.vibrateGroups
                 text: qsTrId("threesea-la-notification-vibrate")
                 onClicked: backend.vibrateGroups = !checked
+            }
+
+            TextSwitch {
+                automaticCheck: false
+                enabled: backend.notificationsEnabled
+                checked: backend.reactionsGroups
+                text: qsTrId("threesea-la-notification-reactions")
+                //% "Notify when someone reacts to one of your messages in a group."
+                description: qsTrId("threesea-la-notification-reactions-groups-description")
+                onClicked: backend.reactionsGroups = !checked
             }
 
             // The tone and vibration of an incoming call; they ring with notifications off too.

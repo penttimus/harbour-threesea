@@ -1245,6 +1245,16 @@ need neither a sensor nor a real network.
     - Note whether "Connecting" flickers on a phone that reconnects often.
 13. A storage problem while receiving (a nearly full disk).
     - Expect: the notice and the chat list's line, gone again once storage works.
+14. Someone reacts to a message of yours, in a chat and in a group, with the app in the
+    background; then with a second emoji, then takes one back; tap the notification.
+    - Expect: a notification beside the chat's own ("Reacted 👍 to: “…”", in a group with the
+      name), the emoji readable in Events and on the lock screen, sound as for a message; the
+      second changes it within 30 s without another sound; taking one back changes it silently;
+      the tap opens the chat at that message, which flashes. Opening the chat any other way takes
+      it away.
+15. The same with the chat muted, with Reactions off under Chats or Groups, with the app locked,
+    and in a private chat.
+    - Expect: nothing for the first three; the private chat's says "Private chat" and how many.
 
 ## Connection, battery and transfers
 
