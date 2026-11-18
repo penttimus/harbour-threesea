@@ -1694,3 +1694,16 @@ Open, for the phone: the waves' strength on light and on pale ambiences (the dra
 one dark red ambience, composited by hand because the emulator blends translucency wrongly), the
 glide when the number of waiting chats changes, and whether the rising level stays or is pinned to
 its highest (one value in `CoverPage.qml`, `tide`).
+
+## Reference submodule at 6.6.1 (2026-11-18)
+
+`third_party/threema-android` is at `6.6.1-1240` (`895c101e`), by hand: `scripts/update-libthreema.sh`
+would merge `vendor/libthreema`, which ADR 0036 holds back. `domain/libthreema` and
+`domain/protocol` are the same in 6.6.0 and 6.6.1, so the vendored libthreema, its protocol files
+and `vendor/libthreema` stay as they are, and the TLS pins are unchanged (`scripts/check-pins.py`).
+Looked at for the full merge, as ADR 0036 asks with every tag: nothing has moved, upstream's
+message layer is where it was. What 6.6.1 changed in the app: notifications for reactions to one's
+own messages, now on for everyone (ported on its own branch, `feat/reaction-notifications`); the
+queue-dry and leader states as ordered tasks, which the connection loop here already is; and
+Android-only work (call notification fallback, a Samsung audio sink, the HMS licence check, error
+reports, WebRTC 149).
