@@ -163,6 +163,8 @@ Page {
                             qsTrId("threesea-la-credit-jolla"),
                             //% "Whisperfish, the Signal client for Sailfish OS: a reference for building such an app."
                             qsTrId("threesea-la-credit-whisperfish"),
+                            //% "Harpoon by Juhani Lehtimäki (GPL-3.0): how the waves on the cover are coloured."
+                            qsTrId("threesea-la-credit-harpoon"),
                             //% "SQLCipher, GStreamer, Qt and many Rust libraries (tokio, rustls, reqwest, rusqlite, RustCrypto and others)."
                             qsTrId("threesea-la-credit-libraries"),
                             //% "The “AI generated” label is the European Commission's icon for AI-generated content."

@@ -158,7 +158,7 @@ Responsibilities, roughly mirroring what Android keeps outside `libthreema`:
 - **Storage:** all persistence in one SQLCipher `Store` (`core/src/store.rs`, a concrete type,
   not a trait: there is one backend), via `rusqlite`'s bundled-sqlcipher; schema migrations are
   versioned. Media files are encrypted separately (`media.rs`). Device-local preferences that
-  aren't secret (log level, the notification sounds of all chats, background running) live in the
+  aren't secret (log level, the notification sounds of all chats, background running, previews on the cover) live in the
   bridge's QSettings in the sandboxed config directory; never message content, keys or who one
   chats with: per-chat tones are in the store, notification action tokens under a salted hash
   (against casual reading only: all IDs can be tried offline) and only while their notification
@@ -209,7 +209,7 @@ Rules:
 - **Read `docs/ui-guidelines.md` first.** Only Harbour-allowed imports (Jolla Store rules), in both flavours.
 - Follow Silica conventions: `ApplicationWindow` + `pageStack`, `PullDownMenu` for primary
   actions, `RemorseItem` for destructive ones, `SilicaListView`, `Theme.*` for all spacing,
-  colours and fonts (no hard-coded sizes), cover page showing the unread count and who wrote (not the text; it can be hidden too).
+  colours and fonts (no hard-coded sizes), cover page showing the unread count and who waits (their last message only if the user asks for it in Settings → Privacy, off by default; all of it can be hidden; never a private chat).
 - Pages (initial set): Onboarding/License, ID setup/restore, Conversation list, Chat,
   Contact details, Group details, New chat/group, Settings, Backup (ID + Safe), About/Licenses.
 - Keep QML dumb: it binds to models and calls backend slots. No crypto, no persistence, no
@@ -422,6 +422,12 @@ volume keys and video calls after the first tries on a phone); details in `docs/
     element (`scripts/make-ui-icons.py`); skin tones in a context menu like a bubble's (user); swipe down closes it like the
     keyboard, the chat's pulleys are off while it is open (user). *(done)*
   - Emoji in the chat input with some room on both sides, every emoji equally wide (user). *(done)*
+  - Launcher icon and cover (user 2026-11-18, after a contributor's idea to show the icon on the
+    cover): the icon is a leaning bubble afloat in a sea of three waves, lime to green, layered with
+    gradients like Jolla's icons (a dark forest green sank into dark wallpapers); the cover is that picture in the ambience's colour as its layout
+    (`CoverSea.qml`): count up left, the chats that wait on the wave under it, the actions on the
+    last wave, the water rising a row per chat, the bubble afloat at the right. Previews of the
+    last message are a setting. *(done; colours and the glide need the phone)*
   - Reactions under a bubble: small, nearly round chips with the emoji's picture, always in the
     highlight colour; the top corner under the bubble square (incoming left, outgoing right),
     the others round (user). *(done)*
@@ -557,7 +563,7 @@ Facts:
 - Threema told us (November 2026) it doesn't actively block third-party clients that cause no
   stability issues or high server load, are clearly unofficial, use no "Threema" branding without
   authorization and don't circumvent the licensing. We send our own `client-info`, as it suggested
-  (ADR 0015), and the launcher icon is our own (green bubble over three waves). Threema is fine with
+  (ADR 0015), and the launcher icon is our own (a pale bubble leaning in a green sea of three waves). Threema is fine with
   our platform code `S` and our user agent, "Threema compatible" included (November 2026).
 - SFOS 5.1/5.2: Qt 5.6.3, glibc 2.41, Rust 1.75, OpenSSL 3.5, SQLCipher 4.5.0 in the repos.
 - Jolla's Messages/People/Email/Phone UIs are closed source; Notes, Gallery, Camera, Weather are

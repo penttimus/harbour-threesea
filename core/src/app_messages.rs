@@ -87,6 +87,8 @@ const CONNECTION_FLUSH_LIMIT: std::time::Duration = std::time::Duration::from_se
 
 /// A page of the media gallery when the UI doesn't say how many it wants.
 const MEDIA_PAGE: u32 = 60;
+/// How many waiting chats the cover is told about: more than it has room for on any screen.
+const COVER_CHATS: usize = 5;
 
 impl Shared {
     /// The conversation `identity` (a Threema ID or a group key) refers to, with its key.
@@ -751,6 +753,7 @@ impl App {
         // one to name: who is still waiting, not whoever wrote last.
         let mut unread_total = 0_i64;
         let mut unread_chat: Option<String> = None;
+        let mut unread_chats = Vec::new();
         for (last, unread) in self.store.conversations()? {
             let is_private = hidden.contains(&last.conversation);
             private_count += usize::from(is_private);
@@ -758,6 +761,9 @@ impl App {
                 unread_total += unread;
                 if unread_chat.is_none() {
                     unread_chat = Some(last.conversation.clone());
+                }
+                if unread_chats.len() < COVER_CHATS {
+                    unread_chats.push(self.waiting_chat_json(&last, unread)?);
                 }
             }
             if is_private != private {
@@ -845,22 +851,28 @@ impl App {
             "unreadTotal": unread_total,
             "unreadFrom": unread_from,
             "unreadChat": unread_chat,
+            "unreadChats": unread_chats,
         }))
     }
 
-    /// The cover's unread total and who it names, as in `conversations_json`, without building
-    /// a list for it: it is asked for at each event that can change them, seen or not.
+    /// The cover's unread total, who it names and the chats it lists, as in
+    /// `conversations_json`, without building a list for it: it is asked for at each event that
+    /// can change them, seen or not.
     pub(crate) fn unread_summary_json(&self) -> Result<Value, ApiError> {
         let archive = self.store.archived_chats()?;
         let hidden = self.store.private_chats()?;
         let mut unread_total = 0_i64;
         let mut unread_chat: Option<String> = None;
-        for (chat, unread) in self.store.unread_chats()? {
-            if hidden.contains(&chat) || archive.contains(&chat) {
+        let mut unread_chats = Vec::new();
+        for (last, unread) in self.store.unread_conversations()? {
+            if hidden.contains(&last.conversation) || archive.contains(&last.conversation) {
                 continue;
             }
             unread_total += unread;
-            unread_chat.get_or_insert(chat);
+            if unread_chats.len() < COVER_CHATS {
+                unread_chats.push(self.waiting_chat_json(&last, unread)?);
+            }
+            unread_chat.get_or_insert(last.conversation);
         }
         let unread_from = unread_chat
             .as_deref()
@@ -870,7 +882,30 @@ impl App {
             "unreadTotal": unread_total,
             "unreadFrom": unread_from,
             "unreadChat": unread_chat,
+            "unreadChats": unread_chats,
         }))
+    }
+
+    /// A chat that waits with something unread, for the cover: its name, how many, and its last
+    /// message as in the chat list (a group's with who wrote it). Never a private or an archived
+    /// chat: the callers leave those out.
+    fn waiting_chat_json(&self, last: &Message, unread: i64) -> Result<Value, ApiError> {
+        let mut row = json!({
+            "identity": last.conversation,
+            "displayName": self.chat_title(&last.conversation)?,
+            "unread": unread,
+            "lastMessage": self.store.message_json(last),
+        });
+        if self.store.group(&last.conversation)?.is_some()
+            && let Some(sender) = last.sender.as_deref()
+        {
+            let name = self
+                .store
+                .contact(sender)?
+                .map_or_else(|| sender.to_owned(), |c| contacts::display_name(&c));
+            row["senderName"] = name.into();
+        }
+        Ok(row)
     }
 
     /// A chat's name in the chat list.

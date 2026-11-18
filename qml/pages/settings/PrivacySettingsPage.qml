@@ -185,6 +185,17 @@ Page {
                 onClicked: page.setSetting("disableScreenshots", !checked)
             }
 
+            TextSwitch {
+                enabled: page.settings.disableScreenshots !== true
+                automaticCheck: false
+                checked: backend.coverPreviews
+                //% "Show messages on the cover"
+                text: qsTrId("threesea-la-cover-previews")
+                //% "Under each chat that has something new, the cover also shows its last message. Never for private chats."
+                description: qsTrId("threesea-la-cover-previews-description")
+                onClicked: backend.coverPreviews = !checked
+            }
+
             SectionHeader {
                 //% "Encryption"
                 text: qsTrId("threesea-se-encryption")

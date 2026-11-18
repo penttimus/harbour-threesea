@@ -4217,6 +4217,7 @@ mod tests {
             assert_eq!(summary["unreadTotal"], list["unreadTotal"]);
             assert_eq!(summary["unreadFrom"], list["unreadFrom"]);
             assert_eq!(summary["unreadChat"], list["unreadChat"]);
+            assert_eq!(summary["unreadChats"], list["unreadChats"]);
             summary
         };
         assert_eq!(same_as_the_list(&app)["unreadTotal"], 0);
@@ -4249,11 +4250,21 @@ mod tests {
             summary["unreadFrom"], "BBBBBBBB",
             "a private chat isn't named"
         );
+        let listed = |summary: &Value| -> Vec<String> {
+            let rows = summary["unreadChats"].as_array().unwrap();
+            rows.iter()
+                .map(|row| row["identity"].as_str().unwrap().to_owned())
+                .collect()
+        };
+        assert_eq!(listed(&summary), ["BBBBBBBB", "AAAAAAAA"], "nor listed");
 
         app.store.set_archived("BBBBBBBB", true).unwrap();
         let summary = same_as_the_list(&app);
         assert_eq!(summary["unreadTotal"], 2);
         assert_eq!(summary["unreadFrom"], "AAAAAAAA", "nor an archived one");
+        assert_eq!(listed(&summary), ["AAAAAAAA"]);
+        assert_eq!(summary["unreadChats"][0]["unread"], 2);
+        assert_eq!(summary["unreadChats"][0]["lastMessage"]["text"], "words");
     }
 
     /// The emulator's demo data (feature `demo`): a chat list to work against, and gone again
@@ -4284,6 +4295,21 @@ mod tests {
         let summary = app.unread_summary_json().unwrap();
         assert_eq!(summary["unreadTotal"], list["unreadTotal"]);
         assert_eq!(summary["unreadFrom"], list["unreadFrom"]);
+        // The cover's rows: who waits, newest first, each with its count and last message.
+        let waiting = summary["unreadChats"].as_array().unwrap();
+        assert_eq!(summary["unreadChats"], list["unreadChats"]);
+        assert_eq!(waiting.len(), 4);
+        assert_eq!(waiting[0]["displayName"], "Carla Mendes");
+        assert_eq!(waiting[0]["identity"], summary["unreadChat"]);
+        assert_eq!(waiting[0]["unread"], 3);
+        assert!(waiting[0]["lastMessage"]["id"].as_i64().unwrap() > 0);
+        assert_eq!(
+            waiting
+                .iter()
+                .map(|w| w["unread"].as_i64().unwrap())
+                .sum::<i64>(),
+            7
+        );
         assert_eq!(chats[0]["displayName"], "Ada Lindqvist", "pinned first");
 
         let long = app

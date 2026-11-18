@@ -1669,3 +1669,28 @@ phone. The headphones offer HFP (`handsfree_head_unit`), but the card stayed on 
 call stream on `sink.fast`, and PulseAudio logged `dbusif.c: can't set profiles/ports to source
 voicecall` at the call's start. Not known whether 0.3.1 did the same (device checklist, "Ringing,
 routes and the screen in calls", step 11).
+
+## A new launcher icon, and the cover as a sea (2026-11-18)
+
+A contributor proposed the launcher icon faint behind the cover's text (pull request 27). Tried
+in the emulator, the coloured icon turned into an olive disc on a red ambience and its dots sat
+behind the count, so the idea was taken further with the user instead of merged: a new icon (a
+leaning speech bubble afloat in a sea of three waves, lime to green like Jolla's gradients after a
+dark forest green sank into dark wallpapers, `scripts/make-icons.py`), and the cover drawing
+that picture in one colour as its layout (`qml/components/CoverSea.qml`, a Canvas): the count up
+left, the chats that wait on the wave under it, the cover actions on the last wave, the bubble
+afloat at the right. The two upper waves rise a row for every chat listed and change their shape a
+little with it; with nothing unread the sea is at its lowest. The colouring (the ambience's
+highlight background colour, layers of 0.30 / 0.55 / 1.0 that add up, the whole at
+`Theme.opacityLow`) is Harpoon's.
+
+The core tells the cover up to five waiting chats (`unreadChats` in `conversations` and
+`unreadSummary`: name, count, last message), never a private or an archived one. Each chat's last
+message shows only with Settings → Privacy → "Show messages on the cover" (the bridge's
+`coverPreviews`, device-local, off by default); "Hide content on the cover" and the app lock still
+leave only the count.
+
+Open, for the phone: the waves' strength on light and on pale ambiences (the drafts were judged on
+one dark red ambience, composited by hand because the emulator blends translucency wrongly), the
+glide when the number of waiting chats changes, and whether the rising level stays or is pinned to
+its highest (one value in `CoverPage.qml`, `tide`).
