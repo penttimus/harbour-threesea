@@ -62,8 +62,8 @@ FI = {
         ("License",
          "Lisenssi"),
     "threesea-la-license-text":
-        ("An unofficial Threema client for Sailfish OS, licensed under the GNU AGPL v3. Uses libthreema by Threema AG. Requires a Threema Libre license from the Threema Shop. Not affiliated with or supported by Threema AG.",
-         "Epävirallinen Threema-sovellus Sailfish OS:lle, lisensoitu GNU AGPL v3 -lisenssillä. Käyttää Threema AG:n libthreema-kirjastoa. Vaatii Threema Libre -lisenssin Threema Shopista. Ei ole sidoksissa Threema AG:hen eikä sen tukema."),
+        ("Free software under the GNU AGPL v3.",
+         "Vapaa ohjelmisto GNU AGPL v3 -lisenssillä."),
     "threesea-he-add":
         ("Add",
          "Lisää"),
@@ -1786,14 +1786,14 @@ FI = {
         ("Disclaimer",
          "Vastuuvapauslauseke"),
     "threesea-la-disclaimer-ai":
-        ("Threesea was developed with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. It is a research and experimentation project.",
-         "Threesea on kehitetty Claude Codella (Anthropic) ja auditoitu OpenAI Codexilla ihmisylläpitäjän ohjauksessa ja testaamana. Se on tutkimus- ja kokeiluprojekti."),
+        ("Made with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. A research and experimentation project.",
+         "Tehty Claude Codella (Anthropic) ja auditoitu OpenAI Codexilla ihmisylläpitäjän ohjauksessa ja testaamana. Tutkimus- ja kokeiluprojekti."),
     "threesea-la-disclaimer-warranty":
-        ("AI makes mistakes. The code, including its security-relevant parts, can contain errors nobody noticed. The developers give no warranty of any kind; you use the app at your own risk.",
-         "Tekoäly tekee virheitä. Koodi, myös sen tietoturvan kannalta olennaiset osat, voi sisältää virheitä, joita kukaan ei ole huomannut. Kehittäjät eivät anna minkäänlaista takuuta; käytät sovellusta omalla vastuullasi."),
+        ("AI makes mistakes, also in security-relevant code. There is no warranty: you use Threesea at your own risk.",
+         "Tekoäly tekee virheitä, myös tietoturvan kannalta olennaisessa koodissa. Takuuta ei ole: käytät Threeseaa omalla vastuullasi."),
     "threesea-la-disclaimer-threema":
-        ("Threesea is based on Threema Libre's open-source code and tries to play fair with Threema's APIs and licensing. Threema told us it doesn't actively block third-party apps that cause no stability issues or high server load, are clearly marked as unofficial without using its branding, and don't circumvent the licensing. Threesea aims to meet that. This is not a permission, and Threesea is not affiliated with, endorsed or supported by Threema AG. As with any Threema app, keep a backup of your ID.",
-         "Threesea perustuu Threema Libren avoimeen lähdekoodiin ja pyrkii toimimaan reilusti Threeman rajapintojen ja lisensoinnin suhteen. Threema on kertonut meille, ettei se aktiivisesti estä kolmannen osapuolen sovelluksia, jotka eivät aiheuta vakausongelmia tai suurta palvelinkuormaa, on selvästi merkitty epävirallisiksi käyttämättä sen tuotemerkkiä eivätkä kierrä lisensointia. Threesea pyrkii täyttämään nämä ehdot. Tämä ei ole lupa, eikä Threesea ole Threema AG:n kanssa sidoksissa eikä sen hyväksymä tai tukema. Kuten minkä tahansa Threema-sovelluksen kanssa, pidä tunnuksestasi varmuuskopio."),
+        ("Unofficial: not affiliated with, endorsed or supported by Threema AG. Threema doesn't actively block third-party apps that play fair, as Threesea aims to, but that isn't a permission. Keep a backup of your ID.",
+         "Epävirallinen: ei sidoksissa Threema AG:hen eikä sen hyväksymä tai tukema. Threema ei aktiivisesti estä kolmannen osapuolen sovelluksia, jotka toimivat reilusti, kuten Threesea pyrkii toimimaan, mutta se ei ole lupa. Pidä tunnuksestasi varmuuskopio."),
     "threesea-se-credits":
         ("Credits",
          "Kiitokset"),
@@ -3699,6 +3699,35 @@ FI = {
     "threesea-la-voice-volume-zero":
         ("Turn the volume up to hear the message",
          "Lisää äänenvoimakkuutta kuullaksesi viestin"),
+    "threesea-la-new-reactions":
+        ("%n new reaction(s)",
+         ("%n uusi reaktio",
+          "%n uutta reaktiota")),
+    "threesea-la-reaction-quote":
+        ("“%1”",
+         "”%1”"),
+    "threesea-la-reaction-chat":
+        ("Reacted %1 to: %2",
+         "Reagoi %1 viestiin: %2"),
+    "threesea-la-reaction-group-one":
+        ("%1 reacted %2 to: %3",
+         "%1 reagoi %2 viestiin: %3"),
+    "threesea-la-reaction-group-two":
+        ("%1 and %2 reacted to: %3",
+         "%1 ja %2 reagoivat viestiin: %3"),
+    "threesea-la-reaction-group-more":
+        ("%1 and %n other(s) reacted to: %2",
+         ("%1 ja %n muu reagoivat viestiin: %2",
+          "%1 ja %n muuta reagoivat viestiin: %2")),
+    "threesea-la-notification-reactions":
+        ("Reactions",
+         "Reaktiot"),
+    "threesea-la-notification-reactions-chats-description":
+        ("Notify when someone reacts to one of your messages in a chat.",
+         "Ilmoita, kun joku reagoi viestiisi keskustelussa."),
+    "threesea-la-notification-reactions-groups-description":
+        ("Notify when someone reacts to one of your messages in a group.",
+         "Ilmoita, kun joku reagoi viestiisi ryhmässä."),
 }
 
 

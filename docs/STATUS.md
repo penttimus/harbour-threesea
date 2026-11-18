@@ -1694,5 +1694,6 @@ with a build that took an echoed emoji for a reaction, not committed): the banne
 lock screen and the entry in Events read "Reacted 😍 to: “reaction test”" under the contact's
 name, from a run without a window as well, and the tap opened the chat; the two switches are on
 the settings page. Not seen there: a group, the update on a second reaction, a long chat's jump.
-Not tried on a phone (device checklist, "Notifications and alerts"); German, French and Finnish
-texts are open (§6).
+Not tried on a phone (device checklist, "Notifications and alerts"). German, French and Finnish
+are in (2026-11-18), with the About page's shortened licence line and disclaimers that had been
+waiting: no text is unfinished.

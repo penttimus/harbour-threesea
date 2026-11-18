@@ -5018,9 +5018,9 @@
         </message>
         <message id="threesea-la-new-reactions" numerus="yes">
             <source>%n new reaction(s)</source>
-            <translation type="unfinished">
-                <numerusform />
-                <numerusform />
+            <translation>
+                <numerusform>%n new reaction</numerusform>
+                <numerusform>%n new reactions</numerusform>
             </translation>
         </message>
         <message id="threesea-la-reaction-quote">
@@ -5041,9 +5041,9 @@
         </message>
         <message id="threesea-la-reaction-group-more" numerus="yes">
             <source>%1 and %n other(s) reacted to: %2</source>
-            <translation type="unfinished">
-                <numerusform />
-                <numerusform />
+            <translation>
+                <numerusform>%1 and %n other reacted to: %2</numerusform>
+                <numerusform>%1 and %n others reacted to: %2</numerusform>
             </translation>
         </message>
         <message id="threesea-la-notification-reactions">
