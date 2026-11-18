@@ -25,6 +25,10 @@ Changed:
   [penttimus](https://github.com/penttimus).
 Fixed:
 
+- With the log on "Detailed" and a chat open, Threesea no longer wakes the processor 60 times a
+  second while it is in the background: the check for a stalling interface now runs only while
+  the app is in front, by [penttimus](https://github.com/penttimus).
+
 - With Bluetooth headphones or a headset, voice messages play in them again: once the phone had
   been at the ear, they came from the loudspeaker until Threesea closed. Holding the phone to the
   ear changes nothing while headphones are connected, as in Threema for Android (Full), by
