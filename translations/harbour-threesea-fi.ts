@@ -5016,5 +5016,47 @@
             <source>License text</source>
             <translation>Lisenssiteksti</translation>
         </message>
+        <message id="threesea-la-new-reactions" numerus="yes">
+            <source>%n new reaction(s)</source>
+            <translation type="unfinished">
+                <numerusform />
+                <numerusform />
+            </translation>
+        </message>
+        <message id="threesea-la-reaction-quote">
+            <source>“%1”</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-reaction-chat">
+            <source>Reacted %1 to: %2</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-reaction-group-one">
+            <source>%1 reacted %2 to: %3</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-reaction-group-two">
+            <source>%1 and %2 reacted to: %3</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-reaction-group-more" numerus="yes">
+            <source>%1 and %n other(s) reacted to: %2</source>
+            <translation type="unfinished">
+                <numerusform />
+                <numerusform />
+            </translation>
+        </message>
+        <message id="threesea-la-notification-reactions">
+            <source>Reactions</source>
+            <translation type="unfinished">Reaktiot</translation>
+        </message>
+        <message id="threesea-la-notification-reactions-chats-description">
+            <source>Notify when someone reacts to one of your messages in a chat.</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-notification-reactions-groups-description">
+            <source>Notify when someone reacts to one of your messages in a group.</source>
+            <translation type="unfinished" />
+        </message>
     </context>
 </TS>

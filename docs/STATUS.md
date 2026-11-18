@@ -1669,3 +1669,30 @@ phone. The headphones offer HFP (`handsfree_head_unit`), but the card stayed on 
 call stream on `sink.fast`, and PulseAudio logged `dbusif.c: can't set profiles/ports to source
 voicecall` at the call's start. Not known whether 0.3.1 did the same (device checklist, "Ringing,
 routes and the screen in calls", step 11).
+
+## Reaction notifications as in Android 6.6.1 (2026-11-18)
+
+Android 6.6.1 (`6.6.1-1240`; nothing in libthreema or the protocol files changed, the reference
+submodule stays at 6.6.0) turned on "Receive a notification when someone reacts to your message".
+Ported: the core says so with a `reaction` event when someone else's reaction changes a message of
+ours (chat or group, new or legacy, given or taken back, also when another device received it
+first), and the window keeps one notification per chat beside the one for its messages: Android's
+wording about the message reacted to last (what, in a group who; "%n new reactions" with message
+content off and for private chats, which share one without names), a tap opens the chat at that
+message (D-Bus `openMessage`). It follows a reaction taken back, an edit and a deletion, and goes
+when the chat is opened or read anywhere. None while the lock is on, for the chat on the screen,
+for a muted chat ("mentions only" too), or with the switch off: Settings → Notifications has one
+under Chats and one under Groups, both on by default like Android's, device-local.
+
+Differences from Android: a reaction has no read state here, so the notification counts what came
+since it was last cleared, in memory (after a restart a notification still showing is taken over
+and replaced by the next reaction); names are display names, not first names. 6.6.1's other
+change to the receive path (queue-dry and leader states as ordered tasks) needs nothing here: the
+connection handles them in order already. Tests: `providers::tests` (the event, muting, the lock)
+and six `reaction*` scenarios in `tests/lockstate`. In the emulator (ECHOECHO can't react, so
+with a build that took an echoed emoji for a reaction, not committed): the banner, the icon on the
+lock screen and the entry in Events read "Reacted 😍 to: “reaction test”" under the contact's
+name, from a run without a window as well, and the tap opened the chat; the two switches are on
+the settings page. Not seen there: a group, the update on a second reaction, a long chat's jump.
+Not tried on a phone (device checklist, "Notifications and alerts"); German, French and Finnish
+texts are open (§6).

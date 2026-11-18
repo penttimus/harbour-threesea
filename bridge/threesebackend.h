@@ -71,6 +71,10 @@ class ThreeseBackend : public QObject
     Q_PROPERTY(bool vibrateChats READ vibrateChats WRITE setVibrateChats NOTIFY notificationSettingsChanged)
     Q_PROPERTY(bool soundGroups READ soundGroups WRITE setSoundGroups NOTIFY notificationSettingsChanged)
     Q_PROPERTY(bool vibrateGroups READ vibrateGroups WRITE setVibrateGroups NOTIFY notificationSettingsChanged)
+    // Android's "Emoji reaction notifications": someone reacted to one of our messages, in chats
+    // and in groups. Device-local.
+    Q_PROPERTY(bool reactionsChats READ reactionsChats WRITE setReactionsChats NOTIFY notificationSettingsChanged)
+    Q_PROPERTY(bool reactionsGroups READ reactionsGroups WRITE setReactionsGroups NOTIFY notificationSettingsChanged)
     Q_PROPERTY(QString toneChats READ toneChats WRITE setToneChats NOTIFY notificationSettingsChanged)
     Q_PROPERTY(QString toneGroups READ toneGroups WRITE setToneGroups NOTIFY notificationSettingsChanged)
     // An incoming call's tone ("": the system's) and whether it vibrates. Device-local.
@@ -191,6 +195,18 @@ public:
     void setSoundGroups(bool on)
     {
         QSettings().setValue(QStringLiteral("soundGroups"), on);
+        emit notificationSettingsChanged();
+    }
+    bool reactionsChats() const { return QSettings().value(QStringLiteral("reactionsChats"), true).toBool(); }
+    void setReactionsChats(bool on)
+    {
+        QSettings().setValue(QStringLiteral("reactionsChats"), on);
+        emit notificationSettingsChanged();
+    }
+    bool reactionsGroups() const { return QSettings().value(QStringLiteral("reactionsGroups"), true).toBool(); }
+    void setReactionsGroups(bool on)
+    {
+        QSettings().setValue(QStringLiteral("reactionsGroups"), on);
         emit notificationSettingsChanged();
     }
     bool vibrateGroups() const { return QSettings().value(QStringLiteral("vibrateGroups"), true).toBool(); }

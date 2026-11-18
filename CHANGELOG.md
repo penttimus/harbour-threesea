@@ -5,6 +5,14 @@ All notable changes. Versions follow `MAJOR.MINOR.PATCH`; each release is built 
 
 ## [Unreleased]
 
+Added:
+
+- A notification when someone reacts to one of your messages, as in Threema for Android 6.6.1:
+  what they reacted with and to which message, in groups also who; tapping it opens the chat at
+  that message. Settings → Notifications has a switch for chats and one for groups, both on. None
+  for muted chats or while the app is locked; private chats only say how many, by
+  [penttimus](https://github.com/penttimus).
+
 Changed:
 
 - About: the license texts are in the pull-down menu, and the disclaimer is shorter. The README

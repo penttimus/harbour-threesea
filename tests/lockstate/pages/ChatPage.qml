@@ -6,6 +6,8 @@ Page {
     objectName: "chat"
     property string identity
     property bool isPrivate
+    property int focusMessage: -1
+    function showMessage(id) { focusMessage = id }
     property QtObject inputField: QtObject { property string text }
     property var attached: []
     function attachAll(files) { attached = files }
