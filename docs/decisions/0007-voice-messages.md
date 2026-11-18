@@ -9,7 +9,8 @@ Qt mediaservice. Shipping an own AAC codec raises patent/licensing questions.
 Record with the platform's AAC (`QAudioRecorder`) where available. Otherwise fall back
 automatically to Opus in Ogg, encoded/decoded in the core with `opus-pure` (pure Rust,
 BSD-3-Clause, no dependencies), vendored in `third_party/opus-pure` with a one-line-kind fix for
-32-bit x86. No setting.
+32-bit x86. No setting. (Since 2026-11-18 from crates.io: 0.2.3 has that fix, and the vendored
+copy is gone.)
 
 ## Consequences
 - Same format as Threema Android on phones with AAC; Opus messages play on Android and in

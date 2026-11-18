@@ -469,7 +469,7 @@ the thumbnail's, which is a square. The name is generic ("video.mp4", "image.jpg
   Qt mediaservice.
 - Policy (user, 2026-10-21): platform AAC first; automatic fallback to something without legal
   questions: **Opus in Ogg** (royalty-free), recorded as raw PCM (`QAudioInput`, 48 kHz mono) and
-  encoded by the core with `opus-pure` (pure Rust, BSD; vendored with an i686 build fix), sent as
+  encoded by the core with `opus-pure` (pure Rust, BSD; from crates.io since 0.2.3, which builds for i686), sent as
   `audio/ogg`, which Threema Android plays. Playback: the platform player (AAC and Opus); without
   one, Opus is decoded by the core and played through `QAudioOutput`. Received AAC without a
   platform player can't be played (we don't ship an AAC decoder).

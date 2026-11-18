@@ -151,7 +151,6 @@ SELF_TEST_SKIPPED = [
     LIBTHREEMA + "cli/mod.rs",
     LIBTHREEMA + "bindings/uniffi/mod.rs",
     "third_party/libthreema/lib/tests/x.rs",
-    "third_party/opus-pure/src/lib.rs",
 ]
 
 

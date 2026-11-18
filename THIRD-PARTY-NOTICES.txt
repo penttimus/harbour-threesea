@@ -143,7 +143,7 @@ num-traits 0.2.19: MIT OR Apache-2.0; https://github.com/rust-num/num-traits
 once_cell 1.21.4: MIT OR Apache-2.0; https://github.com/matklad/once_cell
 opaque-debug 0.3.1: MIT OR Apache-2.0; https://github.com/RustCrypto/utils
 openssl-probe 0.2.2: MIT OR Apache-2.0; https://github.com/rustls/openssl-probe
-opus-pure 0.2.2: BSD-3-Clause; third_party/opus-pure
+opus-pure 0.2.3: BSD-3-Clause; https://github.com/stephenberry/opus-pure
 password-hash 0.5.0: MIT OR Apache-2.0; https://github.com/RustCrypto/traits/tree/master/password-hash
 pbkdf2 0.12.2: MIT OR Apache-2.0; https://github.com/RustCrypto/password-hashes/tree/master/pbkdf2
 pbkdf2 0.13.0: MIT OR Apache-2.0; https://github.com/RustCrypto/password-hashes
@@ -8976,7 +8976,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-Used by: opus-pure 0.2.2 (ATTRIBUTION.md)
+Used by: opus-pure 0.2.3 (ATTRIBUTION.md)
 ==============================================================================
 
 # Attribution
@@ -9009,7 +9009,7 @@ public API narrowed, and a long list of defects fixed. The libopus comparisons b
 the larger ones are in [docs/interop-validation.md](docs/interop-validation.md).
 
 ==============================================================================
-Used by: opus-pure 0.2.2 (LICENSE)
+Used by: opus-pure 0.2.3 (LICENSE)
 ==============================================================================
 
 Copyright 2026 Stephen Berry

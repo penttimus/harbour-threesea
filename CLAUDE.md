@@ -89,7 +89,6 @@ harbour-threesea/
     threema-android/        git submodule of upstream (read-only reference)
     libthreema/             vendored upstream domain/libthreema + our commits (ADR 0006;
                             pristine imports on branch vendor/libthreema)
-    opus-pure/              vendored Opus encoder/decoder (voice fallback), one patch
     webrtc-audio-processing/  submodule: echo cancellation for calls (Full)
   core/                     Rust crate `threesea-core`: our application core (see §4); SQLCipher
                             comes bundled through rusqlite (pinned in Cargo.lock)

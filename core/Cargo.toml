@@ -22,7 +22,7 @@ store = []
 [dependencies]
 # Voice-message fallback where the platform has no AAC: pure-Rust Opus/Ogg (BSD-3-Clause, no
 # dependencies, no C), royalty-free codec. See docs/protocol-notes.md "Voice messages".
-opus-pure = "=0.2.2"
+opus-pure = "=0.2.3"
 # Contact verification QR codes (Threema's 3mid: format): generate and decode, pure Rust,
 # MIT/Apache, without their optional image dependencies.
 # Address book matching: HMAC-SHA256 of normalised e-mails / phone numbers (as Android); the
