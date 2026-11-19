@@ -1234,6 +1234,42 @@ FR = {
     "threesea-la-cover-previews-description":
         ("Under each chat that has something new, the cover also shows its last message. Never for private chats.",
          "Sous chaque discussion qui a du nouveau, la couverture affiche aussi son dernier message. Jamais pour les discussions privées."),
+    "threesea-se-cover":
+        ("Cover",
+         "Couverture"),
+    "threesea-se-cover-content":
+        ("Content",
+         "Contenu"),
+    "threesea-se-cover-look":
+        ("Look",
+         "Apparence"),
+    "threesea-me-cover-colour-ambient":
+        ("Ambient",
+         "Ambiance"),
+    "threesea-me-cover-colour-static":
+        ("Static",
+         "Statique"),
+    "threesea-la-cover-colour":
+        ("Colour of the waves",
+         "Couleur des vagues"),
+    "threesea-la-cover-colour-description":
+        ("Ambient takes the colour of your ambience, Static is a pale haze on every ambience.",
+         "Ambiance reprend la couleur de votre ambiance, Statique est un voile pâle quelle que soit l’ambiance."),
+    "threesea-me-cover-waves-leveled":
+        ("Leveled",
+         "Basses"),
+    "threesea-me-cover-waves-rising":
+        ("Rising",
+         "Montantes"),
+    "threesea-me-cover-waves-risen":
+        ("Always risen",
+         "Toujours hautes"),
+    "threesea-la-cover-waves":
+        ("Waves",
+         "Vagues"),
+    "threesea-la-cover-waves-description":
+        ("Rising: the water climbs with every chat that has something new. Leveled keeps it low, Always risen keeps it high.",
+         "Montantes : l’eau monte avec chaque discussion qui a du nouveau. Basses la garde basse, Toujours hautes la garde haute."),
     "threesea-se-appearance":
         ("Appearance",
          "Apparence"),

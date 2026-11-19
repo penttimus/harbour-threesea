@@ -99,6 +99,11 @@ Page {
                 page: "AppearanceSettingsPage.qml"
             }
             SettingsEntry {
+                icon: "icon-m-home"
+                text: qsTrId("threesea-se-cover")
+                page: "CoverSettingsPage.qml"
+            }
+            SettingsEntry {
                 // Ours: the theme's icon-m-notifications has no full-opacity element and looks
                 // washed out beside the others (scripts/make-ui-icons.py).
                 icon: "notifications.png"

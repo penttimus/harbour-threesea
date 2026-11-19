@@ -18,9 +18,13 @@ Added:
   for muted chats or while the app is locked; private chats only say how many, by
   [penttimus](https://github.com/penttimus).
 - The cover lists the chats that wait, newest first, each with its own count, instead of one
-  name. Settings → Privacy → "Show messages on the cover" adds each chat's last message (off by
+  name. Settings → Cover → "Show messages on the cover" adds each chat's last message (off by
   default; never for private chats, and "Hide content on the cover" still leaves only the count),
   by [penttimus](https://github.com/penttimus).
+- Settings → Cover, a page of its own for what the cover shows and how it looks: its waves in
+  your ambience's colour or as a pale haze ("Ambient", "Static"), and whether they rise with the
+  chats that wait, stay low or stay high ("Rising", "Leveled", "Always risen"). "Hide content on
+  the cover" moved there from Privacy, by [penttimus](https://github.com/penttimus).
 
 Changed:
 

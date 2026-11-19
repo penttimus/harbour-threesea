@@ -209,7 +209,7 @@ Rules:
 - **Read `docs/ui-guidelines.md` first.** Only Harbour-allowed imports (Jolla Store rules), in both flavours.
 - Follow Silica conventions: `ApplicationWindow` + `pageStack`, `PullDownMenu` for primary
   actions, `RemorseItem` for destructive ones, `SilicaListView`, `Theme.*` for all spacing,
-  colours and fonts (no hard-coded sizes), cover page showing the unread count and who waits (their last message only if the user asks for it in Settings → Privacy, off by default; all of it can be hidden; never a private chat).
+  colours and fonts (no hard-coded sizes), cover page showing the unread count and who waits (their last message only if the user asks for it in Settings → Cover, off by default; all of it can be hidden; never a private chat).
 - Pages (initial set): Onboarding/License, ID setup/restore, Conversation list, Chat,
   Contact details, Group details, New chat/group, Settings, Backup (ID + Safe), About/Licenses.
 - Keep QML dumb: it binds to models and calls backend slots. No crypto, no persistence, no
@@ -428,8 +428,11 @@ notifications for reactions, spam groups as in Android 6.6.0/6.6.1); details in 
     cover): the icon is a leaning bubble afloat in a sea of three waves, lime to green, layered with
     gradients like Jolla's icons (a dark forest green sank into dark wallpapers); the cover is that picture in the ambience's colour as its layout
     (`CoverSea.qml`): count up left, the chats that wait on the wave under it, the actions on the
-    last wave, the water rising a row per chat, the bubble afloat at the right. Previews of the
-    last message are a setting. *(done; colours and the glide need the phone)*
+    last wave, the water rising a row per chat, the bubble afloat at the right. Settings → Cover
+    (user 2026-11-19: at full strength the ambience's colour glowed on the phone) has the last
+    messages, the waves' colour ("Ambient", at half the first strength, or "Static", the text's
+    colour) and their level ("Rising", "Leveled", "Always risen"). *(done; the phone has seen
+    the first colouring only)*
   - Reactions under a bubble: small, nearly round chips with the emoji's picture, always in the
     highlight colour; the top corner under the bubble square (incoming left, outgoing right),
     the others round (user). *(done)*

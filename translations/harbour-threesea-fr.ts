@@ -5070,5 +5070,53 @@
             <source>Under each chat that has something new, the cover also shows its last message. Never for private chats.</source>
             <translation>Sous chaque discussion qui a du nouveau, la couverture affiche aussi son dernier message. Jamais pour les discussions privées.</translation>
         </message>
+        <message id="threesea-se-cover">
+            <source>Cover</source>
+            <translation>Couverture</translation>
+        </message>
+        <message id="threesea-se-cover-content">
+            <source>Content</source>
+            <translation>Contenu</translation>
+        </message>
+        <message id="threesea-se-cover-look">
+            <source>Look</source>
+            <translation>Apparence</translation>
+        </message>
+        <message id="threesea-me-cover-colour-ambient">
+            <source>Ambient</source>
+            <translation>Ambiance</translation>
+        </message>
+        <message id="threesea-me-cover-colour-static">
+            <source>Static</source>
+            <translation>Statique</translation>
+        </message>
+        <message id="threesea-la-cover-colour">
+            <source>Colour of the waves</source>
+            <translation>Couleur des vagues</translation>
+        </message>
+        <message id="threesea-la-cover-colour-description">
+            <source>Ambient takes the colour of your ambience, Static is a pale haze on every ambience.</source>
+            <translation>Ambiance reprend la couleur de votre ambiance, Statique est un voile pâle quelle que soit l’ambiance.</translation>
+        </message>
+        <message id="threesea-me-cover-waves-leveled">
+            <source>Leveled</source>
+            <translation>Basses</translation>
+        </message>
+        <message id="threesea-me-cover-waves-rising">
+            <source>Rising</source>
+            <translation>Montantes</translation>
+        </message>
+        <message id="threesea-me-cover-waves-risen">
+            <source>Always risen</source>
+            <translation>Toujours hautes</translation>
+        </message>
+        <message id="threesea-la-cover-waves">
+            <source>Waves</source>
+            <translation>Vagues</translation>
+        </message>
+        <message id="threesea-la-cover-waves-description">
+            <source>Rising: the water climbs with every chat that has something new. Leveled keeps it low, Always risen keeps it high.</source>
+            <translation>Montantes : l’eau monte avec chaque discussion qui a du nouveau. Basses la garde basse, Toujours hautes la garde haute.</translation>
+        </message>
     </context>
 </TS>
