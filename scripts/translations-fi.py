@@ -1228,6 +1228,42 @@ FI = {
     "threesea-la-cover-previews-description":
         ("Under each chat that has something new, the cover also shows its last message. Never for private chats.",
          "Kansi näyttää jokaisen keskustelun alla, jossa on uutta, myös sen viimeisen viestin. Ei koskaan yksityisistä keskusteluista."),
+    "threesea-se-cover":
+        ("Cover",
+         "Kansi"),
+    "threesea-se-cover-content":
+        ("Content",
+         "Sisältö"),
+    "threesea-se-cover-look":
+        ("Look",
+         "Ulkoasu"),
+    "threesea-me-cover-colour-ambient":
+        ("Ambient",
+         "Tunnelma"),
+    "threesea-me-cover-colour-static":
+        ("Static",
+         "Kiinteä"),
+    "threesea-la-cover-colour":
+        ("Colour of the waves",
+         "Aaltojen väri"),
+    "threesea-la-cover-colour-description":
+        ("Ambient takes the colour of your ambience, Static is a pale haze on every ambience.",
+         "Tunnelma käyttää tunnelmasi väriä, Kiinteä on vaalea harso kaikissa tunnelmissa."),
+    "threesea-me-cover-waves-leveled":
+        ("Leveled",
+         "Matala"),
+    "threesea-me-cover-waves-rising":
+        ("Rising",
+         "Nouseva"),
+    "threesea-me-cover-waves-risen":
+        ("Always risen",
+         "Aina korkealla"),
+    "threesea-la-cover-waves":
+        ("Waves",
+         "Aallot"),
+    "threesea-la-cover-waves-description":
+        ("Rising: the water climbs with every chat that has something new. Leveled keeps it low, Always risen keeps it high.",
+         "Nouseva: vesi nousee jokaisen keskustelun myötä, jossa on uutta. Matala pitää sen alhaalla, Aina korkealla pitää sen ylhäällä."),
     "threesea-se-appearance":
         ("Appearance",
          "Ulkoasu"),

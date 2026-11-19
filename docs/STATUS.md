@@ -1770,3 +1770,12 @@ Found while checking `main` for it: the merge of `main` into the reactions' bran
 entry open in all four `.ts` files (not well-formed XML; repaired in pull request 32).
 
 Retaken: the cover and the launcher icon (`08`, `09`). The other pictures are from 0.2.0.
+
+## Settings → Cover (2026-11-19)
+
+On the phone the cover's sea in the ambience's colour was too strong. It is now at half that
+strength (`CoverSea.intensity`), and the cover's settings have a page of their own: "Hide content
+on the cover" and "Show messages on the cover" (both were under Privacy), the waves' colour
+("Ambient", the ambience's highlight background colour, or "Static", the text's colour as a pale
+haze) and their level ("Rising" as before, "Leveled" always low, "Always risen" always at the
+highest). Both choices are device-local (`coverColour`, `coverWaves` in the bridge's QSettings).

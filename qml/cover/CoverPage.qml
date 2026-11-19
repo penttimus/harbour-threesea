@@ -38,7 +38,7 @@ CoverBackground {
     // under it, the actions on the last wave. The water rises a row for every chat listed.
     readonly property bool listsChats: !cover.inCall && backend.unreadCount > 0 && !window.locked
                                        && window.appSettings.disableScreenshots !== true
-    // "Show messages on the cover" (Privacy): each chat's last message under its name.
+    // "Show messages on the cover" (Settings → Cover): each chat's last message under its name.
     readonly property bool previews: backend.coverPreviews
     readonly property real rowHeight: nameMetrics.height + (previews ? previewMetrics.height : 0)
     readonly property real waveHeight: Theme.paddingSmall
@@ -52,8 +52,9 @@ CoverBackground {
         (listBottom - (head.y + count.baselineOffset + waveHeight) - seaGap)
         / Math.max(1, rowHeight))))
     readonly property var waiting: listsChats ? backend.unreadChats.slice(0, rowsMax) : []
-    // The water's level in rows: it glides while the cover is seen and is in place when it is not.
-    property real tide: waiting.length
+    // The water's level in rows (Settings → Cover): low, a row per chat listed, or at its highest.
+    // It glides while the cover is seen and is in place when it is not.
+    property real tide: backend.coverWaves === 0 ? 0 : backend.coverWaves === 2 ? rowsMax : waiting.length
     Behavior on tide {
         enabled: cover.status === Cover.Active
         NumberAnimation { duration: 400; easing.type: Easing.InOutQuad }
@@ -74,6 +75,8 @@ CoverBackground {
         id: sea
         anchors.fill: parent
         level: cover.tide
+        // The ambience's colour, or the text's: a white haze on a dark ambience.
+        color: backend.coverColour === 1 ? Theme.primaryColor : Theme.highlightBackgroundColor
         emulator: backend.emulator
         amplitude: cover.waveHeight
         thirdY: cover.actionsY

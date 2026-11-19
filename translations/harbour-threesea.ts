@@ -5070,5 +5070,53 @@
             <source>Under each chat that has something new, the cover also shows its last message. Never for private chats.</source>
             <translation type="unfinished" />
         </message>
+        <message id="threesea-se-cover">
+            <source>Cover</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-se-cover-content">
+            <source>Content</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-se-cover-look">
+            <source>Look</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-me-cover-colour-ambient">
+            <source>Ambient</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-me-cover-colour-static">
+            <source>Static</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-cover-colour">
+            <source>Colour of the waves</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-cover-colour-description">
+            <source>Ambient takes the colour of your ambience, Static is a pale haze on every ambience.</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-me-cover-waves-leveled">
+            <source>Leveled</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-me-cover-waves-rising">
+            <source>Rising</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-me-cover-waves-risen">
+            <source>Always risen</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-cover-waves">
+            <source>Waves</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-cover-waves-description">
+            <source>Rising: the water climbs with every chat that has something new. Leveled keeps it low, Always risen keeps it high.</source>
+            <translation type="unfinished" />
+        </message>
     </context>
 </TS>

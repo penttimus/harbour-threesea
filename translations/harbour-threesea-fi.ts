@@ -5070,5 +5070,53 @@
             <source>Under each chat that has something new, the cover also shows its last message. Never for private chats.</source>
             <translation>Kansi näyttää jokaisen keskustelun alla, jossa on uutta, myös sen viimeisen viestin. Ei koskaan yksityisistä keskusteluista.</translation>
         </message>
+        <message id="threesea-se-cover">
+            <source>Cover</source>
+            <translation>Kansi</translation>
+        </message>
+        <message id="threesea-se-cover-content">
+            <source>Content</source>
+            <translation>Sisältö</translation>
+        </message>
+        <message id="threesea-se-cover-look">
+            <source>Look</source>
+            <translation>Ulkoasu</translation>
+        </message>
+        <message id="threesea-me-cover-colour-ambient">
+            <source>Ambient</source>
+            <translation>Tunnelma</translation>
+        </message>
+        <message id="threesea-me-cover-colour-static">
+            <source>Static</source>
+            <translation>Kiinteä</translation>
+        </message>
+        <message id="threesea-la-cover-colour">
+            <source>Colour of the waves</source>
+            <translation>Aaltojen väri</translation>
+        </message>
+        <message id="threesea-la-cover-colour-description">
+            <source>Ambient takes the colour of your ambience, Static is a pale haze on every ambience.</source>
+            <translation>Tunnelma käyttää tunnelmasi väriä, Kiinteä on vaalea harso kaikissa tunnelmissa.</translation>
+        </message>
+        <message id="threesea-me-cover-waves-leveled">
+            <source>Leveled</source>
+            <translation>Matala</translation>
+        </message>
+        <message id="threesea-me-cover-waves-rising">
+            <source>Rising</source>
+            <translation>Nouseva</translation>
+        </message>
+        <message id="threesea-me-cover-waves-risen">
+            <source>Always risen</source>
+            <translation>Aina korkealla</translation>
+        </message>
+        <message id="threesea-la-cover-waves">
+            <source>Waves</source>
+            <translation>Aallot</translation>
+        </message>
+        <message id="threesea-la-cover-waves-description">
+            <source>Rising: the water climbs with every chat that has something new. Leveled keeps it low, Always risen keeps it high.</source>
+            <translation>Nouseva: vesi nousee jokaisen keskustelun myötä, jossa on uutta. Matala pitää sen alhaalla, Aina korkealla pitää sen ylhäällä.</translation>
+        </message>
     </context>
 </TS>

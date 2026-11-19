@@ -53,7 +53,9 @@ does. Sources are listed at the end; re-check them before building a new page.
   message). Plain `Label`s. Model: `jolla-notes/cover/NotesCover.qml`; the count up left with its
   label beside it and the list under it as on Jolla's Email cover. Its background is the launcher
   icon's picture in one colour (`qml/components/CoverSea.qml`, user 2026-11-18): three waves in
-  `Theme.highlightBackgroundColor` at `Theme.opacityLow` (the colouring is Harpoon's), the
+  `Theme.highlightBackgroundColor` at half of `Theme.opacityLow` (the colouring is Harpoon's;
+  at its full strength it glowed on a phone; Settings → Cover offers the text's colour instead
+  and the waves always low or always high), the
   first under the count, the second carrying the list, the third the cover actions, the icon's
   bubble afloat on the first at the right, sunk and leaning as on the icon. The two upper waves
   rise a row for every chat listed (one short glide, only while the cover is seen); with nothing

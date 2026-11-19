@@ -71,6 +71,11 @@ class ThreeseBackend : public QObject
     // The cover lists who waits; with this also each chat's last message (Settings → Privacy,
     // off by default). Device-local.
     Q_PROPERTY(bool coverPreviews READ coverPreviews WRITE setCoverPreviews NOTIFY notificationSettingsChanged)
+    // The cover's look (Settings → Cover), device-local. Its waves' colour: 0 the ambience's, 1 the
+    // text's (white on a dark ambience). Its waves' level: 0 always low, 1 a row higher for every
+    // chat listed, 2 always at their highest.
+    Q_PROPERTY(int coverColour READ coverColour WRITE setCoverColour NOTIFY notificationSettingsChanged)
+    Q_PROPERTY(int coverWaves READ coverWaves WRITE setCoverWaves NOTIFY notificationSettingsChanged)
     // Android's sound and vibration for new messages, each for chats and groups: the tone and the
     // vibration of the current sound profile's instant messages. Device-local.
     Q_PROPERTY(bool soundChats READ soundChats WRITE setSoundChats NOTIFY notificationSettingsChanged)
@@ -167,6 +172,8 @@ public:
     void setNotificationsEnabled(bool enabled);
     bool notificationPreview() const;
     bool coverPreviews() const;
+    int coverColour() const;
+    int coverWaves() const;
     bool addressBookSync() const { return QSettings().value(QStringLiteral("addressBookSync"), false).toBool(); }
     void setAddressBookSync(bool sync)
     {
@@ -181,6 +188,8 @@ public:
     }
     void setNotificationPreview(bool preview);
     void setCoverPreviews(bool previews);
+    void setCoverColour(int colour);
+    void setCoverWaves(int waves);
     int imageSize() const { return QSettings().value(QStringLiteral("imageSize"), 1600).toInt(); }
     void setImageSize(int side);
     // These four are read per bubble while a chat scrolls: from members, not the settings file.

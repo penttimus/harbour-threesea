@@ -1231,6 +1231,42 @@ DE = {
     "threesea-la-cover-previews-description":
         ("Under each chat that has something new, the cover also shows its last message. Never for private chats.",
          "Unter jedem Chat, in dem es Neues gibt, zeigt das Cover auch dessen letzte Nachricht. Nie bei privaten Chats."),
+    "threesea-se-cover":
+        ("Cover",
+         "Cover"),
+    "threesea-se-cover-content":
+        ("Content",
+         "Inhalt"),
+    "threesea-se-cover-look":
+        ("Look",
+         "Aussehen"),
+    "threesea-me-cover-colour-ambient":
+        ("Ambient",
+         "Ambiente"),
+    "threesea-me-cover-colour-static":
+        ("Static",
+         "Statisch"),
+    "threesea-la-cover-colour":
+        ("Colour of the waves",
+         "Farbe der Wellen"),
+    "threesea-la-cover-colour-description":
+        ("Ambient takes the colour of your ambience, Static is a pale haze on every ambience.",
+         "Ambiente nimmt die Farbe deines Ambientes, Statisch ist ein heller Schleier in jedem Ambiente."),
+    "threesea-me-cover-waves-leveled":
+        ("Leveled",
+         "Flach"),
+    "threesea-me-cover-waves-rising":
+        ("Rising",
+         "Steigend"),
+    "threesea-me-cover-waves-risen":
+        ("Always risen",
+         "Immer hoch"),
+    "threesea-la-cover-waves":
+        ("Waves",
+         "Wellen"),
+    "threesea-la-cover-waves-description":
+        ("Rising: the water climbs with every chat that has something new. Leveled keeps it low, Always risen keeps it high.",
+         "Steigend: Das Wasser steigt mit jedem Chat, in dem es Neues gibt. Flach hält es niedrig, Immer hoch hält es oben."),
     "threesea-se-appearance":
         ("Appearance",
          "Darstellung"),

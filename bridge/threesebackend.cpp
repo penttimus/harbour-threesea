@@ -1503,6 +1503,34 @@ void ThreeseBackend::setCoverPreviews(bool previews)
     }
 }
 
+int ThreeseBackend::coverColour() const
+{
+    return qBound(0, QSettings().value(QStringLiteral("coverColour"), 0).toInt(), 1);
+}
+
+void ThreeseBackend::setCoverColour(int colour)
+{
+    colour = qBound(0, colour, 1);
+    if (colour != coverColour()) {
+        QSettings().setValue(QStringLiteral("coverColour"), colour);
+        emit notificationSettingsChanged();
+    }
+}
+
+int ThreeseBackend::coverWaves() const
+{
+    return qBound(0, QSettings().value(QStringLiteral("coverWaves"), 1).toInt(), 2);
+}
+
+void ThreeseBackend::setCoverWaves(int waves)
+{
+    waves = qBound(0, waves, 2);
+    if (waves != coverWaves()) {
+        QSettings().setValue(QStringLiteral("coverWaves"), waves);
+        emit notificationSettingsChanged();
+    }
+}
+
 namespace {
 QString storedLogLevel()
 {

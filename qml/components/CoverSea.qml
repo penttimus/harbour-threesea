@@ -20,6 +20,9 @@ Canvas {
     property real thirdY
     property real amplitude: Theme.paddingSmall
     property color color: Theme.highlightBackgroundColor
+    // The whole picture's strength, of Theme.opacityLow: at full strength the ambience's colour
+    // glowed (user 2026-11-19).
+    property real intensity: 0.5
     // Where the bubble floats, of the width; the first wave has a crest there at every level.
     readonly property real bubbleAt: 0.8
     readonly property real bubbleWidth: Math.round(width * 0.21)
@@ -73,7 +76,7 @@ Canvas {
 
     function _tint(strength) {
         return "rgba(" + Math.round(color.r * 255) + "," + Math.round(color.g * 255) + ","
-                + Math.round(color.b * 255) + "," + (strength * Theme.opacityLow).toFixed(3) + ")"
+                + Math.round(color.b * 255) + "," + (strength * Theme.opacityLow * intensity).toFixed(3) + ")"
     }
 
     // From the top left to the bottom right, like the light on the icon.
@@ -106,6 +109,7 @@ Canvas {
     onThirdYChanged: requestPaint()
     onAmplitudeChanged: requestPaint()
     onColorChanged: requestPaint()
+    onIntensityChanged: requestPaint()
 
     onPaint: {
         var ctx = getContext("2d")
