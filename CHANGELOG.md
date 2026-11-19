@@ -3,6 +3,70 @@
 All notable changes. Versions follow `MAJOR.MINOR.PATCH`; each release is built from the
 `release` branch and tagged `v<version>` (see [docs/release.md](docs/release.md)).
 
+## [Unreleased]
+
+## [0.4.0] - 2026-11-19
+
+A new icon and a cover that lists who is waiting, notifications for reactions, and what Threema
+for Android 6.6.0 and 6.6.1 changed around spam groups.
+
+Added:
+
+- A notification when someone reacts to one of your messages, as in Threema for Android 6.6.1:
+  what they reacted with and to which message, in groups also who; tapping it opens the chat at
+  that message. Settings → Notifications has a switch for chats and one for groups, both on. None
+  for muted chats or while the app is locked; private chats only say how many, by
+  [penttimus](https://github.com/penttimus).
+- The cover lists the chats that wait, newest first, each with its own count, instead of one
+  name. Settings → Cover → "Show messages on the cover" adds each chat's last message (off by
+  default; never for private chats, and "Hide content on the cover" still leaves only the count),
+  by [penttimus](https://github.com/penttimus).
+- Settings → Cover, a page of its own for what the cover shows and how it looks: its waves in
+  your ambience's colour or as a pale haze ("Ambient", "Static"), and whether they rise with the
+  chats that wait, stay low or stay high ("Rising", "Leveled", "Always risen"). "Hide content on
+  the cover" moved there from Privacy, by [penttimus](https://github.com/penttimus).
+
+Changed:
+
+- A new app icon: a speech bubble afloat in a green sea. The cover shows the same picture in
+  your ambience's colour, and the water rises with the number of chats that wait. The idea of the
+  icon on the cover is [jmpx448](https://github.com/jmpx448)'s
+  ([#27](https://github.com/penttimus/harbour-threesea/pull/27)), the waves' colouring is
+  [Harpoon](https://github.com/JuhaniLehtimaeki/Harpoon)'s, by
+  [penttimus](https://github.com/penttimus).
+- About: the license texts are in the pull-down menu, and the disclaimer is shorter. The README
+  is shorter too, and recommends installing through
+  [Harpoon](https://github.com/JuhaniLehtimaeki/Harpoon), which keeps Threesea up to date, by
+  [penttimus](https://github.com/penttimus).
+- A release's files carry the flavour after the architecture
+  (`harbour-threesea-<version>-1.aarch64-full.rpm`, was `harbour-threesea-full-<version>-1.aarch64.rpm`):
+  Harpoon then sees one package in two builds, asks which one you want, recognises a Threesea
+  installed by hand and shows its icon, by [penttimus](https://github.com/penttimus).
+- Reporting a group as spam no longer waits for Threema's server, as in Threema for Android 6.6.0:
+  blocking its creator, leaving and deleting happen at once, also without a connection, and the
+  report is sent in the background and tried again until it is through. A call with the creator
+  and the group's call end with it, by [penttimus](https://github.com/penttimus).
+- With "Block unknown senders" on, someone you don't know can no longer add you to a new group,
+  as in Threema for Android 6.6.0. That is how spam groups mostly arrive, by
+  [penttimus](https://github.com/penttimus).
+- Bundled libraries are up to date: the Rust crates within their pinned lines (TLS certificate
+  checking among them), opus-pure 0.2.3 and mapbox-gl-qml 3.2.2, and the reference for Threema
+  for Android is 6.6.1, by [penttimus](https://github.com/penttimus).
+
+Fixed:
+
+- With the log on "Detailed" and a chat open, Threesea no longer wakes the processor 60 times a
+  second while it is in the background: the check for a stalling interface now runs only while
+  the app is in front, by [penttimus](https://github.com/penttimus).
+- With Bluetooth headphones or a headset, voice messages play in them again: once the phone had
+  been at the ear, they came from the loudspeaker until Threesea closed. Holding the phone to the
+  ear changes nothing while headphones are connected, as in Threema for Android (Full), by
+  [penttimus](https://github.com/penttimus), reported by
+  [jmpx448](https://github.com/jmpx448) ([#22](https://github.com/penttimus/harbour-threesea/issues/22)).
+- The bundled SQLite no longer has the fault of RUSTSEC-2026-0459: the store now uses SQLCipher
+  4.20 on SQLite 3.54.1, through `rusqlite` 0.42. Existing data opens as before, by
+  [penttimus](https://github.com/penttimus) ([#9](https://github.com/penttimus/harbour-threesea/issues/9)).
+
 ## [0.3.1] - 2026-11-11
 
 Calls on a phone: the earpiece, the volume keys and video calls with the phone's camera, after the

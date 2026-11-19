@@ -85,6 +85,21 @@ QtObject {
         backend.coreEvent("messagesChanged", { messages: [message] })
     }
 
+    // Someone reacted to message `id` of ours in that chat (or `more.conversation`), or took it back.
+    function reacted(id, emoji, more) {
+        var data = { message: { id: id, conversation: chat, outgoing: true, kind: "text", text: "ours " + id,
+                                createdAt: 1 },
+                     sender: chat, emoji: emoji, apply: true, replaces: false, at: Date.now(), notify: true,
+                     "private": false }
+        for (var key in more) {
+            if (key === "conversation") data.message.conversation = more[key]
+            else data[key] = more[key]
+        }
+        backend.results["contact"] = { displayName: "A Contact" }
+        backend.coreEvent("reaction", data)
+    }
+    readonly property string group: "g:ABCD1234:7"
+
     // The one notification while locked: neither who nor what, tapping it only opens the app.
     function checkAppLocked(count) {
         var n = window.notifications["appLocked"]
@@ -2249,6 +2264,190 @@ QtObject {
                 window.openChat = ""
                 window.openChat = chat
                 check("gone with the chat opened", window.notifications["replyNotSent:" + chat], undefined)
+            }, 0],
+        ],
+        // A reaction to a message of ours: the chat's second notification, which follows what is
+        // given and taken back and opens the chat at that message.
+        reactionNotifies: [
+            [function() { ready(false) }, 100],
+            [function() { reacted(7, "+") }, 50],
+            [function() {
+                var n = window.notifications["reaction:" + chat]
+                check("who", n.summary, "A Contact")
+                check("what", n.body, "threesea-la-reaction-chat")
+                check("on the screen", n.previewBody, "threesea-la-reaction-chat")
+                check("one", n.itemCount, 1)
+                check("opens the message", n.remoteActions[0].method, "openMessage")
+                check("of that chat", n.remoteActions[0].arguments.join(" "), chat + " 7")
+                check("no Reply or Mark as read", n.remoteActions.length, 1)
+                check("not the chat's own", window.notifications[chat], undefined)
+                root.kept = n
+                reacted(8, "-")
+            }, 50],
+            [function() {
+                var n = window.notifications["reaction:" + chat]
+                check("the same one", n === root.kept, true)
+                check("two", n.itemCount, 2)
+                check("the newer message", n.remoteActions[0].arguments[1], "8")
+                // The same again is no news; taken back, it goes.
+                reacted(8, "-")
+            }, 50],
+            [function() {
+                check("still two", window.notifications["reaction:" + chat].itemCount, 2)
+                reacted(8, "-", { apply: false })
+            }, 50],
+            [function() {
+                var n = window.notifications["reaction:" + chat]
+                check("one left", n.itemCount, 1)
+                check("the older message again", n.remoteActions[0].arguments[1], "7")
+                // A thumb of an old app takes the place of what its sender gave.
+                reacted(7, "x", { replaces: true })
+            }, 50],
+            [function() {
+                check("replaced, not added", window.notifications["reaction:" + chat].itemCount, 1)
+                reacted(7, "x", { apply: false })
+            }, 50],
+            [function() {
+                check("gone with the last", window.notifications["reaction:" + chat], undefined)
+                check("nothing kept", window.reactionNews["reaction:" + chat], undefined)
+            }, 0],
+        ],
+        // Android's two switches, the main one, and a muted chat (the core's `notify`).
+        reactionSwitches: [
+            [function() {
+                ready(false)
+                backend.results["group"] = { title: "A Group", left: false,
+                                             members: [{ identity: chat, displayName: "A Member" },
+                                                       { identity: "EFGH5678", displayName: "Another" }] }
+            }, 100],
+            [function() {
+                backend.reactionsChats = false
+                reacted(7, "+")
+                reacted(7, "+", { conversation: group })
+            }, 50],
+            [function() {
+                check("off for chats", window.notifications["reaction:" + chat], undefined)
+                var n = window.notifications["reaction:" + group]
+                check("on for groups", n.summary, "A Group")
+                check("one of them", n.body, "threesea-la-reaction-group-one")
+                reacted(7, "+", { conversation: group, sender: "EFGH5678" })
+            }, 50],
+            [function() {
+                check("two of them", window.notifications["reaction:" + group].body, "threesea-la-reaction-group-two")
+                backend.notificationPreview = false
+                reacted(7, "-", { conversation: group })
+            }, 50],
+            [function() {
+                check("only how many", window.notifications["reaction:" + group].body, "threesea-la-new-reactions")
+                window.clearNotification("reaction:" + group)
+                backend.reactionsChats = true
+                backend.reactionsGroups = false
+                reacted(7, "+", { conversation: group })
+                reacted(8, "+", { notify: false })
+                backend.notificationsEnabled = false
+                reacted(9, "+")
+            }, 50],
+            [function() {
+                check("off for groups", window.notifications["reaction:" + group], undefined)
+                check("muted, or all off", window.notifications["reaction:" + chat], undefined)
+            }, 0],
+        ],
+        // Like Android: none while the lock is on, and what was there goes with the lock.
+        reactionBehindTheLock: [
+            [function() { ready(true) }, 100],
+            [function() { reacted(7, "+") }, 50],
+            [function() {
+                check("shown", !!window.notifications["reaction:" + chat], true)
+                window.lockNow()
+                check("gone with the lock", window.notifications["reaction:" + chat], undefined)
+                check("nothing kept", window.reactionNews["reaction:" + chat], undefined)
+                reacted(8, "+")
+            }, 50],
+            [function() {
+                check("none behind it", window.notifications["reaction:" + chat], undefined)
+                check("nothing kept of it", window.reactionNews["reaction:" + chat], undefined)
+            }, 0],
+        ],
+        // A private chat's: neither who nor which message, and it only opens the app.
+        reactionInPrivateChat: [
+            [function() { ready(false) }, 100],
+            [function() { reacted(7, "+", { "private": true }) }, 50],
+            [function() {
+                var n = window.notifications["reaction:private"]
+                check("no name", n.summary, "threesea-la-private-chat")
+                check("only how many", n.body, "threesea-la-new-reactions")
+                check("only opens the app", n.remoteActions.length === 1 && n.remoteActions[0].method, "activate")
+                check("not under the chat", window.notifications["reaction:" + chat], undefined)
+                backend.coreEvent("conversationRead", { identity: chat })
+                check("gone once read", window.notifications["reaction:private"], undefined)
+            }, 0],
+        ],
+        // Seen in the chat, read elsewhere, or the message is gone: so is the notification. An
+        // edit changes what it quotes without another alert.
+        reactionEndsWithItsReason: [
+            [function() { ready(false) }, 100],
+            [function() { reacted(7, "+") }, 50],
+            [function() {
+                root.kept = window.notifications["reaction:" + chat]
+                root.kept.category = ""
+                changed({ id: 7, outgoing: true, kind: "text", text: "ours 7", editedAt: 5 })
+            }, 50],
+            [function() {
+                check("the same words: left alone", root.kept.category, "")
+                check("the edited message kept", window.reactionNews["reaction:" + chat][0].message.editedAt, 5)
+                changed({ id: 7, outgoing: true, kind: "deleted" })
+                check("gone with its message", window.notifications["reaction:" + chat], undefined)
+                reacted(8, "+")
+            }, 50],
+            [function() {
+                check("there again", !!window.notifications["reaction:" + chat], true)
+                backend.coreEvent("conversationRead", { identity: chat })
+                check("gone once read", window.notifications["reaction:" + chat], undefined)
+                reacted(9, "+")
+            }, 50],
+            [function() {
+                check("and again", !!window.notifications["reaction:" + chat], true)
+                root.kept = push("pages/ChatPage.qml", { identity: chat })
+            }, 100],
+            [function() {
+                check("gone with the chat opened", window.notifications["reaction:" + chat], undefined)
+                reacted(10, "+")
+            }, 50],
+            [function() {
+                check("none for the chat being read", window.notifications["reaction:" + chat], undefined)
+                // Out of sight it tells, and back in front the chat shows it.
+                harness.setActive(false)
+                reacted(11, "+")
+            }, 50],
+            [function() {
+                check("told while away", !!window.notifications["reaction:" + chat], true)
+                harness.setActive(true)
+            }, 50],
+            [function() {
+                check("seen on coming back", window.notifications["reaction:" + chat], undefined)
+            }, 0],
+        ],
+        // The tap: the chat at that message, also when it is open already; and one from the
+        // last run is filed as what it is.
+        reactionTapOpensTheMessage: [
+            [function() { ready(false) }, 100],
+            [function() { fakes.dbus.openMessageRequested(chat, "7") }, 100],
+            [function() {
+                checkStack("conversations chat")
+                check("at the message", page("chat").focusMessage, 7)
+                fakes.dbus.openMessageRequested(chat, "9")
+            }, 50],
+            [function() {
+                checkStack("conversations chat")
+                check("moved to the other", page("chat").focusMessage, 9)
+                var n = Qt.createQmlObject("import Nemo.Notifications 1.0; Notification { summary: \"A Contact\" }", root)
+                n.remoteActions = [{ name: "default", displayName: "", service: "s", path: "/", iface: "i",
+                                     method: "openMessage", arguments: ["EFGH5678", "3"] }]
+                window.takeOver(n)
+                check("not that chat's own", window.notifications["EFGH5678"], undefined)
+                check("the reactions' one", window.notifications["reaction:EFGH5678"] === n, true)
+                backend.coreEvent("conversationRead", { identity: "EFGH5678" })
+                check("gone once read", window.notifications["reaction:EFGH5678"], undefined)
             }, 0],
         ],
         // Deleted by its sender: the words leave the notification, without another alert. Its

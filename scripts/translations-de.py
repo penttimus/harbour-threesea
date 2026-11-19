@@ -65,8 +65,8 @@ DE = {
         ("License",
          "Lizenz"),
     "threesea-la-license-text":
-        ("An unofficial Threema client for Sailfish OS, licensed under the GNU AGPL v3. Uses libthreema by Threema AG. Requires a Threema Libre license from the Threema Shop. Not affiliated with or supported by Threema AG.",
-         "Ein inoffizieller Threema-Client für Sailfish OS unter der GNU AGPL v3. Verwendet libthreema von der Threema AG. Benötigt eine Threema-Libre-Lizenz aus dem Threema Shop. Nicht mit der Threema AG verbunden und nicht von ihr unterstützt."),
+        ("Free software under the GNU AGPL v3.",
+         "Freie Software unter der GNU AGPL v3."),
     "threesea-he-add":
         ("Add",
          "Hinzufügen"),
@@ -1225,6 +1225,48 @@ DE = {
     "threesea-la-hide-cover-description":
         ("The cover only shows the number of new messages, not who wrote.",
          "Das Cover zeigt nur die Zahl neuer Nachrichten, nicht, wer geschrieben hat."),
+    "threesea-la-cover-previews":
+        ("Show messages on the cover",
+         "Nachrichten auf dem Cover anzeigen"),
+    "threesea-la-cover-previews-description":
+        ("Under each chat that has something new, the cover also shows its last message. Never for private chats.",
+         "Unter jedem Chat, in dem es Neues gibt, zeigt das Cover auch dessen letzte Nachricht. Nie bei privaten Chats."),
+    "threesea-se-cover":
+        ("Cover",
+         "Cover"),
+    "threesea-se-cover-content":
+        ("Content",
+         "Inhalt"),
+    "threesea-se-cover-look":
+        ("Look",
+         "Aussehen"),
+    "threesea-me-cover-colour-ambient":
+        ("Ambient",
+         "Ambiente"),
+    "threesea-me-cover-colour-static":
+        ("Static",
+         "Statisch"),
+    "threesea-la-cover-colour":
+        ("Colour of the waves",
+         "Farbe der Wellen"),
+    "threesea-la-cover-colour-description":
+        ("Ambient takes the colour of your ambience, Static is a pale haze on every ambience.",
+         "Ambiente nimmt die Farbe deines Ambientes, Statisch ist ein heller Schleier in jedem Ambiente."),
+    "threesea-me-cover-waves-leveled":
+        ("Leveled",
+         "Flach"),
+    "threesea-me-cover-waves-rising":
+        ("Rising",
+         "Steigend"),
+    "threesea-me-cover-waves-risen":
+        ("Always risen",
+         "Immer hoch"),
+    "threesea-la-cover-waves":
+        ("Waves",
+         "Wellen"),
+    "threesea-la-cover-waves-description":
+        ("Rising: the water climbs with every chat that has something new. Leveled keeps it low, Always risen keeps it high.",
+         "Steigend: Das Wasser steigt mit jedem Chat, in dem es Neues gibt. Flach hält es niedrig, Immer hoch hält es oben."),
     "threesea-se-appearance":
         ("Appearance",
          "Darstellung"),
@@ -1789,14 +1831,14 @@ DE = {
         ("Disclaimer",
          "Haftungsausschluss"),
     "threesea-la-disclaimer-ai":
-        ("Threesea was developed with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. It is a research and experimentation project.",
-         "Threesea wurde mit Claude Code (Anthropic) entwickelt und mit OpenAI Codex geprüft, angeleitet und getestet von einem menschlichen Maintainer. Es ist ein Forschungs- und Experimentierprojekt."),
+        ("Made with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. A research and experimentation project.",
+         "Mit Claude Code (Anthropic) entwickelt und mit OpenAI Codex geprüft, angeleitet und getestet von einem menschlichen Maintainer. Ein Forschungs- und Experimentierprojekt."),
     "threesea-la-disclaimer-warranty":
-        ("AI makes mistakes. The code, including its security-relevant parts, can contain errors nobody noticed. The developers give no warranty of any kind; you use the app at your own risk.",
-         "KI macht Fehler. Der Code, auch seine sicherheitsrelevanten Teile, kann Fehler enthalten, die niemand bemerkt hat. Die Entwickler übernehmen keinerlei Gewährleistung; du verwendest die App auf eigenes Risiko."),
+        ("AI makes mistakes, also in security-relevant code. There is no warranty: you use Threesea at your own risk.",
+         "KI macht Fehler, auch in sicherheitsrelevantem Code. Es gibt keine Gewährleistung: Du verwendest Threesea auf eigenes Risiko."),
     "threesea-la-disclaimer-threema":
-        ("Threesea is based on Threema Libre's open-source code and tries to play fair with Threema's APIs and licensing. Threema told us it doesn't actively block third-party apps that cause no stability issues or high server load, are clearly marked as unofficial without using its branding, and don't circumvent the licensing. Threesea aims to meet that. This is not a permission, and Threesea is not affiliated with, endorsed or supported by Threema AG. As with any Threema app, keep a backup of your ID.",
-         "Threesea beruht auf dem Open-Source-Code von Threema Libre und versucht, fair mit Threemas Schnittstellen und Lizenzen umzugehen. Threema hat uns mitgeteilt, dass es Apps von Dritten nicht aktiv blockiert, solange sie keine Stabilitätsprobleme oder hohe Serverlast verursachen, klar als inoffiziell gekennzeichnet sind, ohne Threemas Marke zu verwenden, und die Lizenzierung nicht umgehen. Threesea will dem entsprechen. Das ist keine Erlaubnis, und Threesea ist nicht mit der Threema AG verbunden, nicht von ihr empfohlen und nicht von ihr unterstützt. Wie bei jeder Threema-App gilt: Bewahre ein Backup deiner ID auf."),
+        ("Unofficial: not affiliated with, endorsed or supported by Threema AG. Threema doesn't actively block third-party apps that play fair, as Threesea aims to, but that isn't a permission. Keep a backup of your ID.",
+         "Inoffiziell: nicht mit der Threema AG verbunden, nicht von ihr empfohlen und nicht von ihr unterstützt. Threema blockiert Apps von Dritten nicht aktiv, wenn sie sich fair verhalten, wie Threesea es anstrebt; eine Erlaubnis ist das aber nicht. Bewahre ein Backup deiner ID auf."),
     "threesea-se-credits":
         ("Credits",
          "Danksagungen"),
@@ -1815,6 +1857,9 @@ DE = {
     "threesea-la-credit-whisperfish":
         ("Whisperfish, the Signal client for Sailfish OS: a reference for building such an app.",
          "Whisperfish, der Signal-Client für Sailfish OS: ein Vorbild dafür, wie man eine solche App baut."),
+    "threesea-la-credit-harpoon":
+        ("Harpoon by Juhani Lehtimäki (GPL-3.0): how the waves on the cover are coloured.",
+         "Harpoon von Juhani Lehtimäki (GPL-3.0): wie die Wellen auf dem Cover gefärbt sind."),
     "threesea-la-credit-libraries":
         ("SQLCipher, GStreamer, Qt and many Rust libraries (tokio, rustls, reqwest, rusqlite, RustCrypto and others).",
          "SQLCipher, GStreamer, Qt und viele Rust-Bibliotheken (tokio, rustls, reqwest, rusqlite, RustCrypto und andere)."),
@@ -2902,10 +2947,10 @@ DE = {
     "threesea-la-license-source":
         ("Source code and bug reports: %1",
          "Quellcode und Fehlermeldungen: %1"),
-    "threesea-bt-license-agpl":
+    "threesea-me-license-agpl":
         ("License text",
          "Lizenztext"),
-    "threesea-bt-license-notices":
+    "threesea-me-license-notices":
         ("Third-party licenses",
          "Lizenzen von Drittanbietern"),
     "threesea-la-add-scanned-contact":
@@ -3702,6 +3747,35 @@ DE = {
     "threesea-la-voice-volume-zero":
         ("Turn the volume up to hear the message",
          "Erhöhe die Lautstärke, um die Nachricht zu hören"),
+    "threesea-la-new-reactions":
+        ("%n new reaction(s)",
+         ("%n neue Reaktion",
+          "%n neue Reaktionen")),
+    "threesea-la-reaction-quote":
+        ("“%1”",
+         "„%1“"),
+    "threesea-la-reaction-chat":
+        ("Reacted %1 to: %2",
+         "Hat mit %1 reagiert auf: %2"),
+    "threesea-la-reaction-group-one":
+        ("%1 reacted %2 to: %3",
+         "%1 hat mit %2 reagiert auf: %3"),
+    "threesea-la-reaction-group-two":
+        ("%1 and %2 reacted to: %3",
+         "%1 und %2 haben reagiert auf: %3"),
+    "threesea-la-reaction-group-more":
+        ("%1 and %n other(s) reacted to: %2",
+         ("%1 und %n weitere Person haben reagiert auf: %2",
+          "%1 und %n weitere haben reagiert auf: %2")),
+    "threesea-la-notification-reactions":
+        ("Reactions",
+         "Reaktionen"),
+    "threesea-la-notification-reactions-chats-description":
+        ("Notify when someone reacts to one of your messages in a chat.",
+         "Benachrichtigen, wenn jemand in einem Chat auf eine deiner Nachrichten reagiert."),
+    "threesea-la-notification-reactions-groups-description":
+        ("Notify when someone reacts to one of your messages in a group.",
+         "Benachrichtigen, wenn jemand in einer Gruppe auf eine deiner Nachrichten reagiert."),
 }
 
 # The engineering-English base file: only the plural forms need filling in.
@@ -3810,6 +3884,14 @@ EN_PLURALS = {
         ("Cleared for %n contact(s)",
          ("Cleared for %n contact",
           "Cleared for %n contacts")),
+    "threesea-la-new-reactions":
+        ("%n new reaction(s)",
+         ("%n new reaction",
+          "%n new reactions")),
+    "threesea-la-reaction-group-more":
+        ("%1 and %n other(s) reacted to: %2",
+         ("%1 and %n other reacted to: %2",
+          "%1 and %n others reacted to: %2")),
 }
 
 

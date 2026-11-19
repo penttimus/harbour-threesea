@@ -1,31 +1,29 @@
-# Threesea — an unofficial Threema client for Sailfish OS
+<img src="icons/172x172/harbour-threesea.png" width="96" alt="Threesea's icon: a speech bubble afloat in a green sea">
+
+# Threesea
+
+**An unofficial [Threema](https://threema.ch) client for Sailfish OS.** Native, private, no Google.
+
+[![CI](https://github.com/penttimus/harbour-threesea/actions/workflows/ci.yml/badge.svg)](https://github.com/penttimus/harbour-threesea/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/penttimus/harbour-threesea?label=release)](https://github.com/penttimus/harbour-threesea/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/penttimus/harbour-threesea/total)](https://github.com/penttimus/harbour-threesea/releases)
+[![Sailfish OS 5.1+](https://img.shields.io/badge/Sailfish%20OS-5.1%2B-1b9ac2)](#install)
+[![Get it with Harpoon](https://img.shields.io/badge/get%20it%20with-Harpoon-2e7d32)](#install)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/ai-generated-white.svg">
   <img alt="AI generated" src="docs/assets/ai-generated-black.svg" height="40">
 </picture>
 
-A native Sailfish OS app for [Threema](https://threema.ch), built on Threema's own Rust protocol
-library `libthreema`, with a Silica UI that follows Jolla's apps. You need a **Threema Libre
-license key from the Threema Shop**. No Google services, no telemetry.
+- 💬 **Threema on your Sailfish phone**: chats, groups, calls, Threema Desktop and Web
+- 🔒 **Threema's own protocol library** (`libthreema`), encrypted storage, no telemetry
+- 🐟 **Feels like Jolla's apps**: Silica UI, pulley menus, cover, notifications
+- 🔑 **Needs a Threema Libre license key** from the [Threema Shop](https://shop.threema.ch)
 
-## Disclaimer — please read
-
-- **Made with AI.** This app was developed with [Claude Code](https://claude.com/claude-code)
-  (Anthropic) and audited with [OpenAI Codex](https://openai.com/codex/), directed and tested by
-  a human maintainer. It is a **research and experimentation** project.
-- **AI makes mistakes.** The code, including its security-relevant parts, can contain errors
-  that neither the AI nor the maintainer noticed. The developers give **no warranty** of any
-  kind (see sections 15 and 16 of the [license](LICENSE)); **you use the app at your own risk.**
-- **Not connected to Threema.** Threesea is based on Threema Libre's open-source code and tries
-  to play fair with Threema's APIs and licensing: it needs a license bought in the Threema Shop,
-  checks it like Threema's own apps, uses Threema's protocol library, names itself to Threema's
-  servers, and tries to follow the protocol as Threema's apps do. We asked Threema about third-party
-  clients, and they told us (November 2026) that they don't actively block them as long as they
-  cause no stability issues or high load on the servers, are clearly marked as unofficial without
-  using Threema's branding, and don't circumvent the licensing. Threesea aims to meet that. This is
-  not a permission, Threema can change its position, and Threesea is **not affiliated with, endorsed
-  or supported by Threema AG**: support questions belong here, not with them. As with any Threema app, keep a backup of your ID.
+> [!IMPORTANT]
+> Threesea is **made with AI**, **comes with no warranty**, and is **not affiliated with Threema**.
+> Please read the [disclaimer](#disclaimer) before you use it.
 
 ## Screenshots
 
@@ -44,104 +42,122 @@ license key from the Threema Shop**. No Google services, no telemetry.
 </tr>
 </table>
 
-Made-up demo data, taken in the emulator. [Which version each picture is from](docs/screenshots/README.md).
-
-## What works
-
-| Feature | State |
-|---|---|
-| Builds and installs on SFOS 5.1+ (aarch64, armv7hl, i486) | ✅ |
-| Libre license check, ID creation, ID backup export/import (as text or QR code), Threema Safe backup/restore (also finding a forgotten ID by its linked number or address) | ✅ |
-| Data backups in Threema for Android's format: create one by hand or on a schedule, import one, or start a new phone from one with ID and chats | ✅ (not yet restored on a real Android device) |
-| 1:1 chats with Perfect Forward Secrecy (off while a device is linked, as Threema's multi-device requires, and if you switch it off; no warning yet on a message sent without it), delivery/read receipts, typing indicators | ✅ |
-| Report spam, 1:1 and groups (the complete report is not tested end to end yet) | ✅ |
-| Groups (create, rename, members, leave, pictures), mentions, distribution lists | ✅ |
-| Photos (cut, turn, draw on them), videos, files, voice messages (pause, listen before sending), GIFs, polls with a chat's overview, locations (your position, or a place found nearby or by name), quotes, reactions, edit, delete | ✅ |
-| Threema's text formatting (*bold*, _italic_, ~strikethrough~), emoji picker with search | ✅ |
-| Profile pictures (cut to a square, or taken with the camera), contact verification by QR code | ✅ |
-| Address book matching (opt-in, hashed) | ✅ |
-| App lock and private chats, encrypted storage (SQLCipher) | ✅ |
-| Notifications with quick reply, cover, background connection | ✅ |
-| Forward and share to several chats at once, share a message's text to other apps, export a chat as a ZIP | ✅ |
-| Share from other apps, Threema links (`threema://`, `threema.id`) | ✅ |
-| Multi-device (Threema for Desktop, with names for the linked devices), Threema Web (sessions with names of their own, self-hosted servers you allow) | ✅ |
-| Archive, pinned chats, mark as unread, chat search, starred messages, auto-delete | ✅ |
-| 1:1 calls and group calls, audio and video (Full flavour) | ✅ (phone tests pending) |
-| German, French and Finnish translations | ✅ |
-
-Two flavours are built from this tree, both as RPMs on the GitHub releases page (not in the
-Jolla Store or Chum yet): **Full**, with a background service that connects at login and calls,
-and **Lite**, which follows the Jolla Store's rules (it stays connected only once opened, no
-calls). Install one of them; see [ADR 0014](docs/decisions/0014-lite-full-github-updates.md).
-
-### What it connects to
-
-Threesea talks to Threema's servers only: the chat server, the directory, the blob server, Threema
-Safe, the mediator for linked devices, the call servers, Threema Web's default server and the map
-server that finds places to send. Two exceptions, each only if you choose it:
-
-- **Check for updates** (builds from GitHub only): once a day it asks GitHub for the newest
-  release. It is asked once and stays off unless you agree; GitHub sees your IP address and the
-  app's version, nothing else. Builds for a store leave it out entirely.
-- **Self-hosted Threema Web servers**: a code that names another server asks you first, and the
-  servers you allowed are listed under Threema Web, where you can take them back.
+<sub>Made-up demo data from the emulator ([versions](docs/screenshots/README.md)).</sub>
 
 ## Install
 
-Download an RPM from the [releases](https://github.com/penttimus/harbour-threesea/releases) and
-install it in developer mode; see [docs/release.md](docs/release.md#installing-a-release-on-a-phone).
-Each release is built by GitHub Actions from the tagged source, with checksums and build
-provenance attestations ([SECURITY.md](SECURITY.md#verifying-a-release)).
+### With Harpoon (recommended)
 
-### If you forget the app lock's PIN or passphrase
+[Harpoon](https://github.com/JuhaniLehtimaeki/Harpoon) installs apps straight from their GitHub
+releases and keeps them up to date, picking the right package for your phone
+([forum thread](https://forum.sailfishos.org/t/obtainium-like-installer-for-sailfish-harpoon/34515)).
 
-This takes the chats and media on this phone with it; what comes back is what your backups hold.
+<img src="docs/assets/harpoon-qr.svg" width="160" align="right" alt="QR code: github.com/penttimus/harbour-threesea">
 
-1. Delete the app's data folder, `.local/share/org.threesea/harbour-threesea` in your home folder:
-   with a file manager that shows hidden folders, or in a terminal with
-   `rm -rf ~/.local/share/org.threesea/harbour-threesea`.
-2. Restart the phone. Closing the window is not enough: with "Keep running in the background" on,
-   which is the default, Threesea goes on running and keeps the deleted data open.
-3. Open Threesea. It starts as on a new phone, without the lock: enter the license key and restore
-   your ID from Threema Safe, an ID backup or a data backup. A data backup brings the chats along;
-   after a restore from Threema Safe or an ID backup, import it from its page in the settings.
+1. Install Harpoon from its [latest release](https://github.com/JuhaniLehtimaeki/Harpoon/releases/latest)
+   (Sailfish OS 5.0+, allow untrusted software in Settings).
+2. In Harpoon, add an app: **scan the QR code**, or paste
+   `https://github.com/penttimus/harbour-threesea`.
+3. Pick **full** when Harpoon asks which build you want (see [below](#full-or-lite)). Releases
+   up to 0.3.1 name their files so that it can't ask: in the same dialog, set
+   **Package filter (regular expression)** to `full` (or `lite`). The filter keeps working later.
 
-With a passphrase for the stored data (Settings → Security), Threesea asks for that passphrase
-before step 3: it is kept in Sailfish Secrets, not in the folder. Only that passphrase gets past
-this page, so keep it safe.
+That's it: new versions come to you through Harpoon. From 0.4.0 on it also
+recognises a Threesea you installed by hand, and shows its icon.
 
-## How it was made, and how to continue
+### By hand
 
-Everything the AI was told and everything learned on the way is in the repository, so anyone
-can pick up the work:
+Download the RPM for your phone from the [releases](https://github.com/penttimus/harbour-threesea/releases/latest)
+(`aarch64` for current phones, `armv7hl` for older ones) and open it on the phone
+([details](docs/release.md#installing-a-release-on-a-phone)). Every release is built by GitHub
+Actions from the tagged source, with checksums and [build attestations](SECURITY.md#verifying-a-release).
 
-- [CLAUDE.md](CLAUDE.md) is the standing brief given to Claude Code: goal, stack, security
-  rules, the phased plan, UI conventions and working rules. Notes like "(user)" or "user
-  decision" in it and in the docs mark decisions the human maintainer made.
-- [docs/](docs) holds the decisions (`decisions/`, one per choice), protocol notes, the mapping
-  to the Android app, research, the build and emulator guides, and the status log
-  ([docs/STATUS.md](docs/STATUS.md)).
-- Security reviews, each with what has been fixed since: [docs/security-audit.md](docs/security-audit.md);
-  the audits of 2026-10-27 ([security](docs/security-audit-2026-10-27.md),
-  [rules](docs/rules-audit-2026-10-27.md), and the [deep re-audit](docs/deep-audit-2026-10-27.md),
-  whose header lists what is still open); and the [audit of 2026-10-30](docs/audit-2026-10-30.md).
-  A further review of 2026-11-04 was worked through for the next release; what it changed is in the
-  [CHANGELOG](CHANGELOG.md) and [docs/STATUS.md](docs/STATUS.md).
-- `scripts/check.sh` runs all checks; `git config core.hooksPath scripts/hooks` runs the quick
-  ones before every commit.
+### Full or Lite?
 
-## Build
+|  | **Full** (recommended) | **Lite** |
+|---|---|---|
+| Messages arrive | always, connects at login | while Threesea runs |
+| Calls (1:1 and group) | ✅ | — |
+| Voice messages at the ear | ✅ | — |
+| Follows the Jolla Store's rules | — | ✅ |
 
-See [docs/build.md](docs/build.md). In short, with Docker installed:
+Install one of the two ([why](docs/decisions/0014-lite-full-github-updates.md)).
+
+## Features
+
+- **Chats**: 1:1 with Perfect Forward Secrecy, groups, distribution lists, mentions, receipts,
+  typing, quotes, reactions, edit, delete, polls, text formatting, emoji with search
+- **Media**: photos (crop, rotate, draw), videos, files, voice messages, GIFs, locations
+- **Calls**: 1:1 and group, audio and video *(Full)*
+- **Devices**: Threema for Desktop (multi-device), Threema Web
+- **Your ID**: license check, new ID, ID backup (text or QR), Threema Safe, Android data backups
+- **Privacy**: app lock, private chats, encrypted storage (SQLCipher), opt-in hashed address book
+  matching, spam reports
+- **Sailfish**: notifications with quick reply, cover, background connection, sharing,
+  `threema://` links
+- **Organise**: archive, pinned chats, mark as unread, search, starred messages, auto-delete,
+  chat export
+- **Languages**: English, German, French, Finnish
+
+Not fully tested yet: calls on a phone, a data backup restored on Android, and a complete spam
+report. What's new is in the [CHANGELOG](CHANGELOG.md).
+
+<details>
+<summary><b>What Threesea connects to</b></summary>
+
+Only Threema's servers: chat, directory, blobs, Threema Safe, the multi-device mediator, calls,
+Threema Web and the map server. Two exceptions, both only if you say yes:
+
+- **Update check** (GitHub builds): once a day asks GitHub for the newest version. GitHub sees your
+  IP address and the app version, nothing else. Asked once, off unless you agree.
+- **Self-hosted Threema Web servers**: asked before the first use, listed under Threema Web.
+
+</details>
+
+<details>
+<summary><b>Forgot your app lock PIN or passphrase?</b></summary>
+
+This deletes the chats and media on this phone. What comes back is what your backups hold.
+
+1. Delete `~/.local/share/org.threesea/harbour-threesea`.
+2. Restart the phone (Threesea keeps running in the background otherwise).
+3. Open Threesea, enter the license key and restore your ID from Threema Safe, an ID backup or a
+   data backup.
+
+With "Encrypt stored data" on, Threesea asks for that passphrase first. Nothing else gets past it.
+
+</details>
+
+## Disclaimer
+
+- **Made with AI.** Developed with [Claude Code](https://claude.com/claude-code) (Anthropic) and
+  audited with [OpenAI Codex](https://openai.com/codex/), directed and tested by a human
+  maintainer. A research and experimentation project.
+- **No warranty.** AI makes mistakes, also in security-relevant code. You use Threesea at your own
+  risk (sections 15 and 16 of the [license](LICENSE)).
+- **Unofficial.** Not affiliated with, endorsed or supported by Threema AG: please ask for help
+  here, not there. Threesea plays fair: it needs a license from the Threema Shop, checks it like
+  Threema's apps, and names itself to Threema's servers. Threema told us (November 2026) that it
+  doesn't actively block third-party apps that cause no trouble, are clearly unofficial and don't
+  get around the licensing. That isn't a permission, and it can change.
+- **Keep a backup of your ID**, as with any Threema app.
+
+## Contributing
+
+Bug reports and pull requests are welcome in the [issues](https://github.com/penttimus/harbour-threesea/issues).
+
+Everything the AI was told and learned is in the repository, so anyone can pick up the work:
+[CLAUDE.md](CLAUDE.md) is the standing brief, [docs/](docs) has the decisions, protocol notes,
+audits and the [status log](docs/STATUS.md). `scripts/check.sh` runs all checks.
+
+Build with Docker ([details](docs/build.md)):
 
 ```sh
-git clone --recurse-submodules --shallow-submodules <repo> && cd harbour-threesea
-scripts/sdk-build.sh aarch64
+git clone --recurse-submodules --shallow-submodules https://github.com/penttimus/harbour-threesea
+cd harbour-threesea && scripts/sdk-build.sh aarch64
 ```
 
 ## Contributors
-
-Everyone who has worked on Threesea, with the day of their first commit:
 
 <!-- contributors: written by scripts/make-contributors.py from contributors.json -->
 - **[penttimus](https://github.com/penttimus)**, since 27 October 2026
@@ -150,45 +166,36 @@ Everyone who has worked on Threesea, with the day of their first commit:
 
 ## Credits
 
-Threesea stands on the work of others; thank you:
+Threesea stands on the work of others. Thank you!
 
 - **[Threema AG](https://threema.ch)**: [threema-android](https://github.com/threema-ch/threema-android)
-  (AGPL-3.0), the reference for nearly everything here, and its Rust library `libthreema`
-  (AGPL-3.0, vendored with our changes in `third_party/libthreema`); the protocols of Threema,
-  Threema for Desktop and Threema Web; the emoji panel's search terms, from threema-android's
-  assets.
-- **[Unicode CLDR](https://cldr.unicode.org/)**: those search terms are likely derived from the
-  Unicode CLDR emoji annotations (Unicode License v3, in THIRD-PARTY-NOTICES.txt).
-- **[Twemoji](https://github.com/jdecked/twemoji)**: emoji graphics (CC-BY 4.0), as packaged
-  in Threema Libre.
-- **[opus-pure](https://crates.io/crates/opus-pure)** by Stephen Berry, from rusty-opus and
-  opus-rs, Rust ports of [libopus](https://opus-codec.org/) by the Xiph.Org Foundation and
-  others (BSD-3-Clause): voice messages where the phone has no Opus encoder.
-- **[webrtc-audio-processing](https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing)**,
-  the PulseAudio project's package of Google's WebRTC audio processing (BSD-3-Clause): echo
-  cancellation in calls.
+  and `libthreema` (AGPL-3.0, vendored with our changes), the protocols of Threema, Threema for
+  Desktop and Threema Web, and the emoji search terms (likely from the
+  [Unicode CLDR](https://cldr.unicode.org/), Unicode License v3)
+- **[Twemoji](https://github.com/jdecked/twemoji)**: emoji graphics (CC-BY 4.0)
+- **[opus-pure](https://crates.io/crates/opus-pure)** by Stephen Berry, from Rust ports of
+  [libopus](https://opus-codec.org/) (BSD-3-Clause): voice messages
+- **[webrtc-audio-processing](https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing)**
+  (BSD-3-Clause): echo cancellation in calls
 - **[MapLibre Native](https://github.com/maplibre/maplibre-native)** and its
-  [Qt bindings](https://github.com/maplibre/maplibre-native-qt) (BSD-2-Clause), with
-  **rinigus**' [mapbox-gl-qml](https://github.com/rinigus/mapbox-gl-qml) (LGPL-3.0) and Sailfish
-  packaging [pkg-maplibre-gl-native](https://github.com/rinigus/pkg-maplibre-gl-native) (MIT):
-  the map, as in Pure Maps. Bundled in the package; the exact sources are those projects at the
-  versions in [scripts/maplibre/versions](scripts/maplibre/versions) plus our patches in
-  [scripts/maplibre/patches](scripts/maplibre/patches).
-- **[OpenMapTiles](https://openmaptiles.org/)** and **[OpenStreetMap](https://www.openstreetmap.org/copyright)
-  contributors** (ODbL): the map data, served by Threema's map server.
-- **[Jolla](https://jolla.com) and Sailfish OS**: the Silica components and theme icons, and
-  Jolla's Messages, People, Settings and Gallery apps as the model for the UI.
-- **[Whisperfish](https://gitlab.com/whisperfish/whisperfish)**: the Rust-based Signal client for
-  Sailfish OS, a reference for how such an app can be built.
-- **[SQLCipher](https://www.zetetic.net/sqlcipher/)** (BSD-3-Clause), **[GStreamer](https://gstreamer.freedesktop.org/)**
-  and its `webrtcbin` (LGPL), **[Qt](https://www.qt.io/)** (LGPL), and the Rust crates in
-  [Cargo.lock](Cargo.lock), among them tokio, rustls, reqwest, rusqlite, RustCrypto, prost and
-  image.
-- The **"AI generated" label** is the European Commission's icon for AI-generated content, free
-  to use.
+  [Qt bindings](https://github.com/maplibre/maplibre-native-qt) (BSD-2-Clause), with **rinigus**'
+  [mapbox-gl-qml](https://github.com/rinigus/mapbox-gl-qml) (LGPL-3.0) and
+  [pkg-maplibre-gl-native](https://github.com/rinigus/pkg-maplibre-gl-native) (MIT): the map,
+  bundled at the [versions](scripts/maplibre/versions) and with the [patches](scripts/maplibre/patches) in this repository
+- **[OpenMapTiles](https://openmaptiles.org/)** and
+  **[OpenStreetMap](https://www.openstreetmap.org/copyright) contributors** (ODbL): map data, served
+  by Threema
+- **[Jolla](https://jolla.com) and Sailfish OS**: Silica, the theme icons, and Jolla's apps as the
+  model for the UI
+- **[Whisperfish](https://gitlab.com/whisperfish/whisperfish)**: the reference for a Rust app on
+  Sailfish OS
+- **[Harpoon](https://github.com/JuhaniLehtimaeki/Harpoon)** by Juhani Lehtimäki (GPL-3.0): how
+  the waves on the cover are coloured
+- **[SQLCipher](https://www.zetetic.net/sqlcipher/)**, **[GStreamer](https://gstreamer.freedesktop.org/)**,
+  **[Qt](https://www.qt.io/)** and the Rust crates in [Cargo.lock](Cargo.lock)
+- The **"AI generated" label** is the European Commission's icon for AI-generated content
 
 ## License
 
-AGPL-3.0-only, like upstream threema-android. See [LICENSE](LICENSE); the licences of the
-bundled libraries are in [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt). The app shows both
-under Settings → About.
+[AGPL-3.0-only](LICENSE), like threema-android. The bundled libraries' licences are in
+[THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt). The app shows both under Settings → About.

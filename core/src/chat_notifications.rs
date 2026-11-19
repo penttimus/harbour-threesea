@@ -205,6 +205,12 @@ impl Store {
         }
     }
 
+    /// Whether a reaction to one of our messages in this chat may notify: like Android, not
+    /// while the chat is muted, "mentions only" included (a reaction mentions nobody).
+    pub fn reactions_notify(&self, conversation: &str) -> bool {
+        !matches!(self.chat_notifications(conversation), Ok(Some(_)))
+    }
+
     fn mentions_me(&self, message: &Message) -> bool {
         let json = message.to_json();
         let text = json["text"]

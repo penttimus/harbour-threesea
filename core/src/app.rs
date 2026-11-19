@@ -1483,6 +1483,8 @@ pub struct Shared {
     /// In the core loop, from the UI: what waits or takes long goes beside the loop. Others
     /// asking the same (Threema Web) need the answer in place.
     pub(crate) in_background: std::cell::Cell<bool>,
+    /// A round of groups' spam reports is being sent (`app_spam`).
+    pub(crate) group_reports_sending: std::cell::Cell<bool>,
 }
 
 impl core::ops::Deref for App {
@@ -1625,6 +1627,7 @@ impl App {
             data_dir: start.data_dir.clone(),
             imported_contacts_unchecked: std::cell::Cell::new(false),
             in_background: std::cell::Cell::new(false),
+            group_reports_sending: std::cell::Cell::new(false),
         };
         let app = Self {
             shared: std::rc::Rc::new(shared),
@@ -4013,7 +4016,7 @@ mod tests {
     /// The page of a table, unreadable from now on.
     fn damage_table(path: &std::path::Path, key: &[u8; 32], table: &str) {
         let store = Store::open(path, key).unwrap();
-        let root: usize = store
+        let root: i64 = store
             .conn
             .query_row(
                 "SELECT rootpage FROM sqlite_master WHERE name = ?1",
@@ -4021,6 +4024,7 @@ mod tests {
                 |row| row.get(0),
             )
             .unwrap();
+        let root = usize::try_from(root).unwrap();
         drop(store);
         let mut raw = std::fs::read(path).unwrap();
         raw[(root - 1) * 4096 + 100..(root - 1) * 4096 + 200].fill(0xA5);
@@ -4213,6 +4217,7 @@ mod tests {
             assert_eq!(summary["unreadTotal"], list["unreadTotal"]);
             assert_eq!(summary["unreadFrom"], list["unreadFrom"]);
             assert_eq!(summary["unreadChat"], list["unreadChat"]);
+            assert_eq!(summary["unreadChats"], list["unreadChats"]);
             summary
         };
         assert_eq!(same_as_the_list(&app)["unreadTotal"], 0);
@@ -4245,11 +4250,21 @@ mod tests {
             summary["unreadFrom"], "BBBBBBBB",
             "a private chat isn't named"
         );
+        let listed = |summary: &Value| -> Vec<String> {
+            let rows = summary["unreadChats"].as_array().unwrap();
+            rows.iter()
+                .map(|row| row["identity"].as_str().unwrap().to_owned())
+                .collect()
+        };
+        assert_eq!(listed(&summary), ["BBBBBBBB", "AAAAAAAA"], "nor listed");
 
         app.store.set_archived("BBBBBBBB", true).unwrap();
         let summary = same_as_the_list(&app);
         assert_eq!(summary["unreadTotal"], 2);
         assert_eq!(summary["unreadFrom"], "AAAAAAAA", "nor an archived one");
+        assert_eq!(listed(&summary), ["AAAAAAAA"]);
+        assert_eq!(summary["unreadChats"][0]["unread"], 2);
+        assert_eq!(summary["unreadChats"][0]["lastMessage"]["text"], "words");
     }
 
     /// The emulator's demo data (feature `demo`): a chat list to work against, and gone again
@@ -4280,6 +4295,21 @@ mod tests {
         let summary = app.unread_summary_json().unwrap();
         assert_eq!(summary["unreadTotal"], list["unreadTotal"]);
         assert_eq!(summary["unreadFrom"], list["unreadFrom"]);
+        // The cover's rows: who waits, newest first, each with its count and last message.
+        let waiting = summary["unreadChats"].as_array().unwrap();
+        assert_eq!(summary["unreadChats"], list["unreadChats"]);
+        assert_eq!(waiting.len(), 4);
+        assert_eq!(waiting[0]["displayName"], "Carla Mendes");
+        assert_eq!(waiting[0]["identity"], summary["unreadChat"]);
+        assert_eq!(waiting[0]["unread"], 3);
+        assert!(waiting[0]["lastMessage"]["id"].as_i64().unwrap() > 0);
+        assert_eq!(
+            waiting
+                .iter()
+                .map(|w| w["unread"].as_i64().unwrap())
+                .sum::<i64>(),
+            7
+        );
         assert_eq!(chats[0]["displayName"], "Ada Lindqvist", "pinned first");
 
         let long = app

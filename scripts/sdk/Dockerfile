@@ -24,7 +24,12 @@ RUN zypper --non-interactive in libatomic >/dev/null && mkdir -p /opt/rust && \
 ENV PATH=/opt/rust/cargo/bin:$PATH
 USER mersdk
 # Target-side libraries the Rust core links against outside of mb2 (SQLCipher needs libcrypto).
+# Tried up to five times each: Jolla's repository server now and then resets a connection, and
+# every CI job builds this image.
 RUN for t in aarch64 armv7hl i486; do \
-      sb2 -t SailfishOS-${SFOS_VERSION}-$t -m sdk-install -R zypper --non-interactive in \
-        openssl-devel >/dev/null || exit 1; \
+      n=1; \
+      until sb2 -t SailfishOS-${SFOS_VERSION}-$t -m sdk-install -R zypper --non-interactive in \
+          openssl-devel >/dev/null; do \
+        [ $n -lt 5 ] || exit 1; n=$((n + 1)); sleep 15; \
+      done; \
     done

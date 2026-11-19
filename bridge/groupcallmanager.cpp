@@ -285,7 +285,8 @@ void GroupCallManager::onCoreEvent(const QString &name, const QVariantMap &data)
 #endif
             emit mutedChanged();
         }
-    } else if (name == QLatin1String("groupCallAlone")) {
+    } else if (name == QLatin1String("groupCallAlone") || name == QLatin1String("groupCallEnd")) {
+        // Alone in the call, or leaving its group (reported as spam).
         leave();
     } else if (name == QLatin1String("groupCallChannelSend")) {
 #ifdef THREESEA_FULL

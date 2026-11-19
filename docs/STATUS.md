@@ -1608,3 +1608,174 @@ for Android showed both pictures upright and Android showed ours; on 2026-11-11 
 of a build of `main` (asked for: both cameras upright, video calls both ways, switching the
 camera and turning it off and on, the earpiece and the volume keys, two messages in a row for
 the banner) "look good", without a word on each. Not tried: a group call with the camera.
+
+## Spam groups as in Android 6.6.0 (2026-11-15)
+
+Android 6.6.0's "Report spam group chats and block the creator", where ours (from iOS 7.5.2's
+written steps, since 0.2.0) differed: the group's report waits in the store and goes in the
+background (right away, after connecting, hourly; 8 tries, a refusal ends it), and blocking,
+leaving and deleting no longer wait for it; a call with the creator and the group's call end with
+block and delete (the group call through a `groupCallEnd` event the bridge leaves on); a blank
+nickname goes as `null`. With "Block unknown senders", a stranger's group-setup for a group the
+user doesn't have is discarded (libthreema; ADR 0019's update). Unchanged: the detection (ours
+also leaves out named, blocked and predefined creators), the dialog and the banner, a contact's
+report (still waits, as on Android). Not tried against the real directory: the full report, as
+before (protocol notes).
+## Upstream 6.6.0: its protocols, not its libthreema (2026-11-15)
+
+threema-android 6.6.0-1237 came out on 2026-11-03. Its libthreema is halfway through a new message
+layer (the wire types private, a storage model, new providers) in exactly the files our message
+support lives in, so its code is not merged (ADR 0036, the user's choice): libthreema's
+protocol files and the reference submodule are 6.6.0's, the code stays 6.5.3's with ours.
+`vendor/libthreema` is back (it was lost with the history's clean-up) and holds the pristine
+6.6.0 for the merge later.
+
+What core follows: the fields 6.6.0's protocol calls deprecated, which Android 6.6.0 still sends
+and reads alone (the contact sync and keyboard policies in the settings sync, a group call's
+participant IDs and early media keys), under their new names; a group call state's participants
+say they take part (moderator approval is new and unused); and the TLS pin of
+`test.threema.com`, new upstream. The wire stays as it was. Open from 6.6.0: Android's new
+"report spam group chats and block the creator".
+## The SQLite advisory fixed (2026-11-15)
+
+`rusqlite` 0.42 / `libsqlite3-sys` 0.40 came out on 2026-11-11 with SQLCipher 4.20.0 on SQLite
+3.54.1, so RUSTSEC-2026-0459 is fixed and no longer passed over (ADR 0035's update, issue 9). The
+API changes it brought: no `ToSql`/`FromSql` for `usize` (three places now convert), and hooks
+only through `&mut`, so a test build's store installs its commit hook when it opens
+(`store::CommitWatch`) and the tests count or refuse commits through it. A store and a WAL written
+by 0.3.1 (SQLCipher 4.6.1) are a fixture now that every later SQLCipher has to open. The licence
+notices take SQLCipher's licence from `sqlcipher-src`.
+
+## Voice messages on Bluetooth headphones (issue 22, 2026-11-15)
+
+Reported on a Jolla Phone 2026 (SFOS 5.2.0.22, 0.3.1): with A2DP headphones voice messages came
+from the loudspeaker, the stream in the policy's group `call`, after the phone had once been at the
+ear. The call class's resource set lived on after letting go, its rule filing every stream of the
+process under the call (ADR 0034's update). Letting go now gives the rule back to the player,
+leaving the ear lets go before the loudspeaker's stream starts, and with headphones or Bluetooth as
+the output (`bridge/mediaroute.h`, `tests/mediaroute`) the ear stays off. Full only.
+
+Tried on the phone (the reporter): with ad18fd3 a message played after one at the ear was silent,
+its stream in the corked `othermedia`; with bc009ed (our streams tagged by role instead) nothing
+played after the first message at the ear. PulseAudio's policy module up to 14.2.51 keeps one
+stream rule per process, shared with Qt's media player, and removing ours removed it (ADR 0034's
+update; Jolla fixed it in 14.2.52). The call class's set now stays and switches its rule's group
+between `call` and `player`. Confirmed by the reporter with 7cccef0 (pulseaudio-policy-enforcement
+14.2.50): at the ear, on the table, at the ear again, the old step 3 with headphones and a voice
+message after a call all heard where they should be; no warnings in the log.
+
+Seen on the way, not from this branch: a call with A2DP headphones connected was heard from the
+phone. The headphones offer HFP (`handsfree_head_unit`), but the card stayed on `a2dp_sink`, the
+call stream on `sink.fast`, and PulseAudio logged `dbusif.c: can't set profiles/ports to source
+voicecall` at the call's start. Not known whether 0.3.1 did the same (device checklist, "Ringing,
+routes and the screen in calls", step 11).
+
+## Reaction notifications as in Android 6.6.1 (2026-11-18)
+
+Android 6.6.1 (`6.6.1-1240`; nothing in libthreema or the protocol files changed, the reference
+submodule stays at 6.6.0) turned on "Receive a notification when someone reacts to your message".
+Ported: the core says so with a `reaction` event when someone else's reaction changes a message of
+ours (chat or group, new or legacy, given or taken back, also when another device received it
+first), and the window keeps one notification per chat beside the one for its messages: Android's
+wording about the message reacted to last (what, in a group who; "%n new reactions" with message
+content off and for private chats, which share one without names), a tap opens the chat at that
+message (D-Bus `openMessage`). It follows a reaction taken back, an edit and a deletion, and goes
+when the chat is opened or read anywhere. None while the lock is on, for the chat on the screen,
+for a muted chat ("mentions only" too), or with the switch off: Settings → Notifications has one
+under Chats and one under Groups, both on by default like Android's, device-local.
+
+Differences from Android: a reaction has no read state here, so the notification counts what came
+since it was last cleared, in memory (after a restart a notification still showing is taken over
+and replaced by the next reaction); names are display names, not first names. 6.6.1's other
+change to the receive path (queue-dry and leader states as ordered tasks) needs nothing here: the
+connection handles them in order already. Tests: `providers::tests` (the event, muting, the lock)
+and six `reaction*` scenarios in `tests/lockstate`. In the emulator (ECHOECHO can't react, so
+with a build that took an echoed emoji for a reaction, not committed): the banner, the icon on the
+lock screen and the entry in Events read "Reacted 😍 to: “reaction test”" under the contact's
+name, from a run without a window as well, and the tap opened the chat; the two switches are on
+the settings page. Not seen there: a group, the update on a second reaction, a long chat's jump.
+Not tried on a phone (device checklist, "Notifications and alerts"). German, French and Finnish
+are in (2026-11-18), with the About page's shortened licence line and disclaimers that had been
+waiting: no text is unfinished.
+## A new launcher icon, and the cover as a sea (2026-11-18)
+
+A contributor proposed the launcher icon faint behind the cover's text (pull request 27). Tried
+in the emulator, the coloured icon turned into an olive disc on a red ambience and its dots sat
+behind the count, so the idea was taken further with the user instead of merged: a new icon (a
+leaning speech bubble afloat in a sea of three waves, lime to green like Jolla's gradients after a
+dark forest green sank into dark wallpapers, `scripts/make-icons.py`), and the cover drawing
+that picture in one colour as its layout (`qml/components/CoverSea.qml`, a Canvas): the count up
+left, the chats that wait on the wave under it, the cover actions on the last wave, the bubble
+afloat at the right. The two upper waves rise a row for every chat listed and change their shape a
+little with it; with nothing unread the sea is at its lowest. The colouring (the ambience's
+highlight background colour, layers of 0.30 / 0.55 / 1.0 that add up, the whole at
+`Theme.opacityLow`) is Harpoon's.
+
+The core tells the cover up to five waiting chats (`unreadChats` in `conversations` and
+`unreadSummary`: name, count, last message), never a private or an archived one. Each chat's last
+message shows only with Settings → Privacy → "Show messages on the cover" (the bridge's
+`coverPreviews`, device-local, off by default); "Hide content on the cover" and the app lock still
+leave only the count.
+
+Open, for the phone: the waves' strength on light and on pale ambiences (the drafts were judged on
+one dark red ambience, composited by hand because the emulator blends translucency wrongly), the
+glide when the number of waiting chats changes, and whether the rising level stays or is pinned to
+its highest (one value in `CoverPage.qml`, `tide`).
+
+## Reference submodule at 6.6.1 (2026-11-18)
+
+`third_party/threema-android` is at `6.6.1-1240` (`895c101e`), by hand: `scripts/update-libthreema.sh`
+would merge `vendor/libthreema`, which ADR 0036 holds back. `domain/libthreema` and
+`domain/protocol` are the same in 6.6.0 and 6.6.1, so the vendored libthreema, its protocol files
+and `vendor/libthreema` stay as they are, and the TLS pins are unchanged (`scripts/check-pins.py`).
+Looked at for the full merge, as ADR 0036 asks with every tag: nothing has moved, upstream's
+message layer is where it was. What 6.6.1 changed in the app: notifications for reactions to one's
+own messages, now on for everyone (ported on its own branch, `feat/reaction-notifications`); the
+queue-dry and leader states as ordered tasks, which the connection loop here already is; and
+Android-only work (call notification fallback, a Samsung audio sink, the HMS licence check, error
+reports, WebRTC 149).
+
+## Dependencies brought up to date (2026-11-18)
+
+Before the next release, everything pinned was compared with its upstream. Updated: the lockfile's
+compatible versions (57 crates, among them rustls-webpki 0.103.17, rustls-pki-types 1.16,
+webpki-roots 1.0.12, zeroize 1.9.2), the exact pins with a newer release of the same line (bytes
+1.12.2, rustix 1.1.6, zip 9.7.0, rcgen 0.14.10 for the tests), opus-pure 0.2.3 from crates.io (it
+builds for i686 now, so the vendored copy with our patch is gone), mapbox-gl-qml 3.2.2 (a Qt 6
+change only) and the reference submodule (above). Already current: webrtc-audio-processing v2.1,
+rinigus' maplibre packaging 3.0.0+git2, protoc, the Rust toolchain for the libthreema we vendor.
+
+Left on purpose: hmac 0.12, sha2 0.10, scrypt 0.11, aes-gcm 0.10, rand 0.8 and prost 0.14.4 stay
+on the versions libthreema uses (one crypto stack, CLAUDE.md §4); tokio-tungstenite 0.29 is the
+version libthreema's examples use; rusqlite 0.43 waits, the store having just moved to 0.42 and
+SQLCipher 4.20. `cargo audit` was not run here (not installed on this machine): the weekly CI job
+and the push's own run say whether anything is open.
+
+## 0.4.0 prepared (2026-11-18, for 2026-11-19)
+
+Version 0.4.0 in the spec, the workspace and the project file, and its CHANGELOG section. Every
+text has its German, French and Finnish (the Finnish written here, not by a native speaker: the
+About page's disclaimer is the part worth a look by one). The store's schema is still the one of
+0.3.0, so there is no new fixture. Nobody is new among the contributors.
+
+In it since 0.3.1: the new launcher icon and the cover as a sea that lists who waits, with the
+last messages as a setting; notifications for reactions to our messages (Android 6.6.1); spam
+groups reported in the background and no new groups from unknown senders with "Block unknown
+senders" (Android 6.6.0); the shorter About page and README with Harpoon as the way to install;
+release files named with the flavour after the architecture; rusqlite 0.42 with SQLCipher 4.20,
+the lockfile's updates, opus-pure from crates.io and mapbox-gl-qml 3.2.2; voice messages on
+Bluetooth headphones; and the stall probe only while the app is in front.
+
+Found while checking `main` for it: the merge of `main` into the reactions' branch had left an
+entry open in all four `.ts` files (not well-formed XML; repaired in pull request 32).
+
+Retaken: the cover and the launcher icon (`08`, `09`). The other pictures are from 0.2.0.
+
+## Settings → Cover (2026-11-19)
+
+On the phone the cover's sea in the ambience's colour was too strong. It is now at half that
+strength (`CoverSea.intensity`), and the cover's settings have a page of their own: "Hide content
+on the cover" and "Show messages on the cover" (both were under Privacy), the waves' colour
+("Ambient", the ambience's highlight background colour, or "Static", the text's colour as a pale
+haze) and their level ("Rising" as before, "Leveled" always low, "Always risen" always at the
+highest). Both choices are device-local (`coverColour`, `coverWaves` in the bridge's QSettings).

@@ -22,7 +22,7 @@ store = []
 [dependencies]
 # Voice-message fallback where the platform has no AAC: pure-Rust Opus/Ogg (BSD-3-Clause, no
 # dependencies, no C), royalty-free codec. See docs/protocol-notes.md "Voice messages".
-opus-pure = "=0.2.2"
+opus-pure = "=0.2.3"
 # Contact verification QR codes (Threema's 3mid: format): generate and decode, pure Rust,
 # MIT/Apache, without their optional image dependencies.
 # Address book matching: HMAC-SHA256 of normalised e-mails / phone numbers (as Android); the
@@ -38,7 +38,7 @@ libthreema = { path = "../third_party/libthreema/lib" }
 # would need unsafe). Goes into the shipped binary with errno, both new there (until now rustix
 # was only a test dependency, through tempfile). Over libc, which every target here has.
 # `process`: who we are (geteuid), to tell our folders in the shared temporary folder from others'.
-rustix = { version = "=1.1.5", default-features = false, features = ["std", "fs", "process", "use-libc"] }
+rustix = { version = "=1.1.6", default-features = false, features = ["std", "fs", "process", "use-libc"] }
 
 # Runtime + HTTPS. Same families libthreema's own CLI uses (tokio, reqwest, rustls); TLS via rustls
 # with the ring provider (no system OpenSSL on the network path), our own verifier does pinning.
@@ -47,7 +47,7 @@ reqwest = { version = "0.13", default-features = false, features = ["rustls-no-p
 # Blob uploads report their progress through a request body of our own (https::ProgressBody);
 # both are in the tree through reqwest already.
 http-body = "=1.1.0"
-bytes = "=1.12.1"
+bytes = "=1.12.2"
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
 rustls-webpki = { version = "0.103", default-features = false, features = ["std", "ring"] }
 webpki-roots = "1"
@@ -61,7 +61,7 @@ futures-util = { version = "0.3", default-features = false, features = ["sink", 
 prost = "=0.14.4"
 
 # Encrypted store (SQLCipher, statically bundled; links the system libcrypto, Harbour-allowed).
-rusqlite = { version = "0.37", features = ["bundled-sqlcipher"] }
+rusqlite = { version = "0.42", features = ["bundled-sqlcipher"] }
 
 # Threema Safe: same RustCrypto crates/versions libthreema uses (it has no Safe implementation).
 scrypt = { version = "0.11", default-features = false }
@@ -80,7 +80,7 @@ flate2 = { version = "1", default-features = false, features = ["rust_backend"] 
 # Android full data backups: Zip4j writes AES-256 (WinZip AE) ZIP entries with DEFLATE
 # (FileHandlingZipOutputStream.kt); read-only here, minimal features (no zopfli/zstd/…),
 # the same flate2 as above. MIT, MSRV 1.88, pinned.
-zip = { version = "=9.1.2", default-features = false, features = ["aes-crypto", "deflate-flate2"] }
+zip = { version = "=9.7.0", default-features = false, features = ["aes-crypto", "deflate-flate2"] }
 
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -94,10 +94,10 @@ tracing-subscriber = { version = "0.3", default-features = false, features = ["f
 
 [dev-dependencies]
 # The same rusqlite: tests count commits with its commit hook.
-rusqlite = { version = "0.37", features = ["bundled-sqlcipher", "hooks"] }
+rusqlite = { version = "0.42", features = ["bundled-sqlcipher", "hooks"] }
 tempfile = "3"
 # The same tokio, its clock under the tests' control.
 tokio = { version = "1.52", default-features = false, features = ["test-util"] }
 # TLS pinning tests: certificates of a throwaway CA, made at test time, for a local TLS server, so
 # no private key lies in the repository. Over the same ring; only ever in tests.
-rcgen = { version = "=0.14.7", default-features = false, features = ["crypto", "ring"] }
+rcgen = { version = "=0.14.10", default-features = false, features = ["crypto", "ring"] }

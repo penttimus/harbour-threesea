@@ -572,6 +572,7 @@ void ThreeseBackend::finishDataRemoval()
     m_unreadCount = 0;
     m_unreadFrom.clear();
     m_unreadChat.clear();
+    m_unreadChats.clear();
     m_connectionState = QStringLiteral("disconnected");
     m_contacts->update(QVariantList());
     m_dbKey.fill('\0');
@@ -603,6 +604,7 @@ void ThreeseBackend::finishDataRemoval()
     emit unreadCountChanged();
     emit unreadFromChanged();
     emit unreadChatChanged();
+    emit unreadChatsChanged();
     emit connectionStateChanged();
     emit keepRunningChanged();
     emit logLevelChanged();
@@ -1488,6 +1490,47 @@ void ThreeseBackend::setNotificationPreview(bool preview)
     }
 }
 
+bool ThreeseBackend::coverPreviews() const
+{
+    return QSettings().value(QStringLiteral("coverPreviews"), false).toBool();
+}
+
+void ThreeseBackend::setCoverPreviews(bool previews)
+{
+    if (previews != coverPreviews()) {
+        QSettings().setValue(QStringLiteral("coverPreviews"), previews);
+        emit notificationSettingsChanged();
+    }
+}
+
+int ThreeseBackend::coverColour() const
+{
+    return qBound(0, QSettings().value(QStringLiteral("coverColour"), 0).toInt(), 1);
+}
+
+void ThreeseBackend::setCoverColour(int colour)
+{
+    colour = qBound(0, colour, 1);
+    if (colour != coverColour()) {
+        QSettings().setValue(QStringLiteral("coverColour"), colour);
+        emit notificationSettingsChanged();
+    }
+}
+
+int ThreeseBackend::coverWaves() const
+{
+    return qBound(0, QSettings().value(QStringLiteral("coverWaves"), 1).toInt(), 2);
+}
+
+void ThreeseBackend::setCoverWaves(int waves)
+{
+    waves = qBound(0, waves, 2);
+    if (waves != coverWaves()) {
+        QSettings().setValue(QStringLiteral("coverWaves"), waves);
+        emit notificationSettingsChanged();
+    }
+}
+
 namespace {
 QString storedLogLevel()
 {
@@ -1695,6 +1738,11 @@ void ThreeseBackend::handleMessage(const QByteArray &json)
         if (chat != m_unreadChat) {
             m_unreadChat = chat;
             emit unreadChatChanged();
+        }
+        const QVariantList chats = result.value(QStringLiteral("unreadChats")).toArray().toVariantList();
+        if (chats != m_unreadChats) {
+            m_unreadChats = chats;
+            emit unreadChatsChanged();
         }
     }
     // Contact list replies feed the shared model. By request, not by the look of the reply: the

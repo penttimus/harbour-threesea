@@ -8,6 +8,7 @@
 #include <QTimer>
 
 namespace ResourcePolicy {
+class AudioResource;
 class ResourceSet;
 }
 
@@ -27,6 +28,9 @@ public:
     // voice message after another doesn't swing the sound to the loudspeaker in between.
     void hold(const void *who);
     void drop(const void *who);
+    // Nobody holds it and something else plays now: let go at once, not after the moment. A
+    // stream that starts while the class is ours is filed under the call and stays there.
+    void letGoNow();
     // The policy gave us the class and the sound is off the loudspeaker.
     bool earpiece() const { return m_state == Earpiece; }
     // It was asked for and the loudspeaker has the sound: no `settled` will come for a new holder.
@@ -67,6 +71,7 @@ private:
     bool m_granted = false;
     QString m_output;
     ResourcePolicy::ResourceSet *m_set = nullptr;
+    ResourcePolicy::AudioResource *m_audio = nullptr;
     QTimer m_letGo;
     QTimer m_wait;
 };

@@ -55,6 +55,9 @@ class ThreeseBackend : public QObject
     // unread chat, for the cover. Empty while nothing is unread.
     Q_PROPERTY(QString unreadFrom READ unreadFrom NOTIFY unreadFromChanged)
     Q_PROPERTY(QString unreadChat READ unreadChat NOTIFY unreadChatChanged)
+    // The cover's rows: the chats that wait, newest first (identity, displayName, unread,
+    // lastMessage, a group's senderName); never a private or an archived chat.
+    Q_PROPERTY(QVariantList unreadChats READ unreadChats NOTIFY unreadChatsChanged)
     // Keep the process (and the connection) alive when the window is closed.
     Q_PROPERTY(bool keepRunning READ keepRunning WRITE setKeepRunning NOTIFY keepRunningChanged)
     // How much goes to the system log, Qt and core alike: "warn" (default), "info", "debug".
@@ -65,12 +68,24 @@ class ThreeseBackend : public QObject
                    NOTIFY notificationSettingsChanged)
     Q_PROPERTY(bool notificationPreview READ notificationPreview WRITE setNotificationPreview
                    NOTIFY notificationSettingsChanged)
+    // The cover lists who waits; with this also each chat's last message (Settings → Privacy,
+    // off by default). Device-local.
+    Q_PROPERTY(bool coverPreviews READ coverPreviews WRITE setCoverPreviews NOTIFY notificationSettingsChanged)
+    // The cover's look (Settings → Cover), device-local. Its waves' colour: 0 the ambience's, 1 the
+    // text's (white on a dark ambience). Its waves' level: 0 always low, 1 a row higher for every
+    // chat listed, 2 always at their highest.
+    Q_PROPERTY(int coverColour READ coverColour WRITE setCoverColour NOTIFY notificationSettingsChanged)
+    Q_PROPERTY(int coverWaves READ coverWaves WRITE setCoverWaves NOTIFY notificationSettingsChanged)
     // Android's sound and vibration for new messages, each for chats and groups: the tone and the
     // vibration of the current sound profile's instant messages. Device-local.
     Q_PROPERTY(bool soundChats READ soundChats WRITE setSoundChats NOTIFY notificationSettingsChanged)
     Q_PROPERTY(bool vibrateChats READ vibrateChats WRITE setVibrateChats NOTIFY notificationSettingsChanged)
     Q_PROPERTY(bool soundGroups READ soundGroups WRITE setSoundGroups NOTIFY notificationSettingsChanged)
     Q_PROPERTY(bool vibrateGroups READ vibrateGroups WRITE setVibrateGroups NOTIFY notificationSettingsChanged)
+    // Android's "Emoji reaction notifications": someone reacted to one of our messages, in chats
+    // and in groups. Device-local.
+    Q_PROPERTY(bool reactionsChats READ reactionsChats WRITE setReactionsChats NOTIFY notificationSettingsChanged)
+    Q_PROPERTY(bool reactionsGroups READ reactionsGroups WRITE setReactionsGroups NOTIFY notificationSettingsChanged)
     Q_PROPERTY(QString toneChats READ toneChats WRITE setToneChats NOTIFY notificationSettingsChanged)
     Q_PROPERTY(QString toneGroups READ toneGroups WRITE setToneGroups NOTIFY notificationSettingsChanged)
     // An incoming call's tone ("": the system's) and whether it vibrates. Device-local.
@@ -148,6 +163,7 @@ public:
     int unreadCount() const { return m_unreadCount; }
     QString unreadFrom() const { return m_unreadFrom; }
     QString unreadChat() const { return m_unreadChat; }
+    QVariantList unreadChats() const { return m_unreadChats; }
     bool keepRunning() const;
     QString logLevel() const;
     // Qt's (and QML's console) messages at the stored level; main() calls it before anything logs.
@@ -155,6 +171,9 @@ public:
     bool notificationsEnabled() const;
     void setNotificationsEnabled(bool enabled);
     bool notificationPreview() const;
+    bool coverPreviews() const;
+    int coverColour() const;
+    int coverWaves() const;
     bool addressBookSync() const { return QSettings().value(QStringLiteral("addressBookSync"), false).toBool(); }
     void setAddressBookSync(bool sync)
     {
@@ -168,6 +187,9 @@ public:
         emit addressBookSyncedAtChanged();
     }
     void setNotificationPreview(bool preview);
+    void setCoverPreviews(bool previews);
+    void setCoverColour(int colour);
+    void setCoverWaves(int waves);
     int imageSize() const { return QSettings().value(QStringLiteral("imageSize"), 1600).toInt(); }
     void setImageSize(int side);
     // These four are read per bubble while a chat scrolls: from members, not the settings file.
@@ -191,6 +213,18 @@ public:
     void setSoundGroups(bool on)
     {
         QSettings().setValue(QStringLiteral("soundGroups"), on);
+        emit notificationSettingsChanged();
+    }
+    bool reactionsChats() const { return QSettings().value(QStringLiteral("reactionsChats"), true).toBool(); }
+    void setReactionsChats(bool on)
+    {
+        QSettings().setValue(QStringLiteral("reactionsChats"), on);
+        emit notificationSettingsChanged();
+    }
+    bool reactionsGroups() const { return QSettings().value(QStringLiteral("reactionsGroups"), true).toBool(); }
+    void setReactionsGroups(bool on)
+    {
+        QSettings().setValue(QStringLiteral("reactionsGroups"), on);
         emit notificationSettingsChanged();
     }
     bool vibrateGroups() const { return QSettings().value(QStringLiteral("vibrateGroups"), true).toBool(); }
@@ -416,6 +450,7 @@ signals:
     void unreadCountChanged();
     void unreadFromChanged();
     void unreadChatChanged();
+    void unreadChatsChanged();
     void keepRunningChanged();
     void logLevelChanged();
     void notificationSettingsChanged();
@@ -520,6 +555,7 @@ private:
     int m_unreadCount = 0;
     QString m_unreadFrom;
     QString m_unreadChat;
+    QVariantList m_unreadChats;
     // The database key while the core runs (to encrypt it when key encryption is switched on);
     // memory only, wiped on exit.
     QByteArray m_dbKey;

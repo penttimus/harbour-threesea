@@ -798,6 +798,10 @@ pub fn group_sync(
     Ok(())
 }
 
+#[expect(
+    deprecated,
+    reason = "fields 6.6.0's protocol deprecates; Android 6.6.0 still uses only these"
+)]
 pub fn settings_sync(
     store: &Store,
     sync: SettingsSync,
@@ -813,8 +817,9 @@ pub fn settings_sync(
         .setting(keys::APP_SETTINGS)?
         .and_then(|json| serde_json::from_str(&json).ok())
         .unwrap_or_default();
-    if let Some(policy) = synced.contact_sync_policy {
-        app.sync_contacts = policy == settings::ContactSyncPolicy::Sync as i32;
+    // Deprecated in libthreema's protocol files (6.6.0), still sent by Android 6.6.0.
+    if let Some(policy) = synced.deprecated_contact_sync_policy {
+        app.sync_contacts = policy == settings::DeprecatedContactSyncPolicy::Sync as i32;
     }
     if let Some(policy) = synced.unknown_contact_policy {
         app.block_unknown = policy == settings::UnknownContactPolicy::BlockUnknown as i32;
@@ -843,9 +848,9 @@ pub fn settings_sync(
     if let Some(policy) = synced.screenshot_policy {
         app.disable_screenshots = policy == settings::ScreenshotPolicy::DenyScreenshot as i32;
     }
-    if let Some(policy) = synced.keyboard_data_collection_policy {
+    if let Some(policy) = synced.deprecated_keyboard_data_collection_policy {
         app.incognito_keyboard =
-            policy == settings::KeyboardDataCollectionPolicy::DenyDataCollection as i32;
+            policy == settings::DeprecatedKeyboardDataCollectionPolicy::DenyDataCollection as i32;
     }
     if let Some(blocked) = synced.blocked_identities {
         // Contact pages say whether someone is blocked.

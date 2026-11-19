@@ -166,17 +166,23 @@ pub fn profile_sync(store: &Store) -> Result<UserProfile, StoreError> {
 }
 
 /// The shared settings as sync data.
+#[expect(
+    deprecated,
+    reason = "fields 6.6.0's protocol deprecates; Android 6.6.0 still uses only these"
+)]
 pub fn settings_sync(store: &Store) -> Result<Settings, StoreError> {
     let app: crate::safe::backup::Settings = store
         .setting(keys::APP_SETTINGS)?
         .and_then(|json| serde_json::from_str(&json).ok())
         .unwrap_or_default();
     let flag = |on: bool, yes: i32, no: i32| Some(if on { yes } else { no });
+    // The two policies libthreema's protocol files call deprecated (6.6.0): Android 6.6.0 still
+    // sends and applies them, under their old names.
     Ok(Settings {
-        contact_sync_policy: flag(
+        deprecated_contact_sync_policy: flag(
             app.sync_contacts,
-            settings::ContactSyncPolicy::Sync as i32,
-            settings::ContactSyncPolicy::NotSynced as i32,
+            settings::DeprecatedContactSyncPolicy::Sync as i32,
+            settings::DeprecatedContactSyncPolicy::NotSynced as i32,
         ),
         unknown_contact_policy: flag(
             app.block_unknown,
@@ -218,10 +224,10 @@ pub fn settings_sync(store: &Store) -> Result<Settings, StoreError> {
             settings::ScreenshotPolicy::DenyScreenshot as i32,
             settings::ScreenshotPolicy::AllowScreenshot as i32,
         ),
-        keyboard_data_collection_policy: flag(
+        deprecated_keyboard_data_collection_policy: flag(
             app.incognito_keyboard,
-            settings::KeyboardDataCollectionPolicy::DenyDataCollection as i32,
-            settings::KeyboardDataCollectionPolicy::AllowDataCollection as i32,
+            settings::DeprecatedKeyboardDataCollectionPolicy::DenyDataCollection as i32,
+            settings::DeprecatedKeyboardDataCollectionPolicy::AllowDataCollection as i32,
         ),
         blocked_identities: Some(Identities {
             identities: app.blocked_contacts.clone(),

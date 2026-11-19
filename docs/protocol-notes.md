@@ -57,8 +57,17 @@ Things learned while porting. Sources are upstream paths at the pinned tag.
 - Offered when: not dismissed or reported before; the contact (a group's creator) is unverified,
   unnamed, not blocked and not predefined, a 1:1 contact also not "group or deleted"; for a group
   also not left and not our own; no outgoing message yet; the first incoming one at most 7 days after
-  the contact was created. Android's window is 1 day; we follow iOS's written steps.
-- Blocking and deleting only after the report went through (Android; iOS doesn't wait).
+  the contact was created (iOS's written steps; Android 6.6.0's _Group Spam Potential Detection
+  Steps_ have the same 7 days for a group, without the name, block and predefined exclusions).
+- A contact's report: blocking and deleting only after it went through (Android; iOS doesn't
+  wait). A group's (Android 6.6.0, `ReportGroupFlow`, `ReportGroupToDirectoryServerTask`): the
+  report waits in the store with what it sends (`spam_group_reports`) and goes in the background,
+  right away, after connecting and hourly, until the directory answered it (a refusal too) or
+  after 8 tries; the chat is marked reported, and blocking, leaving and deleting happen at once.
+  Block and delete also end a call with the creator and the group's call. A blank nickname goes
+  as `null`.
+- With "Block unknown senders", a stranger's group-setup for a group the user doesn't have is
+  discarded (Android 6.6.0, ADR 0019's update): spam groups mostly come that way.
 
 ## Libre / Threema Shop licensing
 - Libre builds use `LicenseType.SERIAL` (`app/…/BuildFlavor.kt`). Key format `XXXXX-XXXXX`
@@ -104,7 +113,8 @@ Things learned while porting. Sources are upstream paths at the pinned tag.
 - HTTPS pins (SHA-256 SPKI): `app/src/main/res/xml/network_security_config.xml`
   (threema.ch, threema.com, sfu.threema.ch, …), copied into `core/src/https.rs`;
   `scripts/check-pins.py` (part of `scripts/check.sh`) fails when they differ from the
-  submodule's, so a new upstream tag with other pins is noticed.
+  submodule's, so a new upstream tag with other pins is noticed. 6.6.0 added `test.threema.com`
+  (Android's app rating, which we don't use) with a pin of its own.
 
 ## Background on Libre
 - Libre has no FCM: `forceThreemaPush = (this is Libre)`, i.e. a foreground service holding a
@@ -459,7 +469,7 @@ the thumbnail's, which is a square. The name is generic ("video.mp4", "image.jpg
   Qt mediaservice.
 - Policy (user, 2026-10-21): platform AAC first; automatic fallback to something without legal
   questions: **Opus in Ogg** (royalty-free), recorded as raw PCM (`QAudioInput`, 48 kHz mono) and
-  encoded by the core with `opus-pure` (pure Rust, BSD; vendored with an i686 build fix), sent as
+  encoded by the core with `opus-pure` (pure Rust, BSD; from crates.io since 0.2.3, which builds for i686), sent as
   `audio/ogg`, which Threema Android plays. Playback: the platform player (AAC and Opus); without
   one, Opus is decoded by the core and played through `QAudioOutput`. Received AAC without a
   platform player can't be played (we don't ship an AAC decoder).

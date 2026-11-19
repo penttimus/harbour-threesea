@@ -73,8 +73,9 @@
             <translation>Licence</translation>
         </message>
         <message id="threesea-la-license-text">
-            <source>An unofficial Threema client for Sailfish OS, licensed under the GNU AGPL v3. Uses libthreema by Threema AG. Requires a Threema Libre license from the Threema Shop. Not affiliated with or supported by Threema AG.</source>
-            <translation>Un client Threema non officiel pour Sailfish OS, sous licence GNU AGPL v3. Utilise libthreema de Threema AG. Nécessite une licence Threema Libre achetée dans la boutique Threema. Sans lien avec Threema AG, ni soutenu par elle.</translation>
+            <source>Free software under the GNU AGPL v3.</source>
+            <oldsource>An unofficial Threema client for Sailfish OS, licensed under the GNU AGPL v3. Uses libthreema by Threema AG. Requires a Threema Libre license from the Threema Shop. Not affiliated with or supported by Threema AG.</oldsource>
+            <translation>Logiciel libre sous licence GNU AGPL v3.</translation>
         </message>
         <message id="threesea-he-add">
             <source>Add</source>
@@ -2420,16 +2421,19 @@
             <translation>Avertissement</translation>
         </message>
         <message id="threesea-la-disclaimer-ai">
-            <source>Threesea was developed with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. It is a research and experimentation project.</source>
-            <translation>Threesea a été développé avec Claude Code (Anthropic) et audité avec OpenAI Codex, sous la direction d’un mainteneur humain qui l’a aussi testé. C’est un projet de recherche et d’expérimentation.</translation>
+            <source>Made with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. A research and experimentation project.</source>
+            <oldsource>Threesea was developed with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. It is a research and experimentation project.</oldsource>
+            <translation>Réalisé avec Claude Code (Anthropic) et audité avec OpenAI Codex, sous la direction d’un mainteneur humain qui l’a aussi testé. Un projet de recherche et d’expérimentation.</translation>
         </message>
         <message id="threesea-la-disclaimer-warranty">
-            <source>AI makes mistakes. The code, including its security-relevant parts, can contain errors nobody noticed. The developers give no warranty of any kind; you use the app at your own risk.</source>
-            <translation>L’IA se trompe. Le code, y compris ses parties liées à la sécurité, peut contenir des erreurs que personne n’a remarquées. Les développeurs ne donnent aucune garantie, de quelque nature que ce soit ; vous utilisez l’application à vos propres risques.</translation>
+            <source>AI makes mistakes, also in security-relevant code. There is no warranty: you use Threesea at your own risk.</source>
+            <oldsource>AI makes mistakes. The code, including its security-relevant parts, can contain errors nobody noticed. The developers give no warranty of any kind; you use the app at your own risk.</oldsource>
+            <translation>L’IA se trompe, y compris dans le code lié à la sécurité. Il n’y a aucune garantie : vous utilisez Threesea à vos propres risques.</translation>
         </message>
         <message id="threesea-la-disclaimer-threema">
-            <source>Threesea is based on Threema Libre's open-source code and tries to play fair with Threema's APIs and licensing. Threema told us it doesn't actively block third-party apps that cause no stability issues or high server load, are clearly marked as unofficial without using its branding, and don't circumvent the licensing. Threesea aims to meet that. This is not a permission, and Threesea is not affiliated with, endorsed or supported by Threema AG. As with any Threema app, keep a backup of your ID.</source>
-            <translation>Threesea s’appuie sur le code open source de Threema Libre et s’efforce de jouer franc jeu avec les API et les licences de Threema. Threema nous a indiqué ne pas bloquer activement les applications tierces tant qu’elles ne causent ni problèmes de stabilité ni charge élevée sur les serveurs, qu’elles sont clairement présentées comme non officielles sans utiliser sa marque et qu’elles ne contournent pas les licences. Threesea s’efforce de respecter cela. Ce n’est pas une autorisation, et Threesea n’est ni affilié à Threema AG, ni approuvé ni soutenu par elle. Comme avec toute application Threema, conservez une sauvegarde de votre ID.</translation>
+            <source>Unofficial: not affiliated with, endorsed or supported by Threema AG. Threema doesn't actively block third-party apps that play fair, as Threesea aims to, but that isn't a permission. Keep a backup of your ID.</source>
+            <oldsource>Threesea is based on Threema Libre's open-source code and tries to play fair with Threema's APIs and licensing. Threema told us it doesn't actively block third-party apps that cause no stability issues or high server load, are clearly marked as unofficial without using its branding, and don't circumvent the licensing. Threesea aims to meet that. This is not a permission, and Threesea is not affiliated with, endorsed or supported by Threema AG. As with any Threema app, keep a backup of your ID.</oldsource>
+            <translation>Non officiel : ni affilié à Threema AG, ni approuvé ni soutenu par elle. Threema ne bloque pas activement les applications tierces qui jouent franc jeu, ce que Threesea s’efforce de faire, mais ce n’est pas une autorisation. Conservez une sauvegarde de votre ID.</translation>
         </message>
         <message id="threesea-se-credits">
             <source>Credits</source>
@@ -3933,14 +3937,6 @@
             <source>Source code and bug reports: %1</source>
             <translation>Code source et signalement de bogues : %1</translation>
         </message>
-        <message id="threesea-bt-license-agpl">
-            <source>License text</source>
-            <translation>Texte de la licence</translation>
-        </message>
-        <message id="threesea-bt-license-notices">
-            <source>Third-party licenses</source>
-            <translation>Licences tierces</translation>
-        </message>
         <message id="threesea-la-add-scanned-contact">
             <source>Adds this Threema ID to your contacts with the key from Threema's directory. To verify it, scan the QR code in the other person's app.</source>
             <translation>Ajoute cet ID Threema à vos contacts avec la clé de l’annuaire de Threema. Pour le vérifier, scannez le code QR dans l’application de l’autre personne.</translation>
@@ -5011,6 +5007,116 @@
         <message id="threesea-la-voice-volume-zero">
             <source>Turn the volume up to hear the message</source>
             <translation>Augmentez le volume pour entendre le message</translation>
+        </message>
+        <message id="threesea-me-license-notices">
+            <source>Third-party licenses</source>
+            <translation>Licences tierces</translation>
+        </message>
+        <message id="threesea-me-license-agpl">
+            <source>License text</source>
+            <translation>Texte de la licence</translation>
+        </message>
+        <message id="threesea-la-new-reactions" numerus="yes">
+            <source>%n new reaction(s)</source>
+            <translation>
+                <numerusform>%n nouvelle réaction</numerusform>
+                <numerusform>%n nouvelles réactions</numerusform>
+            </translation>
+        </message>
+        <message id="threesea-la-reaction-quote">
+            <source>“%1”</source>
+            <translation>« %1 »</translation>
+        </message>
+        <message id="threesea-la-reaction-chat">
+            <source>Reacted %1 to: %2</source>
+            <translation>A réagi avec %1 à : %2</translation>
+        </message>
+        <message id="threesea-la-reaction-group-one">
+            <source>%1 reacted %2 to: %3</source>
+            <translation>%1 a réagi avec %2 à : %3</translation>
+        </message>
+        <message id="threesea-la-reaction-group-two">
+            <source>%1 and %2 reacted to: %3</source>
+            <translation>%1 et %2 ont réagi à : %3</translation>
+        </message>
+        <message id="threesea-la-reaction-group-more" numerus="yes">
+            <source>%1 and %n other(s) reacted to: %2</source>
+            <translation>
+                <numerusform>%1 et %n autre personne ont réagi à : %2</numerusform>
+                <numerusform>%1 et %n autres personnes ont réagi à : %2</numerusform>
+            </translation>
+        </message>
+        <message id="threesea-la-notification-reactions">
+            <source>Reactions</source>
+            <translation>Réactions</translation>
+        </message>
+        <message id="threesea-la-notification-reactions-chats-description">
+            <source>Notify when someone reacts to one of your messages in a chat.</source>
+            <translation>Notifier quand quelqu’un réagit à l’un de vos messages dans une discussion.</translation>
+        </message>
+        <message id="threesea-la-notification-reactions-groups-description">
+            <source>Notify when someone reacts to one of your messages in a group.</source>
+            <translation>Notifier quand quelqu’un réagit à l’un de vos messages dans un groupe.</translation>
+        </message>
+        <message id="threesea-la-credit-harpoon">
+            <source>Harpoon by Juhani Lehtimäki (GPL-3.0): how the waves on the cover are coloured.</source>
+            <translation>Harpoon de Juhani Lehtimäki (GPL-3.0) : la coloration des vagues sur la couverture.</translation>
+        </message>
+        <message id="threesea-la-cover-previews">
+            <source>Show messages on the cover</source>
+            <translation>Afficher les messages sur la couverture</translation>
+        </message>
+        <message id="threesea-la-cover-previews-description">
+            <source>Under each chat that has something new, the cover also shows its last message. Never for private chats.</source>
+            <translation>Sous chaque discussion qui a du nouveau, la couverture affiche aussi son dernier message. Jamais pour les discussions privées.</translation>
+        </message>
+        <message id="threesea-se-cover">
+            <source>Cover</source>
+            <translation>Couverture</translation>
+        </message>
+        <message id="threesea-se-cover-content">
+            <source>Content</source>
+            <translation>Contenu</translation>
+        </message>
+        <message id="threesea-se-cover-look">
+            <source>Look</source>
+            <translation>Apparence</translation>
+        </message>
+        <message id="threesea-me-cover-colour-ambient">
+            <source>Ambient</source>
+            <translation>Ambiance</translation>
+        </message>
+        <message id="threesea-me-cover-colour-static">
+            <source>Static</source>
+            <translation>Statique</translation>
+        </message>
+        <message id="threesea-la-cover-colour">
+            <source>Colour of the waves</source>
+            <translation>Couleur des vagues</translation>
+        </message>
+        <message id="threesea-la-cover-colour-description">
+            <source>Ambient takes the colour of your ambience, Static is a pale haze on every ambience.</source>
+            <translation>Ambiance reprend la couleur de votre ambiance, Statique est un voile pâle quelle que soit l’ambiance.</translation>
+        </message>
+        <message id="threesea-me-cover-waves-leveled">
+            <source>Leveled</source>
+            <translation>Basses</translation>
+        </message>
+        <message id="threesea-me-cover-waves-rising">
+            <source>Rising</source>
+            <translation>Montantes</translation>
+        </message>
+        <message id="threesea-me-cover-waves-risen">
+            <source>Always risen</source>
+            <translation>Toujours hautes</translation>
+        </message>
+        <message id="threesea-la-cover-waves">
+            <source>Waves</source>
+            <translation>Vagues</translation>
+        </message>
+        <message id="threesea-la-cover-waves-description">
+            <source>Rising: the water climbs with every chat that has something new. Leveled keeps it low, Always risen keeps it high.</source>
+            <translation>Montantes : l’eau monte avec chaque discussion qui a du nouveau. Basses la garde basse, Toujours hautes la garde haute.</translation>
         </message>
     </context>
 </TS>

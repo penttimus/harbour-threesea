@@ -25,6 +25,12 @@ QML_OPTS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DUSE_CURL_SSL=
 CORE_STAMP="$QMAPLIBRE_VERSION $PKG_MAPLIBRE_COMMIT $FLAGS $CORE_OPTS $(cat "$ROOT"/scripts/maplibre/patches/*.patch | sha256sum | cut -c1-16)"
 QML_STAMP="$MAPBOX_GL_QML_VERSION $MAPBOX_GL_QML_COMMIT $FLAGS $QML_OPTS $CORE_STAMP $(cat "$ROOT"/scripts/maplibre/patches/mapbox-gl-qml/*.patch | sha256sum | cut -c1-16)"
 fresh() { [ -f "$OUT/$1/.stamp" ] && [ "$(cat "$OUT/$1/.stamp")" = "$2" ]; }
+# One build per architecture at a time: two tests that both need the renderer run side by side
+# (SDK_TEST_JOBS), and both would build into the same "new" directory and move it away under
+# each other. Whoever comes second waits here and then finds the build up to date.
+mkdir -p "$ROOT/target/maplibre"
+exec 9>"$ROOT/target/maplibre/.lock-$SFOS-$ARCH"
+flock 9
 if fresh core "$CORE_STAMP" && fresh qml "$QML_STAMP"; then
   echo "map renderer for $ARCH is up to date ($OUT)"
   exit 0

@@ -386,6 +386,9 @@ pub mod keys {
     /// Our picture changed and the other devices of the group don't have it yet (the groups'
     /// are in `group_picture_syncs`): `app_multidevice::reflect_own_picture`.
     pub const OWN_PICTURE_SYNC_OWED: &str = "own_picture_sync_owed";
+    /// Groups reported as spam whose report the directory hasn't taken yet, with what it sends
+    /// (JSON): `app_spam::send_group_reports`.
+    pub const SPAM_GROUP_REPORTS: &str = "spam_group_reports";
     /// Set by store migration 35: see `sync::reflect_group_contacts_once`.
     pub const GROUP_CONTACTS_TO_REFLECT: &str = "group_contacts_to_reflect";
 }
@@ -401,6 +404,36 @@ pub struct Store {
     pub(crate) invalid_ids: std::cell::RefCell<std::collections::HashMap<String, i64>>,
     /// The current hour's group member lookups: when it began, and how many so far.
     pub(crate) member_lookups: std::cell::Cell<(i64, usize)>,
+    /// Tests count and refuse commits with it; rusqlite only sets a hook through `&mut`, and
+    /// the tests' store is shared by then.
+    #[cfg(test)]
+    pub(crate) commits: std::sync::Arc<CommitWatch>,
+}
+
+/// The commit hook of a test's store ([`Store::commits`]).
+#[cfg(test)]
+#[derive(Default)]
+pub(crate) struct CommitWatch {
+    /// Commits so far.
+    pub(crate) count: std::sync::Arc<std::sync::atomic::AtomicU32>,
+    /// Turns every commit into a rollback while set.
+    pub(crate) refuse: std::sync::atomic::AtomicBool,
+}
+
+#[cfg(test)]
+impl CommitWatch {
+    /// A watch on `conn`'s commits.
+    pub(crate) fn on(conn: &mut Connection) -> std::sync::Arc<Self> {
+        use std::sync::atomic::Ordering::Relaxed;
+        let watch = std::sync::Arc::new(Self::default());
+        let hook = std::sync::Arc::clone(&watch);
+        conn.commit_hook(Some(move || {
+            hook.count.fetch_add(1, Relaxed);
+            hook.refuse.load(Relaxed)
+        }))
+        .expect("a commit hook");
+        watch
+    }
 }
 
 /// What the WAL may keep of its file once its contents are in the database: SQLite would otherwise
@@ -506,7 +539,11 @@ impl Store {
             "PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;
              PRAGMA journal_size_limit = {WAL_SIZE_LIMIT};"
         ))?;
+        #[cfg(test)]
+        let mut conn = conn;
         let mut store = Self {
+            #[cfg(test)]
+            commits: CommitWatch::on(&mut conn),
             conn,
             held_notifications: std::cell::RefCell::default(),
             invalid_ids: std::cell::RefCell::default(),
@@ -918,6 +955,43 @@ mod tests {
         assert_eq!(identity.threema_id, "ECHOECHO");
         assert_eq!(*identity.client_key, [7; 32]);
         assert_eq!(identity.server_group, "a1");
+    }
+
+    /// The stores on phones were written by an older SQLCipher: 0.3.1's store (SQLCipher 4.6.1,
+    /// key `[0x42; 32]`), one message in the database and one only in the WAL of a process that
+    /// ended without closing it, as the Full flavour does.
+    #[test]
+    fn a_store_an_older_sqlcipher_wrote_opens() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("t.db");
+        std::fs::write(&path, include_bytes!("../tests/fixtures/store-0.3.1.db")).unwrap();
+        std::fs::write(
+            dir.path().join("t.db-wal"),
+            include_bytes!("../tests/fixtures/store-0.3.1.db-wal"),
+        )
+        .unwrap();
+
+        assert!(matches!(
+            Store::open(&path, &[2; 32]),
+            Err(StoreError::WrongKey)
+        ));
+        let store = Store::open(&path, &[0x42; 32]).unwrap();
+        let bodies: Vec<String> = store
+            .conn
+            .prepare("SELECT body FROM messages WHERE conversation = 'ABCD1234' ORDER BY id")
+            .unwrap()
+            .query_map([], |row| row.get(0))
+            .unwrap()
+            .collect::<Result<_, _>>()
+            .unwrap();
+        assert_eq!(bodies, ["in the database", "in the wal"]);
+        store
+            .insert_incoming("ABCD1234", 3, "text", "and now", 1_700_000_000_000)
+            .unwrap()
+            .unwrap();
+        drop(store);
+        let store = Store::open(&path, &[0x42; 32]).unwrap();
+        assert_eq!(store.message_count("ABCD1234").unwrap(), 3);
     }
 
     #[test]

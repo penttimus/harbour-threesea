@@ -175,16 +175,6 @@ Page {
                 onClicked: page.setSetting("incognitoKeyboard", !checked)
             }
 
-            TextSwitch {
-                automaticCheck: false
-                checked: page.settings.disableScreenshots === true
-                //% "Hide content on the cover"
-                text: qsTrId("threesea-la-hide-cover")
-                //% "The cover only shows the number of new messages, not who wrote."
-                description: qsTrId("threesea-la-hide-cover-description")
-                onClicked: page.setSetting("disableScreenshots", !checked)
-            }
-
             SectionHeader {
                 //% "Encryption"
                 text: qsTrId("threesea-se-encryption")

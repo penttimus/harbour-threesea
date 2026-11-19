@@ -5769,13 +5769,11 @@ mod sync_order_tests {
 
     /// Counts the store's commits from here on.
     fn count_commits(store: &Store) -> Arc<std::sync::atomic::AtomicU32> {
-        let commits = Arc::new(std::sync::atomic::AtomicU32::new(0));
-        let count = Arc::clone(&commits);
-        store.conn.commit_hook(Some(move || {
-            count.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-            false
-        }));
-        commits
+        store
+            .commits
+            .count
+            .store(0, std::sync::atomic::Ordering::Relaxed);
+        Arc::clone(&store.commits.count)
     }
 
     /// A backlog shouldn't sync the flash for each thing a message writes.

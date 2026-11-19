@@ -49,6 +49,43 @@ pub(crate) fn shown_reactions(json: Option<&str>) -> Value {
     Value::Array(reactions)
 }
 
+/// Someone reacted to one of our messages, or took a reaction back: what a notification for it
+/// needs (Android's `ConversationReactionNotification`, there since 6.6.1).
+#[derive(Debug, Clone)]
+pub struct ReactionNews {
+    /// The message reacted to, as it is now.
+    pub message: Message,
+    pub sender: String,
+    pub emoji: String,
+    pub apply: bool,
+    /// A legacy reaction: it took the place of the sender's other reactions on the message.
+    pub replaces: bool,
+    pub at: i64,
+}
+
+impl ReactionNews {
+    /// For someone else's reaction that changed a message of ours (`changed`, from
+    /// [`Store::set_reaction`] or [`Store::replace_reactions`]); nothing otherwise.
+    pub fn of(
+        changed: Option<&Message>,
+        sender: &str,
+        emoji: &str,
+        apply: bool,
+        replaces: bool,
+        at: i64,
+    ) -> Option<Self> {
+        let message = changed.filter(|message| message.outgoing && sender != OWN_SENDER)?;
+        Some(Self {
+            message: message.clone(),
+            sender: sender.to_owned(),
+            emoji: emoji.to_owned(),
+            apply,
+            replaces,
+            at,
+        })
+    }
+}
+
 /// A message waiting in the outbox.
 #[derive(Debug, Clone)]
 pub struct OutboxEntry {

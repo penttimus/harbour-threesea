@@ -73,8 +73,9 @@
             <translation>Lisenssi</translation>
         </message>
         <message id="threesea-la-license-text">
-            <source>An unofficial Threema client for Sailfish OS, licensed under the GNU AGPL v3. Uses libthreema by Threema AG. Requires a Threema Libre license from the Threema Shop. Not affiliated with or supported by Threema AG.</source>
-            <translation>Epävirallinen Threema-sovellus Sailfish OS:lle, lisensoitu GNU AGPL v3 -lisenssillä. Käyttää Threema AG:n libthreema-kirjastoa. Vaatii Threema Libre -lisenssin Threema Shopista. Ei ole sidoksissa Threema AG:hen eikä sen tukema.</translation>
+            <source>Free software under the GNU AGPL v3.</source>
+            <oldsource>An unofficial Threema client for Sailfish OS, licensed under the GNU AGPL v3. Uses libthreema by Threema AG. Requires a Threema Libre license from the Threema Shop. Not affiliated with or supported by Threema AG.</oldsource>
+            <translation>Vapaa ohjelmisto GNU AGPL v3 -lisenssillä.</translation>
         </message>
         <message id="threesea-he-add">
             <source>Add</source>
@@ -2420,16 +2421,19 @@
             <translation>Vastuuvapauslauseke</translation>
         </message>
         <message id="threesea-la-disclaimer-ai">
-            <source>Threesea was developed with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. It is a research and experimentation project.</source>
-            <translation>Threesea on kehitetty Claude Codella (Anthropic) ja auditoitu OpenAI Codexilla ihmisylläpitäjän ohjauksessa ja testaamana. Se on tutkimus- ja kokeiluprojekti.</translation>
+            <source>Made with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. A research and experimentation project.</source>
+            <oldsource>Threesea was developed with Claude Code (Anthropic) and audited with OpenAI Codex, directed and tested by a human maintainer. It is a research and experimentation project.</oldsource>
+            <translation>Tehty Claude Codella (Anthropic) ja auditoitu OpenAI Codexilla ihmisylläpitäjän ohjauksessa ja testaamana. Tutkimus- ja kokeiluprojekti.</translation>
         </message>
         <message id="threesea-la-disclaimer-warranty">
-            <source>AI makes mistakes. The code, including its security-relevant parts, can contain errors nobody noticed. The developers give no warranty of any kind; you use the app at your own risk.</source>
-            <translation>Tekoäly tekee virheitä. Koodi, myös sen tietoturvan kannalta olennaiset osat, voi sisältää virheitä, joita kukaan ei ole huomannut. Kehittäjät eivät anna minkäänlaista takuuta; käytät sovellusta omalla vastuullasi.</translation>
+            <source>AI makes mistakes, also in security-relevant code. There is no warranty: you use Threesea at your own risk.</source>
+            <oldsource>AI makes mistakes. The code, including its security-relevant parts, can contain errors nobody noticed. The developers give no warranty of any kind; you use the app at your own risk.</oldsource>
+            <translation>Tekoäly tekee virheitä, myös tietoturvan kannalta olennaisessa koodissa. Takuuta ei ole: käytät Threeseaa omalla vastuullasi.</translation>
         </message>
         <message id="threesea-la-disclaimer-threema">
-            <source>Threesea is based on Threema Libre's open-source code and tries to play fair with Threema's APIs and licensing. Threema told us it doesn't actively block third-party apps that cause no stability issues or high server load, are clearly marked as unofficial without using its branding, and don't circumvent the licensing. Threesea aims to meet that. This is not a permission, and Threesea is not affiliated with, endorsed or supported by Threema AG. As with any Threema app, keep a backup of your ID.</source>
-            <translation>Threesea perustuu Threema Libren avoimeen lähdekoodiin ja pyrkii toimimaan reilusti Threeman rajapintojen ja lisensoinnin suhteen. Threema on kertonut meille, ettei se aktiivisesti estä kolmannen osapuolen sovelluksia, jotka eivät aiheuta vakausongelmia tai suurta palvelinkuormaa, on selvästi merkitty epävirallisiksi käyttämättä sen tuotemerkkiä eivätkä kierrä lisensointia. Threesea pyrkii täyttämään nämä ehdot. Tämä ei ole lupa, eikä Threesea ole Threema AG:n kanssa sidoksissa eikä sen hyväksymä tai tukema. Kuten minkä tahansa Threema-sovelluksen kanssa, pidä tunnuksestasi varmuuskopio.</translation>
+            <source>Unofficial: not affiliated with, endorsed or supported by Threema AG. Threema doesn't actively block third-party apps that play fair, as Threesea aims to, but that isn't a permission. Keep a backup of your ID.</source>
+            <oldsource>Threesea is based on Threema Libre's open-source code and tries to play fair with Threema's APIs and licensing. Threema told us it doesn't actively block third-party apps that cause no stability issues or high server load, are clearly marked as unofficial without using its branding, and don't circumvent the licensing. Threesea aims to meet that. This is not a permission, and Threesea is not affiliated with, endorsed or supported by Threema AG. As with any Threema app, keep a backup of your ID.</oldsource>
+            <translation>Epävirallinen: ei sidoksissa Threema AG:hen eikä sen hyväksymä tai tukema. Threema ei aktiivisesti estä kolmannen osapuolen sovelluksia, jotka toimivat reilusti, kuten Threesea pyrkii toimimaan, mutta se ei ole lupa. Pidä tunnuksestasi varmuuskopio.</translation>
         </message>
         <message id="threesea-se-credits">
             <source>Credits</source>
@@ -3933,14 +3937,6 @@
             <source>Source code and bug reports: %1</source>
             <translation>Lähdekoodi ja vikailmoitukset: %1</translation>
         </message>
-        <message id="threesea-bt-license-agpl">
-            <source>License text</source>
-            <translation>Lisenssiteksti</translation>
-        </message>
-        <message id="threesea-bt-license-notices">
-            <source>Third-party licenses</source>
-            <translation>Kolmansien osapuolten lisenssit</translation>
-        </message>
         <message id="threesea-la-add-scanned-contact">
             <source>Adds this Threema ID to your contacts with the key from Threema's directory. To verify it, scan the QR code in the other person's app.</source>
             <translation>Lisää tämän Threema-tunnuksen yhteystietoihisi Threeman hakemiston avaimella. Vahvista se skannaamalla QR-koodi toisen henkilön sovelluksesta.</translation>
@@ -5011,6 +5007,116 @@
         <message id="threesea-la-voice-volume-zero">
             <source>Turn the volume up to hear the message</source>
             <translation>Lisää äänenvoimakkuutta kuullaksesi viestin</translation>
+        </message>
+        <message id="threesea-me-license-notices">
+            <source>Third-party licenses</source>
+            <translation>Kolmansien osapuolten lisenssit</translation>
+        </message>
+        <message id="threesea-me-license-agpl">
+            <source>License text</source>
+            <translation>Lisenssiteksti</translation>
+        </message>
+        <message id="threesea-la-new-reactions" numerus="yes">
+            <source>%n new reaction(s)</source>
+            <translation>
+                <numerusform>%n uusi reaktio</numerusform>
+                <numerusform>%n uutta reaktiota</numerusform>
+            </translation>
+        </message>
+        <message id="threesea-la-reaction-quote">
+            <source>“%1”</source>
+            <translation>”%1”</translation>
+        </message>
+        <message id="threesea-la-reaction-chat">
+            <source>Reacted %1 to: %2</source>
+            <translation>Reagoi %1 viestiin: %2</translation>
+        </message>
+        <message id="threesea-la-reaction-group-one">
+            <source>%1 reacted %2 to: %3</source>
+            <translation>%1 reagoi %2 viestiin: %3</translation>
+        </message>
+        <message id="threesea-la-reaction-group-two">
+            <source>%1 and %2 reacted to: %3</source>
+            <translation>%1 ja %2 reagoivat viestiin: %3</translation>
+        </message>
+        <message id="threesea-la-reaction-group-more" numerus="yes">
+            <source>%1 and %n other(s) reacted to: %2</source>
+            <translation>
+                <numerusform>%1 ja %n muu reagoivat viestiin: %2</numerusform>
+                <numerusform>%1 ja %n muuta reagoivat viestiin: %2</numerusform>
+            </translation>
+        </message>
+        <message id="threesea-la-notification-reactions">
+            <source>Reactions</source>
+            <translation>Reaktiot</translation>
+        </message>
+        <message id="threesea-la-notification-reactions-chats-description">
+            <source>Notify when someone reacts to one of your messages in a chat.</source>
+            <translation>Ilmoita, kun joku reagoi viestiisi keskustelussa.</translation>
+        </message>
+        <message id="threesea-la-notification-reactions-groups-description">
+            <source>Notify when someone reacts to one of your messages in a group.</source>
+            <translation>Ilmoita, kun joku reagoi viestiisi ryhmässä.</translation>
+        </message>
+        <message id="threesea-la-credit-harpoon">
+            <source>Harpoon by Juhani Lehtimäki (GPL-3.0): how the waves on the cover are coloured.</source>
+            <translation>Harpoon, tekijä Juhani Lehtimäki (GPL-3.0): kannen aaltojen väritys.</translation>
+        </message>
+        <message id="threesea-la-cover-previews">
+            <source>Show messages on the cover</source>
+            <translation>Näytä viestit kannessa</translation>
+        </message>
+        <message id="threesea-la-cover-previews-description">
+            <source>Under each chat that has something new, the cover also shows its last message. Never for private chats.</source>
+            <translation>Kansi näyttää jokaisen keskustelun alla, jossa on uutta, myös sen viimeisen viestin. Ei koskaan yksityisistä keskusteluista.</translation>
+        </message>
+        <message id="threesea-se-cover">
+            <source>Cover</source>
+            <translation>Kansi</translation>
+        </message>
+        <message id="threesea-se-cover-content">
+            <source>Content</source>
+            <translation>Sisältö</translation>
+        </message>
+        <message id="threesea-se-cover-look">
+            <source>Look</source>
+            <translation>Ulkoasu</translation>
+        </message>
+        <message id="threesea-me-cover-colour-ambient">
+            <source>Ambient</source>
+            <translation>Tunnelma</translation>
+        </message>
+        <message id="threesea-me-cover-colour-static">
+            <source>Static</source>
+            <translation>Kiinteä</translation>
+        </message>
+        <message id="threesea-la-cover-colour">
+            <source>Colour of the waves</source>
+            <translation>Aaltojen väri</translation>
+        </message>
+        <message id="threesea-la-cover-colour-description">
+            <source>Ambient takes the colour of your ambience, Static is a pale haze on every ambience.</source>
+            <translation>Tunnelma käyttää tunnelmasi väriä, Kiinteä on vaalea harso kaikissa tunnelmissa.</translation>
+        </message>
+        <message id="threesea-me-cover-waves-leveled">
+            <source>Leveled</source>
+            <translation>Matala</translation>
+        </message>
+        <message id="threesea-me-cover-waves-rising">
+            <source>Rising</source>
+            <translation>Nouseva</translation>
+        </message>
+        <message id="threesea-me-cover-waves-risen">
+            <source>Always risen</source>
+            <translation>Aina korkealla</translation>
+        </message>
+        <message id="threesea-la-cover-waves">
+            <source>Waves</source>
+            <translation>Aallot</translation>
+        </message>
+        <message id="threesea-la-cover-waves-description">
+            <source>Rising: the water climbs with every chat that has something new. Leveled keeps it low, Always risen keeps it high.</source>
+            <translation>Nouseva: vesi nousee jokaisen keskustelun myötä, jossa on uutta. Matala pitää sen alhaalla, Aina korkealla pitää sen ylhäällä.</translation>
         </message>
     </context>
 </TS>

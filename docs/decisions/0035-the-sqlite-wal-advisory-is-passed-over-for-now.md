@@ -33,3 +33,11 @@ second vendored C library to keep current for a fault that needs local write acc
   comment in `.cargo/audit.toml` are what remembers it. Look for a fixed release with every
   dependency update and before every release.
 - `cargo audit --file third_party/libthreema/Cargo.lock` is untouched: libthreema has no SQLite.
+
+## Update 2026-11-15: fixed with rusqlite 0.42
+`rusqlite` 0.42.0 / `libsqlite3-sys` 0.40.0 (2026-11-11) take `sqlcipher-src` 420.0.0 under
+`bundled-sqlcipher`: SQLCipher 4.20.0 on SQLite 3.54.1. We are on it, and the advisory is out of
+`.cargo/audit.toml` again. SQLCipher is still built against the target's OpenSSL (the bundled
+libtomcrypt is only for wasm). That the stores on phones (SQLCipher 4.6.1) still open, a WAL left
+behind by a process that was killed included, is a test now
+(`store::tests::a_store_an_older_sqlcipher_wrote_opens`, `core/tests/fixtures/store-0.3.1.db`).

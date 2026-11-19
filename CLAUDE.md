@@ -89,7 +89,6 @@ harbour-threesea/
     threema-android/        git submodule of upstream (read-only reference)
     libthreema/             vendored upstream domain/libthreema + our commits (ADR 0006;
                             pristine imports on branch vendor/libthreema)
-    opus-pure/              vendored Opus encoder/decoder (voice fallback), one patch
     webrtc-audio-processing/  submodule: echo cancellation for calls (Full)
   core/                     Rust crate `threesea-core`: our application core (see §4); SQLCipher
                             comes bundled through rusqlite (pinned in Cargo.lock)
@@ -107,7 +106,8 @@ harbour-threesea/
   translations/             id-based .ts files
   tests/                    tests run in the SDK/emulator, each by a scripts/test-*.sh:
                             callengine (calls; CI only builds it), models, gifdecoder,
-                            secretstore, notificationtokens, lifecycle, voicerecorder, pageload (every page opened; any
+                            secretstore, notificationtokens, lifecycle, voicerecorder, callroute,
+                            mediaroute, pageload (every page opened; any
                             QML warning fails), lockstate (the window's QML on
                             real Silica, no window system)
   rpm/
@@ -134,8 +134,11 @@ harbour-threesea/
 ```
 
 `libthreema` is **vendored** (`third_party/libthreema`, vendor branch `vendor/libthreema`, ADR 0006);
-the upstream repository is a pristine submodule pinned to the same tag for reference. Update
-both together with `scripts/update-libthreema.sh <tag>` and record the version in `docs/build.md`.
+the upstream repository is a pristine submodule for reference. Update both together with
+`scripts/update-libthreema.sh <tag>` and record the version in `docs/build.md`. Since 6.6.0 the
+two differ: libthreema's code stays on 6.5.3 (only 6.6.0's protocol files came over) until
+upstream's new message layer covers ours, the submodule is at 6.6.1, whose libthreema is
+6.6.0's (ADR 0036).
 
 ---
 
@@ -155,7 +158,7 @@ Responsibilities, roughly mirroring what Android keeps outside `libthreema`:
 - **Storage:** all persistence in one SQLCipher `Store` (`core/src/store.rs`, a concrete type,
   not a trait: there is one backend), via `rusqlite`'s bundled-sqlcipher; schema migrations are
   versioned. Media files are encrypted separately (`media.rs`). Device-local preferences that
-  aren't secret (log level, the notification sounds of all chats, background running) live in the
+  aren't secret (log level, the notification sounds of all chats, background running, previews on the cover) live in the
   bridge's QSettings in the sandboxed config directory; never message content, keys or who one
   chats with: per-chat tones are in the store, notification action tokens under a salted hash
   (against casual reading only: all IDs can be tried offline) and only while their notification
@@ -206,7 +209,7 @@ Rules:
 - **Read `docs/ui-guidelines.md` first.** Only Harbour-allowed imports (Jolla Store rules), in both flavours.
 - Follow Silica conventions: `ApplicationWindow` + `pageStack`, `PullDownMenu` for primary
   actions, `RemorseItem` for destructive ones, `SilicaListView`, `Theme.*` for all spacing,
-  colours and fonts (no hard-coded sizes), cover page showing the unread count and who wrote (not the text; it can be hidden too).
+  colours and fonts (no hard-coded sizes), cover page showing the unread count and who waits (their last message only if the user asks for it in Settings → Cover, off by default; all of it can be hidden; never a private chat).
 - Pages (initial set): Onboarding/License, ID setup/restore, Conversation list, Chat,
   Contact details, Group details, New chat/group, Settings, Backup (ID + Safe), About/Licenses.
 - Keep QML dumb: it binds to models and calls backend slots. No crypto, no persistence, no
@@ -214,14 +217,15 @@ Rules:
 - Everything the user sees must be translatable — id-based like Jolla's apps:
   `qsTrId("threesea-<kind>-<name>")` with a `//%` engineering-English comment; `.ts` files in
   `translations/`, refreshed with `scripts/update-translations.sh` after UI text changes; German
-  texts live in `scripts/translations-de.py` and the French in `scripts/translations-fr.py`,
-  which are always the **last** step (they fill the texts and write the files in the
-  repository's layout; running lupdate afterwards reformats every line). New and reworded
-  texts get their German and French at the very end, after all features and UI polish (user
-  decision 2026-10-22); until then they stay unfinished. Each entry keeps the English it was
-  translated from: a text whose English changed (a reworded text keeps its id) stays unfinished
-  until it is translated again, and `scripts/check.sh --release` fails on any unfinished text.
-  Plurals: `qsTrId(id, n)` with `%n`, forms in both files. The few texts the core writes itself
+  texts live in `scripts/translations-de.py`, the French in `scripts/translations-fr.py` and the
+  Finnish in `scripts/translations-fi.py`, which are always the **last** step (they fill the
+  texts and write the files in the repository's layout; running lupdate afterwards reformats
+  every line). New and reworded texts get their German, French and Finnish before the work is
+  pushed, never later (user decision 2026-11-18, replacing "at the very end" of 2026-10-22).
+  Each entry keeps the English it was translated from: a text whose English changed (a reworded
+  text keeps its id) stays unfinished until it is translated again, and
+  `scripts/check.sh --release` fails on any unfinished text. Plurals: `qsTrId(id, n)` with
+  `%n`, forms in all three files. The few texts the core writes itself
   (Threema Web's status lines) have their own small table in `core/src/app_web_data.rs`.
 
 ---
@@ -303,9 +307,10 @@ Work phase by phase. Each phase ends with: it builds in the SDK, tests pass, `RE
 `docs/` updated, a short status note in `docs/STATUS.md`. Do not start the next phase while the
 current one has known-broken core functionality.
 
-Status 2026-11-11: Phases 0–4.5 done (phone tests collected for the end), Phase 5 in progress:
-0.3.0 is out with the fixes of the audit of 2026-11-04, and 0.3.1 is prepared (the earpiece, the
-volume keys and video calls after the first tries on a phone); details in `docs/STATUS.md`.
+Status 2026-11-18: Phases 0–4.5 done (phone tests collected for the end), Phase 5 in progress:
+0.3.1 is out (the earpiece, the volume keys and video calls after the first tries on a phone),
+and 0.4.0 is prepared for 2026-11-19 (a new icon, the cover as a sea listing who waits,
+notifications for reactions, spam groups as in Android 6.6.0/6.6.1); details in `docs/STATUS.md`.
 
 ### Phase 0 — Toolchain and skeleton (highest risk, do first)
 - Add upstream as submodule; pin `libthreema`.
@@ -419,6 +424,15 @@ volume keys and video calls after the first tries on a phone); details in `docs/
     element (`scripts/make-ui-icons.py`); skin tones in a context menu like a bubble's (user); swipe down closes it like the
     keyboard, the chat's pulleys are off while it is open (user). *(done)*
   - Emoji in the chat input with some room on both sides, every emoji equally wide (user). *(done)*
+  - Launcher icon and cover (user 2026-11-18, after a contributor's idea to show the icon on the
+    cover): the icon is a leaning bubble afloat in a sea of three waves, lime to green, layered with
+    gradients like Jolla's icons (a dark forest green sank into dark wallpapers); the cover is that picture in the ambience's colour as its layout
+    (`CoverSea.qml`): count up left, the chats that wait on the wave under it, the actions on the
+    last wave, the water rising a row per chat, the bubble afloat at the right. Settings → Cover
+    (user 2026-11-19: at full strength the ambience's colour glowed on the phone) has the last
+    messages, the waves' colour ("Ambient", at half the first strength, or "Static", the text's
+    colour) and their level ("Rising", "Leveled", "Always risen"). *(done; the phone has seen
+    the first colouring only)*
   - Reactions under a bubble: small, nearly round chips with the emoji's picture, always in the
     highlight colour; the top corner under the bubble square (incoming left, outgoing right),
     the others round (user). *(done)*
@@ -465,11 +479,9 @@ volume keys and video calls after the first tries on a phone); details in `docs/
   Threema's map server, a chat's polls, square profile pictures, names for Web sessions).
 - Open: phone tests, all collected in `docs/voice-video-device-checklist.md` (calls, camera,
   battery, video, the media controls, and everything the audit's fixes left to a phone);
-  the SQLite advisory passed over until `rusqlite` 0.42 is out (ADR 0035, issue 9); the questions the
-  audit's packages left for the user (in `docs/STATUS.md`: sharing media with other apps, a
-  map); P01 for Threema Web's
-  picture and contact commands (still wait in the core loop, ADR 0028); the OrganizationName
-  (§11); Jolla Store and Chum packaging. Done 2026-10-28:
+  the questions the audit's packages left for the user (in `docs/STATUS.md`: sharing media with
+  other apps, a map); P01 for Threema Web's picture and contact commands (still wait in the
+  core loop, ADR 0028); the OrganizationName (§11); Jolla Store and Chum packaging. Done 2026-10-28:
   fuzzing setup and first runs (`core/fuzz/`), indexed search. Done 2026-10-29 (user asked for
   it after all): the per-chat summary (store migration 33) — SQL triggers keep it in step, so
   no write path has to, which was the risk; with the chat list's per-chat lookups batched into
@@ -544,7 +556,8 @@ volume keys and video calls after the first tries on a phone); details in `docs/
 Facts:
 - Upstream is AGPL-3.0; Threema is a paid app and an ID must be registered with a license. A
   third-party client works with a valid license but has no official support.
-- Pinned upstream: `6.5.3-1216` (`d44a2b53`). libthreema is pure Rust (no libsodium/C deps),
+- Pinned upstream: the reference submodule at `6.6.1-1240` (`895c101e`), libthreema's code at
+  `6.5.3-1216` (`d44a2b53`) with 6.6.0's protocol files (ADR 0036). libthreema is pure Rust (no libsodium/C deps),
   sans-I/O, not `Send`. It covers CSP transport, part of CSP-E2E, D2M, D2D rendezvous, ID backup,
   identity creation, parts of the directory API. Upstream does **not** cover groups, PFS, blobs,
   Threema Safe, most message types — Android does these in Kotlin. We do them in `core`, except
@@ -555,15 +568,16 @@ Facts:
 - Threema told us (November 2026) it doesn't actively block third-party clients that cause no
   stability issues or high server load, are clearly unofficial, use no "Threema" branding without
   authorization and don't circumvent the licensing. We send our own `client-info`, as it suggested
-  (ADR 0015), and the launcher icon is our own (green bubble over three waves). Threema is fine with
+  (ADR 0015), and the launcher icon is our own (a pale bubble leaning in a green sea of three waves). Threema is fine with
   our platform code `S` and our user agent, "Threema compatible" included (November 2026).
 - SFOS 5.1/5.2: Qt 5.6.3, glibc 2.41, Rust 1.75, OpenSSL 3.5, SQLCipher 4.5.0 in the repos.
 - Jolla's Messages/People/Email/Phone UIs are closed source; Notes, Gallery, Camera, Weather are
   open (BSD). Whisperfish (AGPL, Rust) is the closest reference app.
 - Phase 0 RPMs pass `mb2 check` (Harbour validator) on all three architectures; CI runs Jolla's
   validator on the Lite RPMs on every push (`scripts/validate-rpm.sh`).
-- Released: 0.1.0 (2026-10-27), 0.2.0 (2026-11-03) and 0.3.0 (2026-11-08), on GitHub. 0.3.1 is
-  prepared on `main` (2026-11-11) and goes out with its merge into `release`.
+- Released: 0.1.0 (2026-10-27), 0.2.0 (2026-11-03), 0.3.0 (2026-11-08) and 0.3.1 (2026-11-11), on
+  GitHub. 0.4.0 is prepared on `main` (2026-11-18) for 2026-11-19 and goes out with its merge into
+  `release`.
 - Our only hosts outside Threema's are GitHub for the opt-in update check and self-hosted
   Threema Web servers the user allows (§7.6); places come from Threema's `poi.threema.ch`
   (ADR 0030), the map from `map.threema.ch`, drawn by a bundled MapLibre held to that origin

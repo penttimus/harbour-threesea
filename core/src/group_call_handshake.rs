@@ -313,7 +313,12 @@ impl Peer {
                 // The other side's own values from its Hello, repeated.
                 pck: remote.pck.to_vec(),
                 pcck: remote.pcck.to_vec(),
-                media_keys: local.media_keys.iter().map(MediaKey::to_proto).collect(),
+                // Deprecated in 6.6.0's protocol; Android 6.6.0 still sends and reads only these.
+                deprecated_early_media_keys: local
+                    .media_keys
+                    .iter()
+                    .map(MediaKey::to_proto)
+                    .collect(),
             })),
         };
         let inner_nonce = XSalsa20Poly1305::generate_nonce(&mut OsRng);
@@ -415,6 +420,10 @@ impl Peer {
         Ok(events)
     }
 
+    #[expect(
+        deprecated,
+        reason = "fields 6.6.0's protocol deprecates; Android 6.6.0 still uses only these"
+    )]
     fn receive_auth(&mut self, data: &[u8]) -> Result<Vec<Event>, HandshakeError> {
         let outer = self.open(data).ok_or(HandshakeError::Invalid("auth"))?;
         if outer.len() < NONCE_LEN {
@@ -439,7 +448,7 @@ impl Peer {
             return Err(HandshakeError::Invalid("auth (repeated values)"));
         }
         let media_keys: Vec<MediaKey> = auth
-            .media_keys
+            .deprecated_early_media_keys
             .iter()
             .filter_map(MediaKey::from_proto)
             .collect();

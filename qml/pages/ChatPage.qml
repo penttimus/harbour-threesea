@@ -412,12 +412,16 @@ Page {
     // Settings → Advanced → Log → Detailed: notes when the interface stopped for longer than
     // a frame or two while this chat was open, with what it was doing — counts only, no
     // content (§7.3). The emulator cannot measure this (its software renderer stalls by
-    // itself), so this is how a real phone can say where the time goes.
+    // itself), so this is how a real phone can say where the time goes. Only with the app in
+    // front: a page stays active behind other apps, where nothing is drawn and 60 wake-ups a
+    // second are the battery's.
     Timer {
-        running: page.status === PageStatus.Active && backend.logLevel === "debug"
+        running: page.status === PageStatus.Active && Qt.application.active && backend.logLevel === "debug"
         interval: 16
         repeat: true
         property double last: 0
+        // The time away is no stop.
+        onRunningChanged: last = 0
         onTriggered: {
             var now = Date.now()
             var gap = now - last
@@ -1563,12 +1567,13 @@ Page {
         return candidate
     }
     // The proximity sensor runs only while it could start or carry playback here, the setting
-    // allows it, and this build can reach the earpiece at all (Full only).
+    // allows it, and this build can reach the earpiece at all (Full only). Not with headphones or
+    // Bluetooth: the message stays in them (issue 22).
     Binding {
         target: proximity
         property: "enabled"
         value: page.status === PageStatus.Active && Qt.application.state === Qt.ApplicationActive
-               && page.shown && backend.earToPlay && voicePlayer.earpieceAvailable
+               && page.shown && backend.earToPlay && voicePlayer.earpieceAvailable && !mediaRoute.headphones
                && (voicePlayer.messageId >= 0 || page.firstUnheardVoice >= 0) && !page.recordingHere
         when: page.status === PageStatus.Active
     }
@@ -1590,6 +1595,9 @@ Page {
                     voicePlayer.earpiece = true
                     page.playVoice(page.firstUnheardVoice)
                 }
+            } else if (mediaRoute.headphones) {
+                // Headphones came while at the ear (the sensor stops then): it goes on in them.
+                voicePlayer.earpiece = false
             } else {
                 // Taken off the ear: pause, back to the loudspeaker.
                 if (voicePlayer.earpiece && voicePlayer.playing) {

@@ -1316,7 +1316,7 @@ impl Store {
         sql: &str,
         args: &[&dyn rusqlite::ToSql],
     ) -> Result<Option<Vec<i64>>, StoreError> {
-        let limit = SEARCH_IDS_MAX + 1;
+        let limit = i64::try_from(SEARCH_IDS_MAX + 1).expect("a small limit");
         let args: Vec<&dyn rusqlite::ToSql> = args
             .iter()
             .copied()
@@ -1493,15 +1493,17 @@ impl Store {
         Ok(rows.collect::<Result<_, _>>()?)
     }
 
-    /// The chats with unread messages and how many, in the order of `conversations()`.
-    pub fn unread_chats(&self) -> Result<Vec<(String, i64)>, StoreError> {
-        let mut statement = self.conn.prepare(
-            "SELECT s.chat, s.unread
+    /// The chats with unread messages as in `conversations()`: each one's last message and how
+    /// many are unread, newest first.
+    pub fn unread_conversations(&self) -> Result<Vec<(Message, i64)>, StoreError> {
+        let mut statement = self.conn.prepare(&format!(
+            "SELECT {}, s.unread
              FROM chat_summaries s JOIN messages m ON m.id = s.last_id
              WHERE s.unread > 0
              ORDER BY COALESCE(m.received_at, m.created_at) DESC, m.id DESC",
-        )?;
-        let rows = statement.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?;
+            columns()
+        ))?;
+        let rows = statement.query_map([], |row| Ok((from_row(row)?, row.get::<_, i64>(19)?)))?;
         Ok(rows.collect::<Result<_, _>>()?)
     }
 

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 TARGET = harbour-threesea
 
-VERSION = 0.3.1
+VERSION = 0.4.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 # i18n: id-based (qsTrId) like Jolla's apps. The base .ts carries the engineering English
@@ -52,6 +52,7 @@ SOURCES += \
     bridge/mediaimageprovider.cpp \
     bridge/photoedit.cpp \
     bridge/callroute.cpp \
+    bridge/mediaroute.cpp \
     bridge/proximitymonitor.cpp \
     bridge/secretstore.cpp \
     bridge/softsound.cpp \
@@ -84,6 +85,7 @@ HEADERS += \
     bridge/photoedit.h \
     bridge/peerimage.h \
     bridge/callroute.h \
+    bridge/mediaroute.h \
     bridge/proximitymonitor.h \
     bridge/offlinenetwork.h \
     bridge/coreresult.h \

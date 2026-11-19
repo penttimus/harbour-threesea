@@ -9,7 +9,7 @@
 #   dialog).
 # Fails, naming the file and the marker, on anything found.
 #
-# Usage: scripts/check-package.sh [--store] RPMS/full/harbour-threesea-full-0.2.0-1.aarch64.rpm ...
+# Usage: scripts/check-package.sh [--store] RPMS/full/harbour-threesea-0.2.0-1.aarch64-full.rpm ...
 set -eu
 SFOS=${SFOS_VERSION:-5.1.0.11}
 IMAGE=harbour-threesea-sdk:$SFOS
@@ -29,8 +29,8 @@ for RPM in "$@"; do
   [ -f "$ABS" ] || { echo "no such file: $RPM" >&2; exit 2; }
   NAME=$(basename "$ABS")
   case "$NAME" in
-    *.i486.rpm) PHONE=0 ;;
-    *.armv7hl.rpm|*.aarch64.rpm) PHONE=1 ;;
+    *.i486.rpm|*.i486-*.rpm) PHONE=0 ;;
+    *.armv7hl.rpm|*.armv7hl-*.rpm|*.aarch64.rpm|*.aarch64-*.rpm) PHONE=1 ;;
     *) echo "cannot tell the architecture from $NAME" >&2; exit 2 ;;
   esac
   echo "== $NAME"

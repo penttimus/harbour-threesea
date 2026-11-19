@@ -8,7 +8,7 @@ Note per step: OK, or what you saw or heard. A screenshot helps for the screens;
 line of the log is often enough (Settings → Advanced → View log → "Save support package" writes
 it to Downloads). The log never holds message text.
 
-Install the fresh **Full** RPM: `devel-su pkcon install-local harbour-threesea-full-….rpm`.
+Install the fresh **Full** RPM: `devel-su pkcon install-local harbour-threesea-…-full.rpm`.
 (Lite has no sensor permission and no GStreamer, so at-the-ear playback and video scaling are
 not in it at all — that is on purpose.)
 
@@ -31,6 +31,24 @@ Settings → Chats: "Play voice messages at the ear" is on by default.
    - Expect: it carries on from where it stood, on the earpiece.
 4. Turn the setting off and hold the phone to your ear.
    - Expect: nothing happens (the sensor is not even started).
+5. Bluetooth headphones connected (A2DP), then a wired headset (issue 22): play a voice message
+   with the phone lying face up, then cover the proximity sensor while it plays, then play the
+   next one. Also once after a message at the ear without headphones, then connect them.
+   - Expect: every message in the headphones, covering the sensor changes nothing. During
+     playback `pactl list sink-inputs` shows Threesea's stream on the Bluetooth sink, not in the
+     policy group `call` (`policy.group = "player"`, or whatever group the system's player gets).
+   - Headphones connected while a message plays at the ear: it goes on in them without a pause.
+   - Without headphones a message at the ear, then headphones again and a message played face up
+     (failed with ad18fd3: silent, the stream in `othermedia`): heard in the headphones, the
+     stream in `player`.
+   - Without headphones: a message at the ear, then one with the phone on the table, then at the
+     ear again (failed with bc009ed: nothing played after the first). Heard each time; the
+     `phone` stream in `call` at the ear, the loudspeaker's in `player`.
+   - A call: the `phone` stream in `call`, and a message on the loudspeaker afterwards in
+     `player`. Note the policy's version, `rpm -q pulseaudio-policy-enforcement` (14.2.52 keeps
+     several rules per process, older versions one).
+   - Confirmed on a phone with 7cccef0 (pulseaudio-policy-enforcement 14.2.50, 2026-11-15): every
+     step above as expected.
 
 ## B. The sound between two voice messages
 
@@ -641,6 +659,9 @@ Full, unless it says otherwise. With a second phone calling.
     - Note where the sound goes each time, and what the output is named
       (`…Route.Manager.ActiveRoutes`, as above). Say if there is a route you'd want to choose and
       can't: a Bluetooth entry depends on this.
+    - Seen 2026-11-15 (headphones with HFP, connected before the call): the call was on the phone,
+      the card stayed on `a2dp_sink` and PulseAudio logged `can't set profiles/ports to source
+      voicecall`. Expect the card to switch to `handsfree_head_unit` and the call to be in them.
 12. Bluetooth headset goes out of range or off during a call.
     - Note where the sound goes. Android has a setting that ends the call then; we only add one if
       the sound ends up somewhere you wouldn't want.
@@ -1224,6 +1245,16 @@ need neither a sensor nor a real network.
     - Note whether "Connecting" flickers on a phone that reconnects often.
 13. A storage problem while receiving (a nearly full disk).
     - Expect: the notice and the chat list's line, gone again once storage works.
+14. Someone reacts to a message of yours, in a chat and in a group, with the app in the
+    background; then with a second emoji, then takes one back; tap the notification.
+    - Expect: a notification beside the chat's own ("Reacted 👍 to: “…”", in a group with the
+      name), the emoji readable in Events and on the lock screen, sound as for a message; the
+      second changes it within 30 s without another sound; taking one back changes it silently;
+      the tap opens the chat at that message, which flashes. Opening the chat any other way takes
+      it away.
+15. The same with the chat muted, with Reactions off under Chats or Groups, with the app locked,
+    and in a private chat.
+    - Expect: nothing for the first three; the private chat's says "Private chat" and how many.
 
 ## Connection, battery and transfers
 
