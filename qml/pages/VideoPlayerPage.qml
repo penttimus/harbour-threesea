@@ -2,6 +2,7 @@
 import QtQuick 2.6
 import QtMultimedia 5.6
 import Sailfish.Silica 1.0
+import "../components" as Components
 import "../components/Format.js" as Fmt
 
 // A video message, full screen on black like Jolla Videos: tap to show/hide the controls,
@@ -9,13 +10,12 @@ import "../components/Format.js" as Fmt
 Page {
     id: page
     allowedOrientations: Orientation.All
-    // Full screen on black also beside a landscape cutout, like Gallery's video player; the
-    // controls sit in the middle and at the bottom, away from the cutout.
     cutoutMode: CutoutMode.FullScreen
     showNavigationIndicator: controls.visible
 
     property int messageId
     property bool controlsShown: true
+    readonly property bool controlsVisible: controlsShown || !videoPlayer.playing
 
     Component.onCompleted: {
         voicePlayer.stop()
@@ -67,11 +67,13 @@ Page {
         running: videoPlayer.loading
     }
 
+    Components.MediaCloseButton { enabled: page.controlsVisible }
+
     Item {
         id: controls
         anchors.fill: parent
         visible: opacity > 0
-        opacity: page.controlsShown || !videoPlayer.playing ? 1.0 : 0.0
+        opacity: page.controlsVisible ? 1.0 : 0.0
         Behavior on opacity { FadeAnimation { } }
 
         IconButton {

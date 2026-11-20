@@ -174,7 +174,7 @@ Item {
         id: tabs
         anchors.top: topLine.bottom
         visible: !panel.searching
-        width: parent.width
+        width: closeButton.x
         height: Theme.itemSizeSmall
         readonly property real cellWidth: Math.floor(width / (EmojiData.names.length
                                                              + (panel.reactionMode ? 2 : 4)))
@@ -270,10 +270,20 @@ Item {
         }
     }
 
+    IconButton {
+        id: closeButton
+        anchors.top: topLine.bottom
+        anchors.right: parent.right
+        width: Theme.itemSizeSmall
+        height: panel.searching ? searchField.height : tabs.height
+        icon.source: "image://theme/icon-m-dismiss"
+        onClicked: panel.closeRequested()
+    }
+
     SearchField {
         id: searchField
         anchors.top: topLine.bottom
-        width: parent.width
+        width: closeButton.x
         visible: panel.searching
         // What is around it doesn't scroll: this is the keyboard's place.
         autoScrollEnabled: false

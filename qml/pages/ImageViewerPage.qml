@@ -499,6 +499,8 @@ FullscreenContentPage {
         running: !page.listReady && !page.gone
     }
 
+    Components.MediaCloseButton { enabled: page.overlayShown }
+
     Item {
         anchors.fill: parent
         visible: opacity > 0 && !page.single
