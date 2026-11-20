@@ -158,6 +158,35 @@ void exifStaysBehind(const QString &dir)
     check(qRed(out.pixel(10, 5)) > 200 && qBlue(out.pixel(10, 5)) < 60, "FilePreparer: turned the right way");
 }
 
+void squarePictures(const QString &dir)
+{
+    for (const QString &format : {QStringLiteral("jpg"), QStringLiteral("png")}) {
+        QImage panorama(2000, 100, QImage::Format_RGB32);
+        panorama.fill(Qt::red);
+        for (int y = 0; y < 100; ++y)
+            for (int x = 950; x < 1050; ++x)
+                panorama.setPixel(x, y, qRgb(0, 220, 0));
+        panorama.setText(QStringLiteral("Comment"), QString::fromLatin1(Secret));
+        const QString path = dir + "/panorama." + format;
+        check(panorama.save(path), "panorama fixture");
+        QByteArray jpeg, safe;
+        check(PhotoEdit::squarePicture(path, jpeg, &safe).isEmpty(), "square panorama prepared");
+        const QImage picture = QImage::fromData(jpeg);
+        check(picture.size() == QSize(512, 512), "normal picture dimensions");
+        check(QImage::fromData(safe).size() == QSize(400, 400), "Safe picture dimensions");
+        check(qGreen(picture.pixel(20, 200)) > 180 && qGreen(picture.pixel(480, 200)) > 180,
+              "panorama centre fills the picture");
+        check(!jpeg.contains(Secret) && !safe.contains(Secret), "both outputs strip metadata");
+    }
+    QFile large(dir + "/large.ppm");
+    large.open(QIODevice::WriteOnly);
+    large.write("P6\n40000 1000\n255\n");
+    large.close();
+    QByteArray jpeg;
+    check(PhotoEdit::squarePicture(large.fileName(), jpeg, nullptr) == QStringLiteral("unsupported picture size")
+          && jpeg.isEmpty(), "oversized input refused before decoding");
+}
+
 void turnsAndCuts()
 {
     const QImage whole = PhotoEdit::edited(halves(false), QRectF(0, 0, 1, 1), 0);
@@ -311,6 +340,7 @@ int main(int argc, char **argv)
     QTemporaryDir dir;
     metadataStaysBehind(dir.path());
     exifStaysBehind(dir.path());
+    squarePictures(dir.path());
     turnsAndCuts();
     wipesOnlyWhatIsItsOwn();
     transparencyStays(dir.path());

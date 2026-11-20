@@ -3426,6 +3426,10 @@
             <source>This backup holds no Threema ID. Restore the ID from Threema Safe or an ID backup, then import this backup in Settings, Backup, Data backup.</source>
             <translation type="unfinished" />
         </message>
+        <message id="threesea-la-backup-restore-limit">
+            <source>This backup exceeds the restore limits. Earlier backups have been kept.</source>
+            <translation type="unfinished" />
+        </message>
         <message id="threesea-la-error-backup-write">
             <source>The backup could not be written. Check the backup folder.</source>
             <translation type="unfinished" />
@@ -4538,6 +4542,10 @@
         </message>
         <message id="threesea-me-remove-star">
             <source>Remove star</source>
+            <translation type="unfinished" />
+        </message>
+        <message id="threesea-la-search-submit-short">
+            <source>Press Enter to search messages</source>
             <translation type="unfinished" />
         </message>
         <message id="threesea-la-search-nothing-at-all">

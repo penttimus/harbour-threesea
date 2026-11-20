@@ -598,7 +598,7 @@ impl App {
             return None;
         }
         // A store that refused to empty still holds the ID, which is on its way out.
-        if self.identity_removed {
+        if self.identity_removed || self.network_offline {
             return None;
         }
         if !self.license_valid().ok()? {
@@ -688,6 +688,10 @@ impl App {
             .maintenance_ran_at
             .elapsed()
             .is_ok_and(|since| since >= crate::app::MAINTENANCE_INTERVAL);
+        if self.network_offline {
+            self.wake_settled_held = self.maintenance_overdue || self.detached.maintenance_running;
+            return json!({ "waiting": self.wake_settled_held });
+        }
         let waiting = self
             .connection
             .borrow()
@@ -909,7 +913,7 @@ impl App {
     }
 
     /// A chat's name in the chat list.
-    fn chat_title(&self, key: &str) -> Result<String, ApiError> {
+    pub(crate) fn chat_title(&self, key: &str) -> Result<String, ApiError> {
         let display_name = |identity: &str| {
             self.store
                 .contact(identity)

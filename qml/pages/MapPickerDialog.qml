@@ -75,8 +75,11 @@ Dialog {
         askLater.restart()
     }
 
+    readonly property bool foreground: Qt.application.active && status === PageStatus.Active
+    onForegroundChanged: if (foreground) askLater.restart()
+
     function askPlaces() {
-        if (window.locked || !point || !point.isValid || map.map.zoomLevel < 13 || map.map.gestureInProgress) return
+        if (!foreground || window.locked || !point || !point.isValid || map.map.zoomLevel < 13 || map.map.gestureInProgress) return
         // Again only after the middle moved by a good part of the list's radius (750 m).
         if (askedAt && QtPositioning.coordinate(askedAt.latitude, askedAt.longitude).distanceTo(point) < 300) return
         var args = { latitude: point.latitude, longitude: point.longitude }

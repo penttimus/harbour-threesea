@@ -13,7 +13,7 @@ use zeroize::Zeroizing;
 use super::{EntryKind, csv::Table};
 
 /// Hard bounds for the container (an archive beyond them is rejected as a whole).
-const MAX_ENTRIES: usize = 400_000;
+pub(super) const MAX_ENTRIES: usize = 400_000;
 const MAX_NAME_BYTES: usize = 160;
 /// What a read reserves at most on the central directory's word alone.
 const MAX_INITIAL_CAPACITY: usize = 1 << 20;

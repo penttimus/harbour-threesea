@@ -1225,7 +1225,7 @@ impl Shared {
 impl Shared {
     /// The part of periodic work that waits for the network, beside the core loop:
     /// [`App::finish_maintenance`] does the rest.
-    pub(crate) async fn maintenance_away(&self) -> MaintenanceRound {
+    pub(crate) async fn maintenance_away(&self, online: bool) -> MaintenanceRound {
         let mut round = MaintenanceRound::default();
         match self.store.identity() {
             Ok(Some(_)) => {}
@@ -1233,6 +1233,13 @@ impl Shared {
         }
         // Refused, and nothing goes to Threema's servers until a key is accepted again.
         if !self.license_valid().unwrap_or(false) {
+            return round;
+        }
+        if !online {
+            round.licensed = true;
+            if self.backup_reminder_due(now()).unwrap_or(false) {
+                round.events.push("backupReminder");
+            }
             return round;
         }
         match self.ask_about_license().await {
@@ -1346,7 +1353,7 @@ impl App {
     /// automatic Safe backup, all in place. Returns the events to emit to the UI.
     #[cfg(test)]
     pub async fn maintenance(&mut self) -> Vec<&'static str> {
-        let round = self.shared.maintenance_away().await;
+        let round = self.shared.maintenance_away(!self.network_offline).await;
         self.finish_maintenance(round)
     }
 }

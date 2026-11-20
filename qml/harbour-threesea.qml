@@ -391,6 +391,7 @@ ApplicationWindow {
             }
             // Timers stood still while the device slept: "connected" may be an old story by now.
             if (Qt.application.state === Qt.ApplicationActive && backend.state === "ready") {
+                backend.reportNetwork()
                 backend.call("wake")
             }
             window.lockedNotification()
@@ -804,14 +805,22 @@ ApplicationWindow {
         })
     }
     Timer {
-        // After start-up or a page transition.
-        running: !window.stackHeld && (window.pendingLink.length > 0 || window.pendingChat.length > 0
-                                       || window.pendingUpdate || window.pendingWebSessions
-                                       || window.pendingSafe || window.pendingDataImport !== null
-                                       || window.pendingShare !== null)
-        interval: 300
-        repeat: true
+        id: pendingNavigation
+        property bool hasPending: window.pendingLink.length > 0 || window.pendingChat.length > 0
+                                  || window.pendingShare !== null
+                                  || ((backend.state === "ready" || backend.state === "error")
+                                      && (window.pendingUpdate || window.pendingWebSessions || window.pendingSafe
+                                          || window.pendingDataImport !== null))
+        property bool dispatchable: hasPending && !window.stackHeld && !pageStack.busy
+                                    && (backend.state === "error" || (shownState === backend.state
+                                        && backend.state !== "locked" && backend.state !== "starting"
+                                        && backend.state !== "removing"))
+        property string currentState: backend.state
+        onCurrentStateChanged: if (dispatchable) restart()
+        onDispatchableChanged: if (dispatchable) restart()
+        interval: 0
         onTriggered: {
+            if (!dispatchable) return
             // The core won't come back, so nothing waiting here will ever go through. StartupPage
             // says what happened; shownState may never catch up with this state (showStatePage).
             if (backend.state === "error") {
@@ -831,6 +840,7 @@ ApplicationWindow {
                 var restored = window.pendingDataImport
                 window.pendingDataImport = null
                 pageStack.push(Qt.resolvedUrl("pages/DataBackupImportPage.qml"), restored)
+                if (dispatchable) restart()
                 return
             }
             if (window.pendingLink.length > 0) window.openLink(window.pendingLink, window.pendingLinkFromMessage)
@@ -869,10 +879,11 @@ ApplicationWindow {
     BackgroundJob {
         id: wakeJob
         enabled: backend.state === "ready" && backend.keepRunning
-        frequency: BackgroundJob.FiveMinutes
+        frequency: backend.networkOffline ? BackgroundJob.OneHour : BackgroundJob.FiveMinutes
         onTriggered: {
             window.checkGrace()
             lifecycle.checkInstallation()
+            if (backend.networkOffline) backend.reportNetwork()
             wakeLimit.restart()
             backend.call("wake", {}, function(ok, result) {
                 if (!ok || !result.waiting) window.endWake()
@@ -2564,6 +2575,7 @@ ApplicationWindow {
             //% "The ID was not removed: %1"
             Notices.show(qsTrId("threesea-la-delete-data-failed").arg(Errors.text(kind, message)), Notice.Long, Notice.Center)
         }
+        onNetworkOfflineChanged: if (backend.networkOffline) window.endWake()
         onNetworkChangedSettled: window.wakeOnNetworkChange()
         onCoreEvent: {
             // Held back for now (notify: false) or not, the backlog is still coming.

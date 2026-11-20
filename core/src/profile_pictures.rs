@@ -1032,7 +1032,7 @@ mod tests {
                      DROP INDEX messages_position; DROP TRIGGER messages_sort_key;
                      ALTER TABLE messages DROP COLUMN sort_key;
                      DROP TABLE android_import_ids;
-                     DROP TABLE reflected_waiting;
+                     DROP TABLE reflected_waiting; DROP TABLE export_files; DROP INDEX messages_download_retry;
                      INSERT INTO settings (key, value) VALUES ('pictureRequested:00000BOB', '1000');
                      PRAGMA user_version = 26;",
                 )

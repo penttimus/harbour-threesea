@@ -2567,6 +2567,9 @@ FI = {
     "threesea-la-error-backup-no-identity":
         ("This backup holds no Threema ID. Restore the ID from Threema Safe or an ID backup, then import this backup in Settings, Backup, Data backup.",
          "Tässä varmuuskopiossa ei ole Threema-tunnusta. Palauta tunnus Threema Safesta tai tunnuksen varmuuskopiosta ja tuo sitten tämä varmuuskopio kohdassa Asetukset, Varmuuskopio, Tietojen varmuuskopio."),
+    "threesea-la-backup-restore-limit":
+        ("This backup exceeds the restore limits. Earlier backups have been kept.",
+         "Varmuuskopio ylittää palautuksen rajat. Aiemmat varmuuskopiot on säilytetty."),
     "threesea-la-error-backup-write":
         ("The backup could not be written. Check the backup folder.",
          "Varmuuskopiota ei voitu kirjoittaa. Tarkista varmuuskopiokansio."),
@@ -3397,6 +3400,9 @@ FI = {
     "threesea-me-remove-star":
         ("Remove star",
          "Poista tähti"),
+    "threesea-la-search-submit-short":
+        ("Press Enter to search messages",
+         "Hae viestejä painamalla Enteriä"),
     "threesea-la-search-nothing-at-all":
         ("No chats, contacts or messages found",
          "Keskusteluja, yhteystietoja tai viestejä ei löytynyt"),
