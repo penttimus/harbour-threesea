@@ -223,6 +223,10 @@ const MIGRATIONS: &[&str] = &[
     crate::multidevice::MIGRATION_REFLECTED_WAITING,
     // 46: the names the user gave Threema Web sessions
     crate::web::MIGRATION_LABEL,
+    crate::export_file::MIGRATION,
+    "CREATE INDEX messages_download_retry ON messages(id)
+        WHERE kind='file' AND json_valid(body) AND
+        (json_extract(body,'$.thumbnailRetry.at') IS NOT NULL OR json_extract(body,'$.fileRetry.at') IS NOT NULL);",
 ];
 
 /// Setting keys.

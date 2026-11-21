@@ -723,6 +723,7 @@ pub enum Command {
     /// new network allows.
     SetNetwork {
         wifi: bool,
+        online: Option<bool>,
     },
     /// Settings → Appearance: `{lastNameFirst, sortByLastName, showInactive}`.
     DisplaySettings,
@@ -1057,6 +1058,8 @@ pub enum ApiError {
     /// A data backup that could not be written into its folder.
     #[error("{0}")]
     BackupWrite(String),
+    #[error("backup exceeds restore limits")]
+    BackupRestoreLimit,
     /// The folder's storage has no room for a data backup.
     #[error("no room for the backup")]
     BackupNoRoom,
@@ -1258,6 +1261,7 @@ impl ApiError {
             Self::BackupOtherIdentity => "backupIdentity",
             Self::BackupNoIdentity => "backupNoIdentity",
             Self::BackupInvalid(_) => "backupInvalid",
+            Self::BackupRestoreLimit => "backupRestoreLimit",
             Self::BackupWrite(_) => "backupWrite",
             Self::BackupNoRoom => "backupNoRoom",
             Self::BackupRunning => "backupRunning",
@@ -1557,6 +1561,7 @@ pub struct App {
     pub(crate) transfer_retry_at: Option<tokio::time::Instant>,
     /// On an unmetered network (Wi-Fi/Ethernet, from the bridge): auto-download policy.
     pub(crate) on_wifi: bool,
+    pub(crate) network_offline: bool,
     pub(crate) pictures_dir: Option<PathBuf>,
     /// `deleteAllData` went through: this core only waits for the bridge to stop it.
     pub(crate) identity_removed: bool,
@@ -1591,6 +1596,7 @@ impl App {
         let store = Store::open_with(&start.data_dir.join("threesea.db"), db_key, upgrading)
             .map(std::rc::Rc::new)
             .map_err(|error| ApiError::store_failed(&error))?;
+        crate::export_file::recover(&store)?;
         forget_false_refusal(&store).map_err(|error| ApiError::store_failed(&error))?;
         let shared = Shared {
             store,
@@ -1664,6 +1670,7 @@ impl App {
             android_export_cancel: Arc::default(),
             transfer_retry_at: None,
             on_wifi: false,
+            network_offline: false,
             pictures_dir: start.pictures_dir.clone(),
             identity_removed: false,
         };
@@ -2527,10 +2534,16 @@ impl App {
                 apply,
             } => self.react(&identity, &message_id, &emoji, apply),
             Command::DeleteConversation { identity } => self.delete_conversation(&identity),
-            Command::SetNetwork { wifi } => {
+            Command::SetNetwork { wifi, online } => {
+                if let Some(online) = online {
+                    self.network_offline = !online;
+                    if !online {
+                        self.stop_connection();
+                    }
+                }
                 let changed = self.on_wifi != wifi;
                 self.on_wifi = wifi;
-                if changed {
+                if changed && !self.network_offline {
                     self.download_pending_media();
                 }
                 Ok(json!({}))
@@ -5388,6 +5401,60 @@ mod tests {
         assert_eq!(app.store.setting("draftQuote:ABCD1234").unwrap(), None);
     }
 
+    /// Host measurement of a long chat exported on the same runtime as a 10 ms heartbeat.
+    #[tokio::test(flavor = "current_thread")]
+    #[ignore = "large export benchmark"]
+    async fn bench_long_chat_export() {
+        let (dir, app) = app();
+        let chat = "ABCD1234";
+        app.store
+            .upsert_contact(&crate::contacts::test_contact(chat))
+            .unwrap();
+        let tx = app.store.conn.unchecked_transaction().unwrap();
+        let body = "abcdefgh".repeat(64);
+        for id in 1..=30_000 {
+            app.store
+                .insert_incoming(chat, id, "text", &body, 1_700_000_000_000)
+                .unwrap();
+        }
+        tx.commit().unwrap();
+
+        let out = dir.path().to_str().unwrap();
+        let export = app.export_chat(chat, true, out, None, None, Some(0));
+        tokio::pin!(export);
+        let mut heartbeat = tokio::time::interval(std::time::Duration::from_millis(10));
+        heartbeat.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+        let start = tokio::time::Instant::now();
+        let mut max_delay = std::time::Duration::ZERO;
+        let mut ticks = 0;
+        let high_water = || {
+            std::fs::read_to_string("/proc/self/status")
+                .unwrap()
+                .lines()
+                .find(|line| line.starts_with("VmHWM:"))
+                .unwrap()
+                .to_owned()
+        };
+        let before = high_water();
+        loop {
+            tokio::select! {
+                reply = &mut export => {
+                    assert_eq!(reply.unwrap()["messages"], 30_000);
+                    break;
+                }
+                due = heartbeat.tick() => {
+                    max_delay = max_delay.max(due.elapsed());
+                    ticks += 1;
+                }
+            }
+        }
+        println!(
+            "export elapsed {:?}, {ticks} heartbeat ticks, maximum lateness {max_delay:?}, before {before}, after {}",
+            start.elapsed(),
+            high_water()
+        );
+    }
+
     /// Exporting a chat: the messages as text and, if wanted, the media that are here
     /// (Android's "Export chat").
     #[test]
@@ -5427,7 +5494,7 @@ mod tests {
             .unwrap();
         // A picture whose bytes are on the device.
         let body = json!({
-            "rendering": "media", "mediaType": "image/jpeg", "name": "pier.jpg", "size": 4,
+            "rendering": "media", "mediaType": "image/jpeg", "name": "pier.jpg", "size": 7,
             "thumbnail": false, "fileState": 2, "thumbnailState": 3, "uploadState": 2,
         });
         let picture = app
@@ -5436,7 +5503,11 @@ mod tests {
             .unwrap()
             .unwrap();
         app.media
-            .write(picture.id, crate::media::MediaPart::File, b"jpeg")
+            .write(
+                picture.id,
+                crate::media::MediaPart::File,
+                b"\xff\xd8\xffjpeg",
+            )
             .unwrap();
         // Status lines stay out, like on Android.
         app.store
@@ -5457,6 +5528,15 @@ mod tests {
             .map(|name| name.unwrap_or_default().into_owned())
             .collect();
         assert!(names.iter().any(|n| n.ends_with("-pier.jpg")), "{names:?}");
+        let picture = names.iter().find(|n| n.ends_with("-pier.jpg")).unwrap();
+        assert_eq!(
+            zip.by_name(picture).unwrap().compression(),
+            zip::CompressionMethod::Stored
+        );
+        assert_eq!(
+            zip.by_name("messages.txt").unwrap().compression(),
+            zip::CompressionMethod::Deflated
+        );
         let mut text = String::new();
         std::io::Read::read_to_string(&mut zip.by_name("messages.txt").unwrap(), &mut text)
             .unwrap();
@@ -5470,7 +5550,7 @@ mod tests {
         assert!(text.contains("-pier.jpg>"), "{text}");
         assert!(!text.contains("group|created"), "no status lines: {text}");
 
-        // More than one page (PAGE = 500): the order must hold across them.
+        // More than one page: the order must hold across them.
         app.store
             .upsert_contact(&crate::contacts::test_contact("BBBB2222"))
             .unwrap();
@@ -5544,7 +5624,7 @@ mod tests {
                 .is_ok()
         );
 
-        // What an export killed half way left behind goes with the next one, and nothing else.
+        // A legacy-looking file without an ownership record belongs to the user.
         let folder = std::path::Path::new(&out);
         let leftover = folder.join("threesea-chat-20261104-120000.zip.part");
         let kept = [
@@ -5557,7 +5637,7 @@ mod tests {
         }
         rt.block_on(app.export_chat("ABCD1234", false, &out, None, None, None))
             .unwrap();
-        assert!(!leftover.exists());
+        assert!(leftover.exists());
         assert!(kept.iter().all(|file| file.exists()));
     }
 

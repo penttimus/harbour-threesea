@@ -35,6 +35,9 @@ function text(kind, message) {
     case "backupInvalid":
         //% "The file could not be read as a Threema backup."
         return qsTrId("threesea-la-error-backup-invalid")
+    case "backupRestoreLimit":
+        //% "This backup exceeds the restore limits. Earlier backups have been kept."
+        return qsTrId("threesea-la-backup-restore-limit")
     case "backupWrite":
         //% "The backup could not be written. Check the backup folder."
         return qsTrId("threesea-la-error-backup-write")

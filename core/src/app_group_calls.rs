@@ -80,18 +80,22 @@ pub(crate) struct SfuCache(Option<(SfuCredentials, i64)>);
 /// retrying the SFU credentials, peeking calls. They hold on to the store, so they go when the ID
 /// does ([`App::drop_detached_work`]).
 #[derive(Clone, Default)]
-pub(crate) struct GroupCallTasks(Rc<RefCell<Vec<AbortHandle>>>);
+pub(crate) struct GroupCallTasks {
+    handles: Rc<RefCell<Vec<AbortHandle>>>,
+    refreshing: Rc<RefCell<HashSet<String>>>,
+}
 
 impl GroupCallTasks {
     fn spawn(&self, work: impl Future<Output = ()> + 'static) {
         let task = tokio::task::spawn_local(work);
-        let mut running = self.0.borrow_mut();
+        let mut running = self.handles.borrow_mut();
         running.retain(|task| !task.is_finished());
         running.push(task.abort_handle());
     }
 
     pub(crate) fn abort_all(&self) {
-        for task in self.0.borrow_mut().drain(..) {
+        self.refreshing.borrow_mut().clear();
+        for task in self.handles.borrow_mut().drain(..) {
             task.abort();
         }
     }
@@ -240,10 +244,19 @@ impl Context {
                 {
                     break;
                 }
+                if !context
+                    .tasks
+                    .refreshing
+                    .borrow_mut()
+                    .insert(conversation.clone())
+                {
+                    continue;
+                }
                 pause = match context.refresh_only(&conversation).await {
                     Some(_) => REFRESH_MS,
                     None => REFRESH_UNREACHABLE_MS,
                 };
+                context.tasks.refreshing.borrow_mut().remove(&conversation);
             }
             context.watched.borrow_mut().remove(&conversation);
         });
@@ -815,8 +828,17 @@ impl Shared {
         }
         let context = self.group_call_context();
         let conversation = conversation.to_owned();
+        if !context
+            .tasks
+            .refreshing
+            .borrow_mut()
+            .insert(conversation.clone())
+        {
+            return json!({});
+        }
         self.group_call_tasks.spawn(async move {
             context.refresh(&conversation).await;
+            context.tasks.refreshing.borrow_mut().remove(&conversation);
         });
         json!({})
     }
@@ -1613,17 +1635,17 @@ mod app_tests {
                         sfu_base_url: "https://sfu.example.org".into(),
                     },
                 );
-                assert_eq!(app.group_call_tasks.0.borrow().len(), 3);
+                assert_eq!(app.group_call_tasks.handles.borrow().len(), 3);
 
                 app.drop_detached_work();
                 tokio::task::yield_now().await;
                 assert_eq!(Rc::strong_count(&held), 1, "the task has gone");
-                assert!(app.group_call_tasks.0.borrow().is_empty());
+                assert!(app.group_call_tasks.handles.borrow().is_empty());
 
                 // A next ID's group can be watched again: no name stays behind as "has a task".
                 assert!(app.group_calls_watched.borrow().is_empty());
                 context.keep_watching(&key);
-                assert_eq!(app.group_call_tasks.0.borrow().len(), 1);
+                assert_eq!(app.group_call_tasks.handles.borrow().len(), 1);
                 app.drop_detached_work();
             })
             .await;

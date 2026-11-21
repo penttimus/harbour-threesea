@@ -21,6 +21,8 @@ QtObject {
             state = "removing"
         }
         property bool unlockedAtStart: false
+        property bool networkOffline: false
+        function reportNetwork() {}
         property bool keepRunning: false
         property bool addressBookSync: false
         property double addressBookSyncedAt: 0

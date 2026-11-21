@@ -622,14 +622,17 @@ fn start_maintenance(app: &mut App) {
     if std::mem::replace(&mut app.detached.maintenance_running, true) {
         return;
     }
+    let online = !app.network_offline;
     app.detached_quietly(
         Lane::InTurn,
-        |app| async move { app.maintenance_away().await },
+        move |app| async move { app.maintenance_away(online).await },
         |app, round| {
             app.detached.maintenance_running = false;
             let events = app.finish_maintenance(round);
             app.note_ui_events(&events);
-            app.start_update_check(false);
+            if !app.network_offline {
+                app.start_update_check(false);
+            }
         },
     );
 }
@@ -1147,7 +1150,8 @@ mod tests {
 
         let now = std::time::SystemTime::now();
         app.maintenance_ran_at = now - crate::app::MAINTENANCE_INTERVAL;
-        app.wake_connection();
+        app.network_offline = true;
+        assert_eq!(app.wake_connection()["waiting"], true);
         assert!(app.maintenance_overdue);
 
         // The clock set back says nothing: the tick is still there.

@@ -228,6 +228,15 @@ impl Default for PollWriter {
     }
 }
 
+fn append_poll_row(table: &mut String, fields: &[&str]) -> Result<(), super::csv::TooLarge> {
+    let row = write_row(fields);
+    if table.len().saturating_add(row.len()) > super::MAX_TABLE_BYTES {
+        return Err(super::csv::TooLarge);
+    }
+    table.push_str(&row);
+    Ok(())
+}
+
 impl PollWriter {
     /// The `BALLOT` body for a `poll`/`pollClosed` message, writing the poll on first sight.
     /// `reference`: `("IdentityBallotModel", identity)` or `("GroupBallotModel", group uid)`.
@@ -239,8 +248,10 @@ impl PollWriter {
         poll: &Value,
         created_at: i64,
         modified_at: i64,
-    ) -> Option<String> {
-        let (creator, poll_id) = key(poll)?;
+    ) -> Result<Option<String>, super::csv::TooLarge> {
+        let Some((creator, poll_id)) = key(poll) else {
+            return Ok(None);
+        };
         let map_key = (conversation.to_owned(), creator.clone(), poll_id);
         let id = match self.ids.get(&map_key) {
             Some(id) => *id,
@@ -255,7 +266,7 @@ impl PollWriter {
                     poll,
                     created_at,
                     modified_at,
-                );
+                )?;
                 id
             }
         };
@@ -264,7 +275,7 @@ impl PollWriter {
         } else {
             CREATED
         };
-        Some(json!([kind, id]).to_string())
+        Ok(Some(json!([kind, id]).to_string()))
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -277,34 +288,37 @@ impl PollWriter {
         poll: &Value,
         created_at: i64,
         modified_at: i64,
-    ) {
+    ) -> Result<(), super::csv::TooLarge> {
         let aid = crate::app_safe::safe_id(poll_id);
         let uid = format!("{aid}-{creator}");
         let (created, modified) = (created_at.to_string(), modified_at.to_string());
         let closed = poll["state"] == 1;
-        self.polls.push_str(&write_row(&[
-            &id.to_string(),
-            &aid,
-            creator,
-            reference.0,
-            reference.1,
-            poll["description"].as_str().unwrap_or_default(),
-            if closed { "CLOSED" } else { "OPEN" },
-            if poll["multiple"] == true {
-                "MULTIPLE_CHOICE"
-            } else {
-                "SINGLE_CHOICE"
-            },
-            if poll["announce"] == true {
-                "INTERMEDIATE"
-            } else {
-                "RESULT_ON_CLOSE"
-            },
-            "TEXT",
-            "",
-            &created,
-            &modified,
-        ]));
+        append_poll_row(
+            &mut self.polls,
+            &[
+                &id.to_string(),
+                &aid,
+                creator,
+                reference.0,
+                reference.1,
+                poll["description"].as_str().unwrap_or_default(),
+                if closed { "CLOSED" } else { "OPEN" },
+                if poll["multiple"] == true {
+                    "MULTIPLE_CHOICE"
+                } else {
+                    "SINGLE_CHOICE"
+                },
+                if poll["announce"] == true {
+                    "INTERMEDIATE"
+                } else {
+                    "RESULT_ON_CLOSE"
+                },
+                "TEXT",
+                "",
+                &created,
+                &modified,
+            ],
+        )?;
         let choices = poll["choices"].as_array().cloned().unwrap_or_default();
         let votes = poll["votes"].as_object().cloned().unwrap_or_default();
         let chose = |voter: &Value, choice: &Value| {
@@ -318,34 +332,41 @@ impl PollWriter {
                 None => i64::try_from(votes.values().filter(|v| chose(v, &choice["id"])).count())
                     .unwrap_or_default(),
             };
-            self.choices.push_str(&write_row(&[
-                &self.next_choice.to_string(),
-                &uid,
-                &choice["id"].to_string(),
-                "Text",
-                choice["name"].as_str().unwrap_or_default(),
-                &count.to_string(),
-                &order.to_string(),
-                &created,
-                &modified,
-            ]));
+            append_poll_row(
+                &mut self.choices,
+                &[
+                    &self.next_choice.to_string(),
+                    &uid,
+                    &choice["id"].to_string(),
+                    "Text",
+                    choice["name"].as_str().unwrap_or_default(),
+                    &count.to_string(),
+                    &order.to_string(),
+                    &created,
+                    &modified,
+                ],
+            )?;
             self.next_choice += 1;
         }
         for (voter, ids) in &votes {
             for choice in &choices {
-                self.votes.push_str(&write_row(&[
-                    &self.next_vote.to_string(),
-                    &uid,
-                    &choice["id"].to_string(),
-                    voter,
-                    if chose(ids, &choice["id"]) { "1" } else { "0" },
-                    &created,
-                    &modified,
-                ]));
+                append_poll_row(
+                    &mut self.votes,
+                    &[
+                        &self.next_vote.to_string(),
+                        &uid,
+                        &choice["id"].to_string(),
+                        voter,
+                        if chose(ids, &choice["id"]) { "1" } else { "0" },
+                        &created,
+                        &modified,
+                    ],
+                )?;
                 self.next_vote += 1;
             }
         }
         self.count += 1;
+        Ok(())
     }
 
     /// `ballot.csv`, `ballot_choice.csv`, `ballot_vote.csv`.
@@ -400,6 +421,7 @@ mod tests {
                 5,
                 6,
             )
+            .unwrap()
             .unwrap();
         assert_eq!(created, "[1,1]");
         // The closing line points at the same poll; a second poll gets its own id.
@@ -412,6 +434,7 @@ mod tests {
                 7,
                 7,
             )
+            .unwrap()
             .unwrap();
         assert_eq!(closed, "[3,1]");
         let mut other = poll(1);
@@ -419,6 +442,7 @@ mod tests {
         assert_eq!(
             writer
                 .message_body("g", ("GroupBallotModel", "g"), "poll", &other, 1, 1)
+                .unwrap()
                 .unwrap(),
             "[1,2]"
         );

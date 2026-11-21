@@ -1815,16 +1815,7 @@ Page {
             page.groupCall = groupCalls.call(page.identity)
         }
     }
-    // The _Group Call Refresh Steps_ every 10 s while a call runs and the chat shows; the
-    // banner's time every second.
-    Timer {
-        running: page.isGroup && page.groupCallRunning && page.status === PageStatus.Active
-                 && Qt.application.active && groupCalls.supported
-                 && window.appSettings.groupCalls !== false
-        interval: 10000
-        repeat: true
-        onTriggered: groupCalls.refresh(page.identity)
-    }
+    // The core watcher updates the banner. Only its elapsed time is local.
     Timer {
         running: page.groupCallRunning && page.status === PageStatus.Active && Qt.application.active
         interval: 1000
@@ -1906,7 +1897,7 @@ Page {
         if (isGroup && groupCalls.supported) {
             groupCallRunning = groupCalls.running(identity)
             groupCall = groupCalls.call(identity)
-            groupCalls.refresh(identity)
+            if (!groupCallRunning) groupCalls.refresh(identity)
         }
         loadDraft()
     }

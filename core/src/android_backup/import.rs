@@ -15,6 +15,7 @@ use zeroize::Zeroizing;
 use super::{
     Archive, ArchiveError, EntryKind, convert, place::Placer, polls::ArchivePolls, records,
 };
+use crate::android_backup::MAX_TABLE_BYTES;
 use crate::{
     media::{MAX_BLOB_SIZE, MediaPart, MediaStore},
     messages::{ImportedMessage, OutgoingState},
@@ -39,8 +40,6 @@ const BATCH: usize = 400;
 /// How many left-out chats the summary names; a crafted archive could leave out thousands, and
 /// the counts hold them all.
 const MAX_LEFT_OUT_NAMED: usize = 100;
-/// How much of one table is held in memory (tests stay at what they can write quickly).
-const MAX_TABLE_BYTES: usize = if cfg!(test) { 1 << 20 } else { 64 << 20 };
 
 /// A file message whose bytes are applied after its row is committed.
 struct MediaJob {

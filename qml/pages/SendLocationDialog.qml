@@ -69,7 +69,7 @@ Dialog {
     PositionSource {
         id: positionSource
         // Not behind the app lock: the place list can stay open under the unlock page.
-        active: !window.locked && (dialog.picking
+        active: Qt.application.active && !window.locked && (dialog.picking
                 || (!dialog.place && (dialog.status === PageStatus.Active || dialog.status === PageStatus.Activating)))
         updateInterval: 1000
         onPositionChanged: {

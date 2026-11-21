@@ -14,6 +14,9 @@ namespace PhotoEdit {
 // comments, a PNG's text chunks) through scaling and copying, and Qt's writers write it out again.
 QImage withoutMetadata(const QImage &image);
 
+// Prepare the centre crop for a contact or group, with the optional Safe-sized copy.
+QString squarePicture(const QString &path, QByteArray &jpeg, QByteArray *safeJpeg);
+
 // Zeroes the pixels if nothing else shares them (decrypted pictures, once done with).
 void wipe(QImage &image);
 

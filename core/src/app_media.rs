@@ -563,7 +563,9 @@ impl Store {
             }
         }
         let mut statement = self.conn.prepare(
-            "SELECT id, body FROM messages WHERE kind = 'file'
+            "SELECT id, body FROM messages INDEXED BY messages_download_retry
+                 WHERE kind='file' AND json_valid(body)
+                 AND (json_extract(body,'$.thumbnailRetry.at') IS NOT NULL OR json_extract(body,'$.fileRetry.at') IS NOT NULL)
                  AND ((json_extract(body, '$.thumbnailState') = ?1
                        AND json_extract(body, '$.thumbnailRetry.at') IS NOT NULL)
                       OR (json_extract(body, '$.fileState') = ?1

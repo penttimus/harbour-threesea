@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 #include "photoedit.h"
 
+#include <QBuffer>
 #include <QColor>
+#include <QImageReader>
 #include <QFile>
 #include <QFont>
 #include <QFontMetricsF>
@@ -74,6 +76,34 @@ QImage withoutMetadata(const QImage &image)
         bare.setColorTable(image.colorTable());
     }
     return bare.copy();
+}
+
+QString squarePicture(const QString &path, QByteArray &jpeg, QByteArray *safeJpeg)
+{
+    QImageReader reader(path);
+    reader.setAutoTransform(true);
+    const QSize full = reader.size();
+    // Some Qt 5 readers decode the full image before applying a crop or scale.
+    if (full.isEmpty() || qint64(full.width()) * full.height() > 30000000) {
+        return QStringLiteral("unsupported picture size");
+    }
+    const int side = qMin(full.width(), full.height());
+    reader.setClipRect(QRect((full.width() - side) / 2, (full.height() - side) / 2, side, side));
+    reader.setScaledSize(QSize(512, 512));
+    const QImage image = withoutMetadata(reader.read().convertToFormat(QImage::Format_RGB32));
+    QBuffer buffer(&jpeg);
+    buffer.open(QIODevice::WriteOnly);
+    if (image.isNull() || !image.save(&buffer, "JPEG", 85)) {
+        return QStringLiteral("could not prepare picture");
+    }
+    if (safeJpeg) {
+        QBuffer safeBuffer(safeJpeg);
+        safeBuffer.open(QIODevice::WriteOnly);
+        if (!image.scaled(400, 400, Qt::IgnoreAspectRatio, Qt::SmoothTransformation).save(&safeBuffer, "JPEG", 60)) {
+            return QStringLiteral("could not prepare backup picture");
+        }
+    }
+    return QString();
 }
 
 void wipe(QImage &image)

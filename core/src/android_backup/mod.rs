@@ -6,6 +6,8 @@
 //! see docs/android-mapping.md. This module only reads and validates; nothing here touches the
 //! store or the network.
 
+/// Maximum expanded size accepted by metadata and history restore.
+pub(crate) const MAX_TABLE_BYTES: usize = if cfg!(test) { 1 << 20 } else { 64 << 20 };
 pub mod archive;
 pub mod convert;
 pub mod csv;

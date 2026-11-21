@@ -42,6 +42,7 @@ pub(crate) mod detached;
 pub(crate) mod dial;
 pub mod directory;
 pub mod distribution_lists;
+mod export_file;
 pub mod ffi;
 pub mod file_types;
 pub mod fs_store;

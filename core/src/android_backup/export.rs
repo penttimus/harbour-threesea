@@ -67,13 +67,21 @@ pub fn time_stamp(now_ms: i64) -> String {
     format!("{y:04}{mo:02}{d:02}-{h:02}{m:02}{s:02}")
 }
 
-/// Is this one of our backup files (rotation only ever touches these)?
+/// Recognize backup filenames for the free-space estimate. Ownership is tracked separately.
 pub fn is_backup_file_name(name: &str) -> bool {
     let Some(rest) = name.strip_prefix("threema-backup-") else {
         return false;
     };
     let Some(stamp) = rest.strip_suffix(".zip") else {
         return false;
+    };
+    let stamp = match stamp.rsplit_once('-') {
+        Some((base, suffix))
+            if suffix.len() == 16 && suffix.bytes().all(|b| b.is_ascii_hexdigit()) =>
+        {
+            base
+        }
+        _ => stamp,
     };
     stamp.len() == 15
         && stamp.as_bytes()[8] == b'-'
@@ -178,7 +186,8 @@ fn last_backup_size(directory: &std::path::Path) -> u64 {
         .map_or(0, |metadata| metadata.len())
 }
 
-type Writer = zip::ZipWriter<std::fs::File>;
+// Keep the compressor buffers off the core thread's stack as ownership moves between futures.
+type Writer = Box<zip::ZipWriter<std::fs::File>>;
 
 /// How much of an entry is compressed before looking at the cancel flag again.
 const ADD_CHUNK_BYTES: usize = 1 << 20;
@@ -197,25 +206,6 @@ fn contacts_to_look_up(store: &Store, me: &str) -> Result<Vec<String>, ApiError>
         }
     }
     Ok(missing)
-}
-
-/// What an export left behind when the phone restarted or the app was killed during it: gigabytes
-/// nothing else ever takes away. Only one export runs at a time, and this runs before it creates
-/// its own, so none of these is in use.
-fn remove_leftovers(directory: &std::path::Path) {
-    let Ok(entries) = std::fs::read_dir(directory) else {
-        return;
-    };
-    for entry in entries.flatten() {
-        let name = entry.file_name();
-        let is_ours = name
-            .to_str()
-            .and_then(|name| name.strip_suffix(".part"))
-            .is_some_and(is_backup_file_name);
-        if is_ours {
-            let _ = std::fs::remove_file(entry.path());
-        }
-    }
 }
 
 /// A folder's entries onto the disk. File systems without that (some answer it this way) lose
@@ -334,26 +324,17 @@ impl Export {
     }
 
     async fn run_inner(&self) -> Result<(ExportSummary, PathBuf), ApiError> {
+        self.store.delete_setting("androidExportLimitChat")?;
         let mut summary = ExportSummary::default();
         let name = backup_file_name(crate::messages::now_ms());
-        let path = self.directory.join(&name);
-        // A temporary name until the archive is complete: a crashed export never leaves a
-        // file that looks like a finished backup.
-        let temporary = self.directory.join(format!("{name}.part"));
-        let create = temporary.clone();
-        let folder = self.directory.clone();
-        let free_space = self.free_space;
-        let writer = tokio::task::spawn_blocking(move || -> Result<Writer, ApiError> {
-            remove_leftovers(&folder);
-            // Before minutes of decrypting and encrypting all media for nothing. Older backups
-            // only go after the new one stands, so they can't make room for it.
-            check_room(free_space, &folder, last_backup_size(&folder))?;
-            let file = std::fs::File::create(&create).map_err(|e| write_error(&e))?;
-            Ok(zip::ZipWriter::new(file))
-        })
-        .await
-        .map_err(|e| ApiError::Internal(e.to_string()))??;
-
+        check_room(
+            self.free_space,
+            &self.directory,
+            last_backup_size(&self.directory),
+        )?;
+        let (temporary, file) =
+            crate::export_file::ExportFile::create(&self.store, &self.directory)?;
+        let writer = Box::new(zip::ZipWriter::new(file));
         let result = self.write_entries(writer, &mut summary).await;
         let finished = match result {
             Ok(writer) => tokio::task::spawn_blocking(move || -> Result<(), ApiError> {
@@ -373,26 +354,13 @@ impl Export {
                 Ok(())
             }
         });
-        if let Err(error) = finished {
-            let _ = std::fs::remove_file(&temporary);
-            return Err(error);
-        }
-        // A rename to a new name is only lasting once the folder is on the disk too, and rotating
-        // may delete the only other backup: the battery can die seconds after this.
-        let (from, to, folder) = (temporary.clone(), path.clone(), self.directory.clone());
-        let placed = tokio::task::spawn_blocking(move || -> Result<bool, ApiError> {
-            std::fs::rename(&from, &to).map_err(|e| write_error(&e))?;
-            Ok(sync_directory(&folder).is_ok())
-        })
-        .await
-        .map_err(|e| ApiError::Internal(e.to_string()))?;
-        match placed {
-            Ok(true) => summary.removed_old_backups = self.rotate(&name),
-            Ok(false) => tracing::warn!("backup folder not synced, older backups stay"),
-            Err(error) => {
-                let _ = std::fs::remove_file(&temporary);
-                return Err(error);
-            }
+        finished?;
+        let path = temporary.publish(&name, true)?;
+        if let Some(folder) = path.parent()
+            && sync_directory(folder).is_ok()
+        {
+            summary.removed_old_backups =
+                crate::export_file::rotate(&self.store, folder, self.keep)?;
         }
         Ok((summary, path))
     }
@@ -443,52 +411,34 @@ impl Export {
         Ok(())
     }
 
-    /// Delete the oldest of our backup files beyond `keep` (never anything else).
-    fn rotate(&self, just_written: &str) -> usize {
-        if self.keep == 0 {
-            return 0;
-        }
-        let Ok(entries) = std::fs::read_dir(&self.directory) else {
-            return 0;
-        };
-        let mut backups: Vec<String> = entries
-            .filter_map(|entry| entry.ok())
-            .filter_map(|entry| entry.file_name().into_string().ok())
-            .filter(|name| is_backup_file_name(name))
-            .collect();
-        backups.sort();
-        let mut removed = 0;
-        while backups.len() > self.keep {
-            let oldest = backups.remove(0);
-            if oldest == just_written {
-                break;
-            }
-            if std::fs::remove_file(self.directory.join(&oldest)).is_ok() {
-                removed += 1;
-            }
-        }
-        removed
-    }
-
     /// One entry into the archive (on the blocking thread; the writer round-trips).
     async fn add(
         &self,
         mut writer: Writer,
-        name: String,
+        name: Option<String>,
         data: Zeroizing<Vec<u8>>,
-    ) -> Result<Writer, ApiError> {
+        mut table: super::csv::ExportTable,
+    ) -> Result<(Writer, super::csv::ExportTable), ApiError> {
         if self.cancelled() {
             return Err(export_cancelled());
         }
         let password = self.password.clone();
         let cancel = Arc::clone(&self.cancel);
         let (free_space, folder) = (self.free_space, self.directory.clone());
-        tokio::task::spawn_blocking(move || -> Result<Writer, ApiError> {
+        tokio::task::spawn_blocking(move || {
+            // Unnamed chunks continue the current chat CSV. Validation can scan many cells.
+            if name.as_ref().is_none_or(|name| name.ends_with(".csv")) {
+                table
+                    .check(&data)
+                    .map_err(|_| ApiError::BackupRestoreLimit)?;
+            }
             check_room(free_space, &folder, data.len() as u64)?;
-            let options = zip::write::SimpleFileOptions::default()
-                .compression_method(zip::CompressionMethod::Deflated)
-                .with_aes_encryption(zip::AesMode::Aes256, &password);
-            writer.start_file(name, options).map_err(zip_error)?;
+            if let Some(name) = name {
+                let options = zip::write::SimpleFileOptions::default()
+                    .compression_method(crate::export_file::compression(&data))
+                    .with_aes_encryption(zip::AesMode::Aes256, &password);
+                writer.start_file(name, options).map_err(zip_error)?;
+            }
             // In pieces: one big video must not hold up whoever waits for the cancel.
             for piece in data.chunks(ADD_CHUNK_BYTES) {
                 if cancel.load(Ordering::Relaxed) {
@@ -496,7 +446,7 @@ impl Export {
                 }
                 writer.write_all(piece).map_err(|e| write_error(&e))?;
             }
-            Ok(writer)
+            Ok::<_, ApiError>((writer, table))
         })
         .await
         .map_err(|e| ApiError::Internal(e.to_string()))?
@@ -508,9 +458,32 @@ impl Export {
         mut writer: Writer,
         summary: &mut ExportSummary,
     ) -> Result<Writer, ApiError> {
+        let mut entries = 0usize;
+        let mut picture_bytes = 0usize;
+        macro_rules! count_entry {
+            () => {{
+                entries += 1;
+                if entries > super::archive::MAX_ENTRIES {
+                    return Err(ApiError::BackupRestoreLimit);
+                }
+            }};
+        }
         macro_rules! add {
             ($name:expr, $data:expr) => {{
-                writer = self.add(writer, $name, $data).await?;
+                let name: String = $name;
+                let data = $data;
+                count_entry!();
+                if name.contains("avatar") || name.starts_with("contact_profile_pic_") {
+                    picture_bytes += data.len();
+                    if picture_bytes > crate::app_android_backup::MAX_PICTURES_TOTAL
+                        || data.len() > crate::app_android_backup::MAX_PICTURE_BYTES
+                    {
+                        return Err(ApiError::BackupRestoreLimit);
+                    }
+                }
+                (writer, _) = self
+                    .add(writer, Some(name), data, Default::default())
+                    .await?;
             }};
         }
 
@@ -754,20 +727,65 @@ impl Export {
                 "done": done,
                 "total": total,
             }));
-            let messages = self.store.conversation_messages(&conversation, u32::MAX)?;
+            let boundary = self.store.export_last_id()?;
+            let mut cursor = (i64::MIN, 0);
+            let mut messages = self
+                .store
+                .export_page(&conversation, boundary, cursor, false)?;
             if messages.is_empty() {
                 continue;
             }
-            let mut rows = write_row(&MESSAGE_HEADER);
-            let mut media: Vec<(i64, MediaPart, String)> = Vec::new();
-            for message in &messages {
-                let reference = poll_reference.map(|model| (model, conversation.as_str()));
-                match self.message_row(message, &mut polls, reference, summary)? {
-                    Some(row) => rows.push_str(&row),
-                    None => continue,
+            count_entry!();
+            let mut table = super::csv::ExportTable::default();
+            let header = write_row(&MESSAGE_HEADER);
+            (writer, table) = self
+                .add(
+                    writer,
+                    Some(file_name),
+                    Zeroizing::new(header.into_bytes()),
+                    table,
+                )
+                .await?;
+            while let Some(last) = messages.last() {
+                if self.cancelled() {
+                    return Err(export_cancelled());
                 }
-                summary.messages += 1;
-                if message.kind == "file" {
+                cursor = (last.sort_key, last.id);
+                let mut rows = String::new();
+                for message in &messages {
+                    let reference = poll_reference.map(|model| (model, conversation.as_str()));
+                    if let Some(row) = self.message_row(message, &mut polls, reference, summary)? {
+                        rows.push_str(&row);
+                        summary.messages += 1;
+                    }
+                }
+                let chunk = self
+                    .add(writer, None, Zeroizing::new(rows.into_bytes()), table)
+                    .await;
+                if matches!(chunk, Err(ApiError::BackupRestoreLimit)) {
+                    self.store
+                        .set_setting("androidExportLimitChat", &conversation)?;
+                }
+                (writer, table) = chunk?;
+                messages = self
+                    .store
+                    .export_page(&conversation, boundary, cursor, false)?;
+            }
+            summary.chats += 1;
+            cursor = (i64::MIN, 0);
+            loop {
+                let page = self
+                    .store
+                    .export_page(&conversation, boundary, cursor, true)?;
+                let Some(last) = page.last() else {
+                    break;
+                };
+                cursor = (last.sort_key, last.id);
+                if self.cancelled() {
+                    return Err(export_cancelled());
+                }
+                let mut media = Vec::new();
+                for message in page {
                     let body: Value = serde_json::from_str(&message.body).unwrap_or_default();
                     if body["fileState"] == crate::app_media::STATE_LOCAL {
                         media.push((
@@ -784,56 +802,63 @@ impl Export {
                         ));
                     }
                 }
-            }
-            add!(file_name, Zeroizing::new(rows.into_bytes()));
-            summary.chats += 1;
-            for (row, part, entry_name) in media {
-                // Decrypt and re-encrypt on the blocking thread.
-                let media_store = Arc::clone(&self.media);
-                let password = self.password.clone();
-                let (free_space, folder) = (self.free_space, self.directory.clone());
-                let (returned, written) =
-                    tokio::task::spawn_blocking(move || -> (Writer, Result<bool, ApiError>) {
-                        let mut writer = writer;
-                        let result = (|| {
-                            // One bad file must not fail this and every later backup; it is
-                            // counted below. Not being able to write, on the other hand, ends it.
-                            let Ok(Some(data)) = media_store.read(row, part) else {
-                                return Ok(false);
-                            };
-                            check_room(free_space, &folder, data.len() as u64)?;
-                            let options = zip::write::SimpleFileOptions::default()
-                                .compression_method(zip::CompressionMethod::Deflated)
-                                .with_aes_encryption(zip::AesMode::Aes256, &password);
-                            writer
-                                .start_file(entry_name, options)
-                                .and_then(|()| {
-                                    writer.write_all(&data).map_err(zip::result::ZipError::Io)
-                                })
-                                .map_err(zip_error)?;
-                            Ok(true)
-                        })();
-                        (writer, result)
-                    })
-                    .await
-                    .map_err(|e| ApiError::Internal(e.to_string()))?;
-                writer = returned;
-                if written? {
-                    if matches!(part, MediaPart::File) {
-                        summary.media_files += 1;
-                    } else {
-                        summary.thumbnails += 1;
+
+                for (row, part, entry_name) in media {
+                    // Decrypt and re-encrypt on the blocking thread.
+                    let media_store = Arc::clone(&self.media);
+                    let password = self.password.clone();
+                    let (free_space, folder) = (self.free_space, self.directory.clone());
+                    let (returned, written) =
+                        tokio::task::spawn_blocking(move || -> (Writer, Result<bool, ApiError>) {
+                            let mut writer = writer;
+                            let result = (|| {
+                                // One bad file must not fail this and every later backup; it is
+                                // counted below. Not being able to write, on the other hand, ends it.
+                                let Ok(Some(data)) = media_store.read(row, part) else {
+                                    return Ok(false);
+                                };
+                                if data.len() > crate::media::MAX_BLOB_SIZE {
+                                    return Err(ApiError::BackupRestoreLimit);
+                                }
+                                check_room(free_space, &folder, data.len() as u64)?;
+                                let options = zip::write::SimpleFileOptions::default()
+                                    .compression_method(crate::export_file::compression(&data))
+                                    .with_aes_encryption(zip::AesMode::Aes256, &password);
+                                writer
+                                    .start_file(entry_name, options)
+                                    .and_then(|()| {
+                                        writer.write_all(&data).map_err(zip::result::ZipError::Io)
+                                    })
+                                    .map_err(zip_error)?;
+                                Ok(true)
+                            })();
+                            (writer, result)
+                        })
+                        .await
+                        .map_err(|e| ApiError::Internal(e.to_string()))?;
+                    writer = returned;
+                    if matches!(written, Err(ApiError::BackupRestoreLimit)) {
+                        self.store
+                            .set_setting("androidExportLimitChat", &conversation)?;
                     }
-                } else {
-                    tracing::warn!(row, "media file left out of the backup");
-                    if self.store.is_private(&conversation)? {
-                        summary.private_files_left_out += 1;
+                    if written? {
+                        count_entry!();
+                        if matches!(part, MediaPart::File) {
+                            summary.media_files += 1;
+                        } else {
+                            summary.thumbnails += 1;
+                        }
                     } else {
-                        *summary.skipped.entry(FILES_UNREADABLE).or_default() += 1;
+                        tracing::warn!(row, "media file left out of the backup");
+                        if self.store.is_private(&conversation)? {
+                            summary.private_files_left_out += 1;
+                        } else {
+                            *summary.skipped.entry(FILES_UNREADABLE).or_default() += 1;
+                        }
                     }
                 }
+                tokio::task::yield_now().await;
             }
-            tokio::task::yield_now().await;
         }
         self.emit(json!({
             "event": "androidExportProgress",
@@ -1049,16 +1074,26 @@ impl Export {
             }
             "poll" | "pollClosed" => {
                 let state: Value = serde_json::from_str(&message.body).unwrap_or_default();
-                let body = poll_reference.and_then(|reference| {
-                    polls.message_body(
-                        &message.conversation,
-                        reference,
-                        &message.kind,
-                        &state,
-                        message.created_at,
-                        message.updated_at,
-                    )
-                });
+                let body = poll_reference
+                    .map(|reference| {
+                        polls.message_body(
+                            &message.conversation,
+                            reference,
+                            &message.kind,
+                            &state,
+                            message.created_at,
+                            message.updated_at,
+                        )
+                    })
+                    .transpose();
+                let body = match body {
+                    Ok(body) => body.flatten(),
+                    Err(_) => {
+                        self.store
+                            .set_setting("androidExportLimitChat", &message.conversation)?;
+                        return Err(ApiError::BackupRestoreLimit);
+                    }
+                };
                 let Some(body) = body else {
                     *summary.skipped.entry("poll").or_default() += 1;
                     return Ok(None);
