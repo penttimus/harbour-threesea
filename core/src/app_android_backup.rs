@@ -81,10 +81,10 @@ impl Shared {
     }
 }
 
+use crate::android_backup::MAX_TABLE_BYTES;
 /// Reading bounds for the metadata import (an archive beyond them reports instead of OOMing).
-const MAX_TABLE_BYTES: usize = if cfg!(test) { 1 << 20 } else { 64 << 20 };
-const MAX_PICTURE_BYTES: usize = 8 << 20;
-const MAX_PICTURES_TOTAL: usize = 256 << 20;
+pub(crate) const MAX_PICTURE_BYTES: usize = 8 << 20;
+pub(crate) const MAX_PICTURES_TOTAL: usize = 256 << 20;
 
 /// What the metadata import lifts off the archive on the blocking thread, applied afterwards
 /// on the core thread (which owns the store).
@@ -2410,6 +2410,10 @@ impl App {
             "keep": number(keys::ANDROID_EXPORT_KEEP).unwrap_or(3),
             "lastBackup": number(keys::ANDROID_EXPORT_LAST),
             "lastError": self.store.setting(keys::ANDROID_EXPORT_ERROR)?,
+            "limitChat": match self.store.setting("androidExportLimitChat")? {
+                Some(key) if self.check_readable(&key).is_ok() => Some(self.chat_title(&key)?),
+                _ => None,
+            },
             "chatsLeftOut": left_out(
                 keys::ANDROID_EXPORT_LEFT_OUT,
                 keys::ANDROID_EXPORT_LEFT_OUT_PRIVATE,
@@ -2519,7 +2523,7 @@ impl App {
             done,
             cancel: std::sync::Arc::clone(&self.android_export_cancel),
             free_space: crate::android_backup::export::free_bytes,
-            lookup: Some(crate::android_backup::export::ContactLookup {
+            lookup: (!self.network_offline).then(|| crate::android_backup::export::ContactLookup {
                 https: self.https.clone(),
                 config: std::sync::Arc::clone(&self.config),
                 connection: self.connection.borrow().clone(),
@@ -2928,10 +2932,57 @@ mod export_tests {
         assert_eq!(status["interval"], "weekly", "from what is stored");
     }
 
-    /// A killed export's partial file goes with the next backup; nothing else in the folder does,
-    /// and the new archive ends up complete under its final name.
     #[tokio::test(flavor = "current_thread")]
-    async fn a_backup_clears_what_a_killed_one_left() {
+    async fn oversized_chat_preserves_previous_restorable_export() {
+        let dir = tempfile::tempdir().unwrap();
+        let out = tempfile::tempdir().unwrap();
+        let app = app_with_identity(dir.path(), [7; 32]);
+        app.store
+            .upsert_contact(&crate::contacts::test_contact("B0B0B0B0"))
+            .unwrap();
+        let body = "x".repeat(4096);
+        for id in 1..180 {
+            app.store
+                .insert_incoming("B0B0B0B0", id, "text", &body, 1)
+                .unwrap();
+        }
+        let done = run_export(&app, out.path(), 1).await;
+        let path = std::path::Path::new(done["path"].as_str().unwrap());
+        let mut archive = crate::android_backup::Archive::open(path, "round-trip-pw").unwrap();
+        assert_eq!(
+            archive
+                .read_table("message_B0B0B0B0.csv", super::MAX_TABLE_BYTES)
+                .unwrap()
+                .rows
+                .len(),
+            179
+        );
+        for id in 180..300 {
+            app.store
+                .insert_incoming("B0B0B0B0", id, "text", &body, 1)
+                .unwrap();
+        }
+        let (job, events) = export_job(&app, out.path(), 1);
+        assert_eq!(failed_kind(&app, job, events).await, "backupRestoreLimit");
+        app.store.set_private("B0B0B0B0", true).unwrap();
+        app.unlocked.set(false);
+        assert!(app.android_export_status().unwrap()["limitChat"].is_null());
+        app.unlocked.set(true);
+        assert!(app.android_export_status().unwrap()["limitChat"].is_string());
+        let recovered = tempfile::tempdir().unwrap();
+        let restored = restored(recovered.path(), path.to_str().unwrap()).await;
+        let messages = restored
+            .store
+            .conversation_messages("B0B0B0B0", 300)
+            .unwrap();
+        assert_eq!(messages.len(), 179);
+        assert!(messages.iter().all(|m| m.body == body));
+        assert_eq!(std::fs::read_dir(out.path()).unwrap().count(), 1);
+    }
+
+    /// Untracked files and legacy partials belong to the user.
+    #[tokio::test(flavor = "current_thread")]
+    async fn a_backup_keeps_untracked_files() {
         let dir = tempfile::tempdir().unwrap();
         let folder = tempfile::tempdir().unwrap();
         let app = app_with_identity(dir.path(), [7; 32]);
@@ -2968,6 +3019,7 @@ mod export_tests {
             .to_owned();
         let mut expected = vec![
             "holiday.zip.part".to_owned(),
+            "threema-backup-20231114-221320.zip.part".to_owned(),
             "threema-backup-20231114-221320.zip".to_owned(),
             "threema-backup-2023.zip.part".to_owned(),
             written,

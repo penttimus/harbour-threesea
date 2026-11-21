@@ -3426,6 +3426,10 @@
             <source>This backup holds no Threema ID. Restore the ID from Threema Safe or an ID backup, then import this backup in Settings, Backup, Data backup.</source>
             <translation>Cette sauvegarde ne contient pas d’ID Threema. Restaurez l’ID depuis Threema Safe ou une sauvegarde d’ID, puis importez cette sauvegarde dans Paramètres, Sauvegarde, Sauvegarde des données.</translation>
         </message>
+        <message id="threesea-la-backup-restore-limit">
+            <source>This backup exceeds the restore limits. Earlier backups have been kept.</source>
+            <translation>Cette sauvegarde dépasse les limites de restauration. Les sauvegardes précédentes ont été conservées.</translation>
+        </message>
         <message id="threesea-la-error-backup-write">
             <source>The backup could not be written. Check the backup folder.</source>
             <translation>La sauvegarde n’a pas pu être écrite. Vérifiez le dossier de sauvegarde.</translation>
@@ -4539,6 +4543,10 @@
         <message id="threesea-me-remove-star">
             <source>Remove star</source>
             <translation>Retirer l’étoile</translation>
+        </message>
+        <message id="threesea-la-search-submit-short">
+            <source>Press Enter to search messages</source>
+            <translation>Appuyez sur Entrée pour rechercher des messages</translation>
         </message>
         <message id="threesea-la-search-nothing-at-all">
             <source>No chats, contacts or messages found</source>

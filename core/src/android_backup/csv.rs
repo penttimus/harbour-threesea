@@ -38,6 +38,37 @@ pub fn parse(text: &str) -> Result<Zeroizing<Vec<Vec<String>>>, TooLarge> {
     reader.finish()
 }
 
+/// Apply the import limits as complete CSV rows are handed to the ZIP writer.
+#[derive(Default)]
+pub(super) struct ExportTable {
+    bytes: usize,
+    rows: usize,
+    cells: usize,
+}
+impl ExportTable {
+    pub fn check(&mut self, data: &[u8]) -> Result<(), TooLarge> {
+        self.bytes = self.bytes.checked_add(data.len()).ok_or(TooLarge)?;
+        if self.bytes > super::MAX_TABLE_BYTES {
+            return Err(TooLarge);
+        }
+        let mut reader = Reader::new(data.len());
+        reader.cells = self.cells;
+        for line in physical_lines(std::str::from_utf8(data).map_err(|_| TooLarge)?) {
+            reader.line(line)?;
+            self.rows += reader.rows.len();
+            reader.rows.zeroize();
+            if self.rows > MAX_ROWS {
+                return Err(TooLarge);
+            }
+        }
+        self.cells = reader.cells;
+        if reader.pending {
+            return Err(TooLarge);
+        }
+        Ok(())
+    }
+}
+
 /// Physical lines as `BufferedReader.readLine` sees them: terminated by `\n`, `\r` or `\r\n`
 /// (the terminator is stripped; a trailing terminator ends the last line).
 fn physical_lines(text: &str) -> impl Iterator<Item = &str> {

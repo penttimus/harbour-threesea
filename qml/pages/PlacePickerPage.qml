@@ -29,6 +29,8 @@ Page {
     property int requests: 0
     property Item searchFieldItem
 
+    readonly property bool foreground: Qt.application.active && status === PageStatus.Active
+    onForegroundChanged: if (foreground) askPending()
     onCenterChanged: askPending()
     Component.onCompleted: askPending()
 
@@ -52,7 +54,7 @@ Page {
 
     // One answer counts, the one to the latest question.
     function ask() {
-        if (!center || window.locked) return
+        if (!foreground || !center || window.locked) return
         var args = { latitude: center.latitude, longitude: center.longitude }
         if (query.length > 0) args.query = query
         askedQuery = query

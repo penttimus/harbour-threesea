@@ -52,13 +52,18 @@ Page {
         else pageStack.push(Qt.resolvedUrl("ChatPage.qml"), { identity: identity })
     }
 
+    // Count Unicode code points as the Rust trigram index does.
+    function characterCount(text) {
+        return text.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, "x").length
+    }
+    property string submittedQuery
     function search() {
         if (searching) {
             searchAgain = true
             return
         }
         var text = searchFieldItem.text.trim()
-        if (text.length < 2) {
+        if (characterCount(text) < 2) {
             results = []
             query = ""
             namedChats = []
@@ -67,7 +72,14 @@ Page {
         }
         var args = { query: text }
         if (identity.length > 0) args.identity = identity
-        else findNames(text)
+        else {
+            findNames(text)
+            if (characterCount(text) < 3 && submittedQuery !== text) {
+                results = []
+                query = text
+                return
+            }
+        }
         searching = true
         backend.call("searchMessages", args, function(ok, result) {
             page.searching = false
@@ -121,9 +133,17 @@ Page {
                                  //% "Names and messages"
                                  : qsTrId("threesea-la-search-names-messages")
                 inputMethodHints: Qt.ImhNoAutoUppercase | window.incognitoHints
-                EnterKey.iconSource: "image://theme/icon-m-enter-close"
-                EnterKey.onClicked: focus = false
-                onTextChanged: searchDelay.restart()
+                EnterKey.iconSource: page.identity.length === 0 && page.characterCount(text.trim()) === 2
+                                     ? "image://theme/icon-m-search" : "image://theme/icon-m-enter-close"
+                EnterKey.onClicked: {
+                    if (!page.identity && page.characterCount(text.trim()) === 2) {
+                        page.submittedQuery = text.trim()
+                        searchDelay.stop()
+                        page.search()
+                    }
+                    focus = false
+                }
+                onTextChanged: { page.submittedQuery = ""; searchDelay.restart() }
                 Component.onCompleted: page.searchFieldItem = searchField
             }
             // Before searching (all chats): the starred messages, one tap away.
@@ -269,8 +289,11 @@ Page {
             text: page.identity.length > 0
                   //% "No messages found"
                   ? qsTrId("threesea-la-search-nothing")
-                  //% "No chats, contacts or messages found"
-                  : qsTrId("threesea-la-search-nothing-at-all")
+                  : page.characterCount(page.query) === 2 && page.submittedQuery !== page.query
+                    //% "Press Enter to search messages"
+                    ? qsTrId("threesea-la-search-submit-short")
+                    //% "No chats, contacts or messages found"
+                    : qsTrId("threesea-la-search-nothing-at-all")
         }
 
         VerticalScrollDecorator { }

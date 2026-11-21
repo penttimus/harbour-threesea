@@ -388,16 +388,23 @@ void ThreeseBackend::reportNetwork()
     // A socket on the old network hangs without a word, and a wait for the next attempt goes on
     // although the network is back. Only what is in use counts: a Wi-Fi scan's findings are
     // changes too. Together with the core's echo this tells within seconds.
+    const bool offline = active.isEmpty() && !m_network->isOnline();
+    if (offline != m_networkOffline) {
+        m_networkOffline = offline;
+        emit networkOfflineChanged();
+    }
     active.sort();
     if (active != m_activeNetworks) {
         m_activeNetworks = active;
-        m_networkWakeTimer.start();
+        if (!offline) m_networkWakeTimer.start();
+        else m_networkWakeTimer.stop();
     }
     if (m_state != QLatin1String("ready")) {
         return;
     }
     QVariantMap args;
     args.insert(QStringLiteral("wifi"), unmetered);
+    args.insert(QStringLiteral("online"), !offline);
     call(QStringLiteral("setNetwork"), args);
 }
 
@@ -1095,45 +1102,17 @@ void ThreeseBackend::sendSquarePicture(const QString &path, QVariantMap request,
                                        bool safeCopy)
 {
     const QString localPath = path.startsWith(QLatin1String("file://")) ? QUrl(path).toLocalFile() : path;
-    QImageReader reader(localPath);
-    reader.setAutoTransform(true);
-    const QSize full = reader.size();
-    // Decode close to the target size (camera photos are large), then crop the centre square.
-    if (full.isValid() && qMin(full.width(), full.height()) > 1024) {
-        reader.setScaledSize(full.scaled(1024, 1024, Qt::KeepAspectRatioByExpanding));
-    }
-    QImage image = reader.read();
-    if (image.isNull()) {
-        if (callback.isCallable()) {
-            QJSValue(callback).call(QJSValueList() << false << QJSValue() << QStringLiteral("internal")
-                                                   << reader.errorString());
-        }
-        return;
-    }
-    const int side = qMin(image.width(), image.height());
-    image = image.copy((image.width() - side) / 2, (image.height() - side) / 2, side, side)
-                .scaled(512, 512, Qt::IgnoreAspectRatio, Qt::SmoothTransformation)
-                .convertToFormat(QImage::Format_RGB32);
-    image = PhotoEdit::withoutMetadata(image);
-    QByteArray jpeg;
-    QBuffer buffer(&jpeg);
-    buffer.open(QIODevice::WriteOnly);
-    image.save(&buffer, "JPEG", 85);
-    // Threema Safe's format (safe-backup.schema.yml): JPEG, q=60, at most 400×400, no metadata
-    // (Qt writes what the image still carries: none, since withoutMetadata above).
-    QByteArray safeJpeg;
-    if (safeCopy) {
-        QBuffer safeBuffer(&safeJpeg);
-        safeBuffer.open(QIODevice::WriteOnly);
-        image.scaled(400, 400, Qt::IgnoreAspectRatio, Qt::SmoothTransformation).save(&safeBuffer, "JPEG", 60);
-    }
-
     const quint64 id = m_nextId++;
     if (callback.isCallable()) {
         m_callbacks.insert(id, callback);
     }
     request.insert(QStringLiteral("id"), static_cast<double>(id));
-    filePrepared(request, jpeg, safeJpeg, QString());
+    QThreadPool::globalInstance()->start(new Task([this, localPath, request, safeCopy]() {
+        QByteArray jpeg, safeJpeg;
+        const QString error = PhotoEdit::squarePicture(localPath, jpeg, safeCopy ? &safeJpeg : nullptr);
+        QMetaObject::invokeMethod(this, "filePrepared", Qt::QueuedConnection, Q_ARG(QVariantMap, request),
+                                  Q_ARG(QByteArray, jpeg), Q_ARG(QByteArray, safeJpeg), Q_ARG(QString, error));
+    }));
 }
 
 namespace {

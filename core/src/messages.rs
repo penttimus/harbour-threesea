@@ -1012,6 +1012,30 @@ impl Store {
         Ok(rows.collect::<Result<_, _>>()?)
     }
 
+    /// Freeze the insertion boundary so new messages do not extend an export indefinitely.
+    pub(crate) fn export_last_id(&self) -> Result<i64, StoreError> {
+        Ok(self
+            .conn
+            .query_row("SELECT COALESCE(MAX(id),0) FROM messages", [], |r| r.get(0))?)
+    }
+
+    pub(crate) fn export_page(
+        &self,
+        chat: &str,
+        last_id: i64,
+        after: (i64, i64),
+        only_files: bool,
+    ) -> Result<Vec<Message>, StoreError> {
+        let filter = if only_files { "AND kind='file'" } else { "" };
+        let sql = format!(
+            "SELECT {} FROM messages WHERE conversation=?1 AND id<=?2 {filter} AND (sort_key,id)>(?3,?4) ORDER BY sort_key,id LIMIT 128",
+            columns()
+        );
+        let mut statement = self.conn.prepare_cached(&sql)?;
+        let rows = statement.query_map(params![chat, last_id, after.0, after.1], from_row)?;
+        Ok(rows.collect::<Result<_, _>>()?)
+    }
+
     /// Messages of a conversation in history order, oldest first (`limit` newest ones). Live
     /// messages sit in arrival/sending order (never by `created_at`: the sender's clock can be
     /// off); imported history is slotted between them by `sort_key`, ties broken by `id`.
@@ -3083,7 +3107,7 @@ mod tests {
                      DROP TABLE group_picture_sends;
                      ALTER TABLE groups DROP COLUMN picture_pending;
                      ALTER TABLE messages DROP COLUMN no_receipts;
-                     DROP TABLE reflected_waiting;
+                     DROP TABLE reflected_waiting; DROP TABLE export_files; DROP INDEX messages_download_retry;
                      PRAGMA user_version = 35;",
                 )
                 .unwrap();

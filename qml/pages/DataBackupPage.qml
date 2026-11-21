@@ -376,7 +376,8 @@ Page {
                 //% "Last attempt failed"
                 label: qsTrId("threesea-la-safe-last-attempt-failed")
                 value: page.exportStatus.lastError
-                       ? Errors.text(page.exportStatus.lastError, "") : ""
+                       ? Errors.text(page.exportStatus.lastError, "")
+                         + (page.exportStatus.limitChat ? " (" + page.exportStatus.limitChat + ")" : "") : ""
             }
         }
 

@@ -59,6 +59,7 @@ class ThreeseBackend : public QObject
     // lastMessage, a group's senderName); never a private or an archived chat.
     Q_PROPERTY(QVariantList unreadChats READ unreadChats NOTIFY unreadChatsChanged)
     // Keep the process (and the connection) alive when the window is closed.
+    Q_PROPERTY(bool networkOffline READ networkOffline NOTIFY networkOfflineChanged)
     Q_PROPERTY(bool keepRunning READ keepRunning WRITE setKeepRunning NOTIFY keepRunningChanged)
     // How much goes to the system log, Qt and core alike: "warn" (default), "info", "debug".
     // Device-local (Settings → Advanced); no level logs content (CLAUDE.md §7.3).
@@ -164,6 +165,8 @@ public:
     QString unreadFrom() const { return m_unreadFrom; }
     QString unreadChat() const { return m_unreadChat; }
     QVariantList unreadChats() const { return m_unreadChats; }
+    bool networkOffline() const { return m_networkOffline; }
+    Q_INVOKABLE void reportNetwork();
     bool keepRunning() const;
     QString logLevel() const;
     // Qt's (and QML's console) messages at the stored level; main() calls it before anything logs.
@@ -446,6 +449,7 @@ signals:
     void coreEvent(const QString &name, const QVariantMap &data);
     // The networks in use have changed and calmed down: the window wakes the connection.
     void networkChangedSettled();
+    void networkOfflineChanged();
     void connectionStateChanged();
     void unreadCountChanged();
     void unreadFromChanged();
@@ -477,7 +481,6 @@ private slots:
     void handleMessage(const QByteArray &json);
     void startAgain();
     void onKeyWorkDone(quint64 id, const QByteArray &result);
-    void reportNetwork();
     void finishDataRemoval();
     void purgeImageCacheSoon();
     void filePrepared(const QVariantMap &request, const QByteArray &data, const QByteArray &thumbnail,
@@ -563,6 +566,7 @@ private:
     QByteArray m_wrappedKey;
     class QNetworkConfigurationManager *m_network = nullptr;
     // The networks in use: a change wakes the connection, once things have calmed down.
+    bool m_networkOffline = false;
     QStringList m_activeNetworks;
     QTimer m_networkWakeTimer;
     bool m_unlockedAtStart = false;

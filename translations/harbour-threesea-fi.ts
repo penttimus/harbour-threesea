@@ -3426,6 +3426,10 @@
             <source>This backup holds no Threema ID. Restore the ID from Threema Safe or an ID backup, then import this backup in Settings, Backup, Data backup.</source>
             <translation>Tässä varmuuskopiossa ei ole Threema-tunnusta. Palauta tunnus Threema Safesta tai tunnuksen varmuuskopiosta ja tuo sitten tämä varmuuskopio kohdassa Asetukset, Varmuuskopio, Tietojen varmuuskopio.</translation>
         </message>
+        <message id="threesea-la-backup-restore-limit">
+            <source>This backup exceeds the restore limits. Earlier backups have been kept.</source>
+            <translation>Varmuuskopio ylittää palautuksen rajat. Aiemmat varmuuskopiot on säilytetty.</translation>
+        </message>
         <message id="threesea-la-error-backup-write">
             <source>The backup could not be written. Check the backup folder.</source>
             <translation>Varmuuskopiota ei voitu kirjoittaa. Tarkista varmuuskopiokansio.</translation>
@@ -4539,6 +4543,10 @@
         <message id="threesea-me-remove-star">
             <source>Remove star</source>
             <translation>Poista tähti</translation>
+        </message>
+        <message id="threesea-la-search-submit-short">
+            <source>Press Enter to search messages</source>
+            <translation>Hae viestejä painamalla Enteriä</translation>
         </message>
         <message id="threesea-la-search-nothing-at-all">
             <source>No chats, contacts or messages found</source>
