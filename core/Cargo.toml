@@ -29,7 +29,7 @@ opus-pure = "=0.2.3"
 # same RustCrypto version libthreema already uses.
 hmac = "=0.12.1"
 # Threema links (threema://, threema.id): URL and query parsing; already in the tree via reqwest.
-url = "=2.5.8"
+url = "=2.5.9"
 qrcode = { version = "=0.14.1", default-features = false }
 rqrr = { version = "=0.11.0", default-features = false }
 libthreema = { path = "../third_party/libthreema/lib" }
